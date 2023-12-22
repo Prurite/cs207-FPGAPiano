@@ -1,3 +1,5 @@
+`include "header.svh"
+
 module unifiedInput (
 	input ...,
     output UserInput user_in
