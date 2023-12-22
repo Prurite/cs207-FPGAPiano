@@ -1,13 +1,44 @@
 `include "header.svh"
 
 module main(
-    // Inputs and outputs
+    // System clock and reset signals
+    input logic clk, sys_rst,
+    // PS2 keyboard in
+    input logic ps2_clk, ps2_data,
+    // Board in
+    input logic btn_arr[3:0], btn_notes[6:0],
+        btn_oct_up, btn_oct_down, sw_user_id[3:0],
+    // PWM audio out
+    output logic audio_pwm, audio_sd,
+    // 7-seg display out, 2 groups, each 4 displays
+    output logic [7:0] seg [1:0], logic [3:0] seg_sel [1:0],
+    // LED out
+    output logic led [7:0],
+    // VGA out
+    output logic vga_clk, vga_hsync, vga_vsync,
+        vga_r [3:0], vga_g [3:0], vga_b [3:0]
 );
     // Bind the unified input and output controls
     UserInput user_in;
     ProgramOutput prog_out;
-    unifiedInput input_handler(.user_in(user_in), ...);
-    unifiedOutput output_handler(.prog_out(prog_out), ...);
+
+    unifiedInput input_handler(
+        .clk(clk), .sys_rst(sys_rst),
+        .ps2_clk(ps2_clk), .ps2_data(ps2_data),
+        .btn_arr(btn_arr), .btn_notes(btn_notes),
+        .btn_oct_up(btn_oct_up), .btn_oct_down(btn_oct_down),
+        .sw_user_id(sw_user_id),
+        .user_in(user_in)
+    );
+    unifiedOutput output_handler(
+        .clk(clk), .sys_rst(sys_rst),
+        .prog_out(prog_out),
+        .audio_pwm(audio_pwm), .audio_sd(audio_sd),
+        .seg(seg), .seg_sel(seg_sel),
+        .led(led),
+        .vga_clk(vga_clk), .vga_hsync(vga_hsync), .vga_vsync(vga_vsync),
+        .vga_r(vga_r), .vga_g(vga_g), .vga_b(vga_b)
+    );
     
     // Local variables
     logic rst = 0;
@@ -29,12 +60,12 @@ module main(
      */
 
     ChartStorageManager chart_storage(
-        .clk(clk),
+        .clk(clk), .sys_rst(sys_rst),
         .read_chart_id(read_chart_id), .write_chart_id(write_chart_id),
         .new_chart_data(write_chart), .current_chart_data(read_chart)
     );
     RecordStorageManager record_storage(
-        .clk(clk),
+        .clk(clk), .sys_rst(sys_rst),
         .read_record_id(read_record_id), .write_record_id(write_record_id),
         .new_record_data(write_record), .current_record_data(read_record)
     );
@@ -44,10 +75,11 @@ module main(
     // Bind the pages
     pageInit page_init(
         .clk(clk), .rst(rst), .user_in(user_in), .init_out(init_out)
-    );
+    ); // pageInit resets things, loads charts from ROM then jumps to MENU
     pageMenu page_menu(
         .clk(clk), .rst(rst), .user_in(user_in), .menu_out(menu_out),
-        .read_chart_id(read_chart_id), .chart_data(read_chart)
+        .read_chart_id(read_chart_id), .chart_data(read_chart),
+        .auto_play(auto_play)
     );
     pageScoreHistory page_history(
         .clk(clk), .rst(rst), .user_in(user_in), .history_out(history_out),
@@ -55,7 +87,7 @@ module main(
     );
     pagePlayChart page_play(
         .clk(clk), .rst(rst), .user_in(user_in), .play_out(play_out),
-        .cur_chart(read_chart),
+        .cur_chart(read_chart), .auto_play(auto_play),
         .write_chart_id(write_chart_id), .write_chart(write_chart),
         .write_record_id(write_record_id), .write_record(write_record)
     );
@@ -72,16 +104,16 @@ module main(
         else
             cur_state <= next_state;
     
-    always @(*) begin
+    always_comb begin
         case (cur_state)
-            INIT: prog_out <= init_out;
-            MENU: prog_out <= menu_out;
-            HISTORY: prog_out <= history_out;
-            PLAY: prog_out <= play_out;
-            default: prog_out <= init_out;
+            INIT: prog_out = init_out;
+            MENU: prog_out = menu_out;
+            HISTORY: prog_out = history_out;
+            PLAY: prog_out = play_out;
+            default: prog_out = init_out;
         endcase
-        next_state <= prog_out.state;
-        rst <= next_state != cur_state;
+        next_state = prog_out.state;
+        rst = next_state != cur_state;
     end
     
 endmodule

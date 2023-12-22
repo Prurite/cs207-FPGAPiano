@@ -38,6 +38,7 @@ typedef struct {
     bit oct_up, oct_down; // +8 / -8
     bit [3:0] user_id; // Controlled by on board switches
 } UserInput;
+// Processed input from keyboard and board
 
 typedef struct {
     ScreenText text;
@@ -46,6 +47,7 @@ typedef struct {
     SegDisplayText seg;
     TopState state;
 } ProgramOutput;
+// Output to all peripherals
 
 typedef struct {
     bit [0:8*`NAME_LEN-1] name;

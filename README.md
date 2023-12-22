@@ -35,7 +35,7 @@
 	3	recorded_1
 	
 [^][v]	Move
-[<]	Auto	[>]	Play Chart	[C] Delete
+[<]	Auto	[>]	Play Chart
 ```
 
 ```
