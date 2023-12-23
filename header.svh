@@ -13,6 +13,11 @@
 `define SEG_WIDTH 8
 `define PLAY_RECS_MAX 10
 
+`define UP 4'b1000;
+`define DOWN 4'b0100;
+`define LEFT 4'b0010;
+`define RIGHT 4'b0001;
+
 typedef bit [0:8*`SCREEN_WIDTH-1] ScreenText [`SCREEN_HEIGHT-1:0];
 // An unpacked array of packed chars in ASCII
 // Note that strings MUST be used with small index to the left
