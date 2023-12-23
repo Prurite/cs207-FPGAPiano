@@ -1,5 +1,8 @@
 `timescale 1ns / 1ps
 
+`define SYS_FREQ 100_000_000 // Hz
+`define PROG_FREQ 60 // Hz
+
 `define NAME_LEN 16
 `define NOTE_WIDTH 7
 `define CHART_LEN 2048

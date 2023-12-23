@@ -14,7 +14,7 @@
 	键位设置
 	历史分数
 	自由演奏
-    谱面选择
+	谱面选择
 
 2 历史分数
 	显示历史 x 条成绩：用户 id，谱面名和得分
@@ -56,18 +56,18 @@ Save to chart id: 5
 Prog.	352	/	460		Score	3527
 
 	.	.	.	.	#	.	.	.
-    .	.	.	.	.	.	.	.
+	.	.	.	.	.	.	.	.
 	.	.	.	.	#	.	.	.
-    .	.	.	.	#	.	.	.
-    .	.	.	.	.	.	.	.
-    #	.	.	.	.	.	.	.
-    #	.	.	.	.	.	.	.
-    .	.	.	.	.	.	.	.
-    #	.	.	.	.	.	.	.
->>> #	.	.	.	.	.	.	. <<<
+	.	.	.	.	#	.	.	.
+	.	.	.	.	.	.	.	.
+	#	.	.	.	.	.	.	.
+	#	.	.	.	.	.	.	.
+	.	.	.	.	.	.	.	.
+	#	.	.	.	.	.	.	.
+>>>	#	.	.	.	.	.	.	.	<<<
 	
 	C	D	E	F	G	A	B	|
-	#							+
+	#							 
 
 [^] High [v] Low [<] Exit [>] Save
 ```
@@ -82,11 +82,15 @@ Prog.	352	/	460		Score	3527
 
 输入和输出直接连接到板上各个端口。负责连接各子模块的输入输出，及管理当前的主要系统状态（即在不同的页面间切换）。
 
-系统状态为：主菜单（选曲，最上段是自由/录制模式）；自由(录制)模式；自动/学习模式；历史演奏记录查看
+系统状态为：INIT, MENU, HISTORY, PLAY
 
 分别调用对应的模块处理输入输出。
 
 *录制：默认记录，结束自由模式时，可选择保存并退出 / 不保存退出
+
+有两个总时钟：clk 系统时钟 100MHz 和 prog_clk 程序时钟 60Hz。
+除了 IO 等需要串行处理的信息以外，程序均应使用 prog_clk 来同步逻辑。
+clk 用于在 1 帧之类读取 RAM ，进行 IO 等需要串行处理的数据。
 
 ```
 header.svh
@@ -108,14 +112,6 @@ page*.sv
 
 IO 模块通过主模块连接到板上各个端口。负责硬件与其他模块间的编解码。
 
-输入：键盘，板子上的开关
-
-输出：LED 灯，数码管，显示器，喇叭
-
-分别两个模块把键盘和板子上的开关输入转化为打包好的输入输出结构体。
-
-音频输出是所有页面共用一个
-
 ```
 io.sv
 ```
@@ -125,5 +121,21 @@ io.sv
 谱面读写模块从内存中读写谱面，以结构体的形式将谱面传回。
 
 ```
-memory.sv
+storageManager.sv
+```
+
+## 字符串的处理
+
+```systemverilog
+typedef bit [0:8*`SCREEN_WIDTH-1] ScreenText [`SCREEN_HEIGHT-1:0];
+/* An unpacked array of packed chars in ASCII
+ * Note that strings MUST be used with small index to the left
+ * ALWAYS pad the string literal to the expected length (32 chars)
+ * Example: ScreenText[0] <= "=====	   Main Menu	  ====="
+ * Then ScreenText[0][0:7] is "="
+ * Otherwise, verilog fills 0 from left (right-aligned)
+ *
+ * Changing part of a string:
+ * ScreenText[2] [5*8 : 10*8 - 1] = "user0"
+ */
 ```

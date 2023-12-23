@@ -1,29 +1,50 @@
 `include "header.svh"
 
+module progClkGen #(parameter FREQ_DIV = `SYS_FREQ / `PROG_FREQ) (
+	input logic clk, sys_rst,
+	output logic prog_clk
+);
+	shortint cnt;
+	always @(posedge clk or posedge sys_rst)
+		if (sys_rst || cnt == FREQ_DIV - 1)
+			cnt <= 0;
+		else
+			cnt <= cnt + 1;
+	assign prog_clk = cnt == 1;
+endmodule
+
 module main(
     // System clock and reset signals
     input logic clk, sys_rst,
     // PS2 keyboard in
     input logic ps2_clk, ps2_data,
     // Board in
-    input logic btn_arr[3:0], btn_notes[6:0],
+    input logic [3:0] btn_arr, [6:0] btn_notes,
         btn_oct_up, btn_oct_down, sw_user_id[3:0],
     // PWM audio out
     output logic audio_pwm, audio_sd,
     // 7-seg display out, 2 groups, each 4 displays
     output logic [7:0] seg [1:0], logic [3:0] seg_sel [1:0],
     // LED out
-    output logic led [7:0],
+    output logic [7:0] led,
     // VGA out
     output logic vga_clk, vga_hsync, vga_vsync,
-        vga_r [3:0], vga_g [3:0], vga_b [3:0]
+        [3:0] vga_r, [3:0] vga_g, [3:0] vga_b
 );
+	// Generate the program clock, used to sync all program logic
+	// The system clock is used for IO
+	logic prog_clk;
+	progClkGen prog_clk_gen(
+		.clk(clk), .sys_rst(sys_rst),
+		.prog_clk(prog_clk)
+	);
+
     // Bind the unified input and output controls
     UserInput user_in;
     ProgramOutput prog_out;
 
     unifiedInput input_handler(
-        .clk(clk), .sys_rst(sys_rst),
+        .clk(clk), .prog_clk(prog_clk), .sys_rst(sys_rst),
         .ps2_clk(ps2_clk), .ps2_data(ps2_data),
         .btn_arr(btn_arr), .btn_notes(btn_notes),
         .btn_oct_up(btn_oct_up), .btn_oct_down(btn_oct_down),
@@ -31,7 +52,7 @@ module main(
         .user_in(user_in)
     );
     unifiedOutput output_handler(
-        .clk(clk), .sys_rst(sys_rst),
+        .clk(clk), .prog_clk(prog_clk), .sys_rst(sys_rst),
         .prog_out(prog_out),
         .audio_pwm(audio_pwm), .audio_sd(audio_sd),
         .seg(seg), .seg_sel(seg_sel),
@@ -74,19 +95,19 @@ module main(
 
     // Bind the pages
     pageInit page_init(
-        .clk(clk), .rst(rst), .user_in(user_in), .init_out(init_out)
+        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(user_in), .init_out(init_out)
     ); // pageInit resets things, loads charts from ROM then jumps to MENU
     pageMenu page_menu(
-        .clk(clk), .rst(rst), .user_in(user_in), .menu_out(menu_out),
+        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(user_in), .menu_out(menu_out),
         .read_chart_id(read_chart_id), .chart_data(read_chart),
         .auto_play(auto_play)
     );
     pageScoreHistory page_history(
-        .clk(clk), .rst(rst), .user_in(user_in), .history_out(history_out),
+        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(user_in), .history_out(history_out),
         .read_record_id(read_record_id), .record_data(read_record)
     );
     pagePlayChart page_play(
-        .clk(clk), .rst(rst), .user_in(user_in), .play_out(play_out),
+        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(user_in), .play_out(play_out),
         .cur_chart(read_chart), .auto_play(auto_play),
         .write_chart_id(write_chart_id), .write_chart(write_chart),
         .write_record_id(write_record_id), .write_record(write_record)
@@ -98,7 +119,7 @@ module main(
      * MENU -(chart_id, auto_play)-> PLAY -> MENU
      */
 
-    always @(posedge clk or posedge sys_rst)
+    always @(posedge prog_clk or posedge sys_rst)
         if (sys_rst)
             cur_state <= INIT;
         else
