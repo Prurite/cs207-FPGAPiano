@@ -114,19 +114,25 @@ module keyboardInput (
     logic [7:0] last_key;
     UserInput keyboard_in_next;
 
-    // PS/2 clock sync
-    logic ps2_clk_sync;
-    always_ff @(posedge clk)
-        ps2_clk_sync <= ps2_clk;
+    // The PS/2 clock is much slower than the system clock, so we need to sync it
+    // Also for the prog_clk; Use shift-registers to detect edges
+    logic ps2_clk_sync [1:0], prog_clk_sync [1:0];
+    always_ff @(posedge clk) begin
+        ps2_clk_sync <= {ps2_clk_sync[0], ps2_clk};
+        prog_clk_sync <= {prog_clk_sync[0], prog_clk};
+    end
 
     // PS/2 data state machine
     always_ff @(posedge clk or posedge sys_rst)
         if (sys_rst) begin
-            state <= IDLE; bit_count <= 4'd0; data_reg <= 8'h00;
-        end else if (ps2_clk_sync)
+            state <= IDLE; bit_count <= 4'd0; data_reg <= 8'h00; last_key <= 8'h00;
+        end else if (ps2_clk_sync[1] && !ps2_clk_sync[0]) // negedge of ps2_clk
             case (state)
-                IDLE: if (!ps2_data) begin
-                    state <= READ; bit_count <= 4'd0; data_reg <= 8'h00;
+                IDLE: begin
+                    last_key <= 8'h00;
+                    if (!ps2_data) begin
+                        state <= READ; bit_count <= 4'd0; data_reg <= 8'h00;
+                    end
                 end
                 READ: begin
                     bit_count <= bit_count + 1;
@@ -140,30 +146,32 @@ module keyboardInput (
                 end
             endcase
 
-    // Mapping received data to UserInput structure
-    always_ff @(posedge prog_clk or posedge sys_rst)
-        if (sys_rst)
-            keyboard_in = '{default: '0};
-        else begin
-            keyboard_in_next = '{default: '0};
+    // Mapping keycodes to UserInput structure
+    always_ff @(posedge clk or posedge sys_rst)
+        if (sys_rst) begin
+            keyboard_in <= '{default: '0};
+            keyboard_in_next <= '{default: '0};
+        end else begin
             case (last_key)
-                KEY_1: keyboard_in_next.note_keys[0] = 1'b1;
-                KEY_2: keyboard_in_next.note_keys[1] = 1'b1;
-                KEY_3: keyboard_in_next.note_keys[2] = 1'b1;
-                KEY_4: keyboard_in_next.note_keys[3] = 1'b1;
-                KEY_5: keyboard_in_next.note_keys[4] = 1'b1;
-                KEY_6: keyboard_in_next.note_keys[5] = 1'b1;
-                KEY_7: keyboard_in_next.note_keys[6] = 1'b1;
-                KEY_MINUS: keyboard_in_next.oct_down = 1'b1;
-                KEY_PLUS: keyboard_in_next.oct_up = 1'b1;
-                KEY_UP: keyboard_in_next.arrow_keys[0] = 1'b1;
-                KEY_DOWN: keyboard_in_next.arrow_keys[1] = 1'b1;
-                KEY_LEFT: keyboard_in_next.arrow_keys[2] = 1'b1;
-                KEY_RIGHT: keyboard_in_next.arrow_keys[3] = 1'b1;
+                KEY_1: keyboard_in_next.note_keys[0] <= 1'b1;
+                KEY_2: keyboard_in_next.note_keys[1] <= 1'b1;
+                KEY_3: keyboard_in_next.note_keys[2] <= 1'b1;
+                KEY_4: keyboard_in_next.note_keys[3] <= 1'b1;
+                KEY_5: keyboard_in_next.note_keys[4] <= 1'b1;
+                KEY_6: keyboard_in_next.note_keys[5] <= 1'b1;
+                KEY_7: keyboard_in_next.note_keys[6] <= 1'b1;
+                KEY_MINUS: keyboard_in_next.oct_down <= 1'b1;
+                KEY_PLUS: keyboard_in_next.oct_up <= 1'b1;
+                KEY_UP: keyboard_in_next.arrow_keys[0] <= 1'b1;
+                KEY_DOWN: keyboard_in_next.arrow_keys[1] <= 1'b1;
+                KEY_LEFT: keyboard_in_next.arrow_keys[2] <= 1'b1;
+                KEY_RIGHT: keyboard_in_next.arrow_keys[3] <= 1'b1;
             endcase
-            keyboard_in = keyboard_in_next;
+            if (!prog_clk_sync[1] && prog_clk_sync[0]) begin // posedge of prog_clk
+                keyboard_in <= keyboard_in_next;
+                keyboard_in_next <= '{default: '0};
+            end
         end
-
 endmodule
 
 module boardInput (
