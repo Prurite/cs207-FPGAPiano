@@ -1,9 +1,11 @@
 `include "header.svh"
 
-module progClkGen #(parameter FREQ_DIV = `SYS_FREQ / `PROG_FREQ) (
+module progClkGen (
 	input logic clk, sys_rst,
 	output logic prog_clk
 );
+    parameter FREQ_DIV = `SYS_FREQ / `PROG_FREQ;
+
 	shortint cnt;
 	always @(posedge clk or posedge sys_rst)
 		if (sys_rst || cnt == FREQ_DIV - 1)
