@@ -197,6 +197,53 @@ module audioOutput (
     input Notes playing_notes,
     output logic audio_pwm, audio_sd
 );
+    assign audio_sd = 1'b1;
+
+    // Local parameters for audio
+    localparam int NOTES[0:21] = { // C3 to C5
+        0,
+        131, 147, 165, 175, 196, 220, 247,
+        262, 294, 330, 349, 392, 440, 494,
+        523, 587, 659, 698, 784, 880, 988
+    };
+    localparam int BASE = 7;
+
+    byte note;
+    int counter;
+    
+    // Convert Note struct to note from 0 to 20
+    // Currently only support 1 note at a time
+    always_comb begin
+        casex(playing_notes)
+            9'bxxxxxxxx1: note = 1;
+            9'bxxxxxxx10: note = 2;
+            9'bxxxxxx100: note = 3;
+            9'bxxxxx1000: note = 4;
+            9'bxxxx10000: note = 5;
+            9'bxxx100000: note = 6;
+            9'bxx1000000: note = 7;
+            default: note = 0;
+        endcase
+        if (!note)
+            note = 0;
+        else if (playing_notes[7])
+            note = note + 2 * BASE;
+        else if (playing_notes[8])
+            note = note;
+        else
+            note = note + BASE;
+    end
+
+    always @(posedge clk or posedge sys_rst)
+        if (sys_rst) begin
+            counter <= 0;
+            audio_pwm <= 0;
+        end else if (!note || counter < `SYS_FREQ / NOTES[note])
+            counter <= counter + 1;
+        else begin
+            counter <= 0;
+            audio_pwm <= ~audio_pwm;
+        end
 endmodule
 
 module segDisplayOutput (
@@ -204,6 +251,59 @@ module segDisplayOutput (
     input SegDisplayText text,
     output logic [7:0] seg [1:0], logic [3:0] seg_sel [1:0]
 );
+    // Local parameters for 7-seg display
+    logic [3:0] i; // 1 to 4; 0 off
+
+    always_comb begin
+        // 1st group
+        // text is an up vec, use up_vect[msb_base_expr +: width_expr]
+        case(text[i*8-1 +: 8])
+            "0": seg[0] <= 7'b0111111; "1": seg[0] <= 7'b0000110; "2": seg[0] <= 7'b1011011;
+            "3": seg[0] <= 7'b1001111; "4": seg[0] <= 7'b1100110; "5": seg[0] <= 7'b1101101;
+            "6": seg[0] <= 7'b1111101; "7": seg[0] <= 7'b0000111; "8": seg[0] <= 7'b1111111;
+            "9": seg[0] <= 7'b1101111;
+            "a": seg[0] <= 7'b1110111; "b": seg[0] <= 7'b1111100; "c": seg[0] <= 7'b0111001;
+            "d": seg[0] <= 7'b1011110; "e": seg[0] <= 7'b1111001; "f": seg[0] <= 7'b1110001;
+            "g": seg[0] <= 7'b0111101; "h": seg[0] <= 7'b1110110; "i": seg[0] <= 7'b0000110;
+            "j": seg[0] <= 7'b0011110; "k": seg[0] <= 7'b1110101; "l": seg[0] <= 7'b0111000;
+            "m": seg[0] <= 7'b0010101; "n": seg[0] <= 7'b1010100; "o": seg[0] <= 7'b1011100;
+            "p": seg[0] <= 7'b1110011; "q": seg[0] <= 7'b1100111; "r": seg[0] <= 7'b1010000;
+            "s": seg[0] <= 7'b1101101; "t": seg[0] <= 7'b1111000; "u": seg[0] <= 7'b0111110;
+            "v": seg[0] <= 7'b0011100; "w": seg[0] <= 7'b0010101; "x": seg[0] <= 7'b1110111;
+            "y": seg[0] <= 7'b1101110; "z": seg[0] <= 7'b1011011;
+            default: seg[0] <= 7'b0;
+        endcase
+
+        // 2nd group
+        case(text[4*8 + i*8-1 +: 8])
+            "0": seg[1] <= 7'b0111111; "1": seg[1] <= 7'b0000110; "2": seg[1] <= 7'b1011011;
+            "3": seg[1] <= 7'b1001111; "4": seg[1] <= 7'b1100110; "5": seg[1] <= 7'b1101101;
+            "6": seg[1] <= 7'b1111101; "7": seg[1] <= 7'b0000111; "8": seg[1] <= 7'b1111111;
+            "9": seg[1] <= 7'b1101111;
+            "a": seg[1] <= 7'b1110111; "b": seg[1] <= 7'b1111100; "c": seg[1] <= 7'b0111001;
+            "d": seg[1] <= 7'b1011110; "e": seg[1] <= 7'b1111001; "f": seg[1] <= 7'b1110001;
+            "g": seg[1] <= 7'b0111101; "h": seg[1] <= 7'b1110110; "i": seg[1] <= 7'b0000110;
+            "j": seg[1] <= 7'b0011110; "k": seg[1] <= 7'b1110101; "l": seg[1] <= 7'b0111000;
+            "m": seg[1] <= 7'b0010101; "n": seg[1] <= 7'b1010100; "o": seg[1] <= 7'b1011100;
+            "p": seg[1] <= 7'b1110011; "q": seg[1] <= 7'b1100111; "r": seg[1] <= 7'b1010000;
+            "s": seg[1] <= 7'b1101101; "t": seg[1] <= 7'b1111000; "u": seg[1] <= 7'b0111110;
+            "v": seg[1] <= 7'b0011100; "w": seg[1] <= 7'b0010101; "x": seg[1] <= 7'b1110111;
+            "y": seg[1] <= 7'b1101110; "z": seg[1] <= 7'b1011011;
+            default: seg[1] <= 7'b0;
+        endcase
+    end
+
+    always_ff @(posedge clk or posedge sys_rst)
+        if (sys_rst) begin
+            i <= 1;
+            seg_sel[0] <= 4'b0;
+            seg_sel[1] <= 4'b0;
+        end else begin
+            i <= i == 4'd4 ? 4'd1 : i + 1;
+            seg_sel[0] <= 1 << (i-1);
+            seg_sel[1] <= 1 << (i-1);
+        end
+
 endmodule
 
 module ledOutput (
@@ -211,6 +311,8 @@ module ledOutput (
     input LedState led_state,
     output logic led [7:0]
 );
+    for (genvar i = 0; i < 8; i++)
+        assign led[i] = led_state[i];
 endmodule
 
 module vgaOutput (
