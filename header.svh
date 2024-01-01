@@ -12,11 +12,53 @@
 `define NOTE_TIME 100 // ms
 `define SEG_WIDTH 8
 `define PLAY_RECS_MAX 10
+`define MAX_DISPLAY_HEIGHT 16
 
+// Arrow keys
 `define UP 4'b1000;
 `define DOWN 4'b0100;
 `define LEFT 4'b0010;
 `define RIGHT 4'b0001;
+
+// Wavelength of diffrent notes
+`define C3  764467
+`define C3s	721552
+`define D3	681060
+`define D3s 642839
+`define E3	606759
+`define F3	572704
+`define F3s	540541
+`define G3	510204
+`define G3s	481580
+`define A4	454545
+`define A4s	429037
+`define B4	404957
+
+`define C4	382219
+`define C4s	360776
+`define D4	340530
+`define D4s 321409
+`define E4	303370
+`define F4	286344
+`define F4s	270278
+`define G4	255102
+`define G4s	240790
+`define A5	227273
+`define A5s	214519
+`define B5	202478
+ 
+`define C5	191113
+`define C5s	180385
+`define D5	170262
+`define D5s 160707
+`define E5	151685
+`define F5	143172
+`define F5s	135137
+`define G5	127553
+`define G5s	120393
+`define A6	113636
+`define A6s	107258
+`define B6	101238
 
 typedef bit [0:8*`SCREEN_WIDTH-1] ScreenText [`SCREEN_HEIGHT-1:0];
 // An unpacked array of packed chars in ASCII

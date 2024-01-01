@@ -5,7 +5,7 @@
 module binary2Str(
     // Input up to 16384
     input [13:0] intx,
-    output [39:0] str;
+    output [39:0] str
 );
     bit [3:0] t [10:0];
     // 00 0000 0000 0xxx
