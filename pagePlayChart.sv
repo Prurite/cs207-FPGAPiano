@@ -16,7 +16,8 @@ module pagePlayChart(
     logic sig = 1'b0;
 
     // Status control
-    logic play_en = 1'b0, play_st = 1'b0, fin_en = 1'b1;
+    logic play_en;
+    logic play_st = 1'b0, fin_en = 1'b1;
     assign play_en = play_st & fin_en;
     
     // Iterate notes 
@@ -35,7 +36,7 @@ module pagePlayChart(
     notePlayer note_player(.clk(clk), .rst(rst), .note(cur_note), .sig(sig));
 
     // Get screen output
-    screenOut screen_out(.prog_clk(prog_clk), .rst(rst), .chart(read_chart), .note_count(note_count), .score(cur_score), .play_st(play_st) .text(text), .seg_text(play_out.seg), .led(play_out.led));
+    screenOut screen_out(.prog_clk(prog_clk), .rst(rst), .chart(read_chart), .note_count(note_count), .score(cur_score), .play_st(play_st), .text(text), .seg_text(play_out.seg), .led(play_out.led));
     
     // Countdown func (3s before start)
     wire [1:0] cnt_dn;
@@ -46,16 +47,15 @@ module pagePlayChart(
     clkDiv div100(.clk(clk), .rst(rst), .divx(10_000_000), .clk_out(clk_100ms));
     always @(posedge clk_100ms or posedge rst) begin
         if (rst) begin
-            note_cnt <= 0;
+            note_count <= 0;
             cur_note <= 9'b00_0000000;
             sig <= 1'b0;
-            en <= 1'b0;
-            cnt_en <= 1'b0;
+            play_st <= 1'b0;
             fin_en <= 1'b1;
         end
         else if (play_en) begin
-            if (note_cnt == read_chart.info.note_count) fin_en <= 1'b0;
-            note_cnt <= note_cnt + 1;
+            if (note_count == read_chart.info.note_count) fin_en <= 1'b0;
+            note_count <= note_count + 1;
             cur_note <= notes[note_count];
         end
     end
@@ -85,9 +85,9 @@ module screenOut(
     initial begin
         // Title display
         text[2]  = "=====    Playing Chart    ===== ";
-        text[4]  = "Current User ID: -              ";
+        text[4]  = "Current User ID: 0              ";
         text[5]  = "Playing: -                      ";
-        text[6]  = "Save to chart ID: -             ";
+        text[6]  = "Save to chart ID: 0             ";
         // Progress & Score display
         text[8]  = "Prog.    0 /    0    Score     0";
         // Line 10-25 display notes
@@ -98,13 +98,15 @@ module screenOut(
     // Display Info (Line 8, Col 7~10, 14~17, 28~32)
     wire [39:0] sc_str, cnt_str, len_str;
     binary2Str b2sc(.intx(score), .str(sc_str));
-    binary2Str b2sc(.intx(note_count), .str(cnt_str));
-    binary2Str b2sc(.intx(chart.note_count), .str(len_str));
+    binary2Str b2sn(.intx(note_count), .str(cnt_str));
+    binary2Str b2snc(.intx(chart.note_count), .str(len_str));
     assign text[8][27*8:32*8 - 1] = sc_str;
     assign text[8][13*8:17*8 - 1] = len_str[31:0];
     assign text[8][6*8:10*8 - 1] = cnt_str[31:0];
     assign seg_text[0:2*8 - 1] = "SC";
     assign seg_text[3*8:8*8 - 1] = sc_str;
+    //Display chart name
+    assign text[5][9*8:(9+`NAME_LEN)*8 - 1] = chart.info.name;
 endmodule
 
 // Return realtime score according to user input
@@ -123,7 +125,7 @@ module scoreManager (
     Notes uin [chart.info.note_cnt * 2 - 1:0];
     Notes cur_note, cur_in;
     shortint uc;
-    always @(posedge clk50 or posedge rst) begin
+    always @(posedge clk50ms or posedge rst) begin
         if (rst) begin
             clk50ms = 1'b0;
             score = 14'd0;
@@ -149,8 +151,8 @@ module noteAreaController(
     input Notes [0:`MAX_DISPLAY_HEIGHT - 1] notes,
     input logic play_st,
     // Only [10:25] is modified
-    output ScreenText text
-    output LedState led;
+    output ScreenText text,
+    output LedState led
 );
     // Display countdown
     always @(posedge prog_clk or posedge rst) begin
@@ -211,7 +213,7 @@ module noteAreaController(
                     text[25] = "                                ";
                 end
                 default:
-                    text = 0;
+                    text = "";
             endcase
         end
     end
@@ -235,11 +237,12 @@ module noteAreaController(
     displayLed dd(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[cnt]), .led(led));
 endmodule
 
+// Display each line in note area
 module displayLine(
     input logic prog_clk, rst, en,
     input Notes cur_note,
     input logic is_line,
-    output [0:`SCREEN_WIDTH * 8 - 1] line
+    output reg [0:`SCREEN_WIDTH * 8 - 1] line
 );
     always @(posedge prog_clk or posedge rst) begin
         if (rst)
@@ -283,6 +286,7 @@ module displayLine(
     end
 endmodule
 
+// Control led output
 module displayLed(
     input logic prog_clk, rst, en,
     input Notes cur_note,
@@ -310,6 +314,7 @@ module displayLed(
     end
 endmodule
 
+// Perform countdown before a chart starts
 module countDown (
     input logic clk, rst,
     output logic en = 1'b0,
@@ -339,13 +344,14 @@ module countDown (
     end
 endmodule
 
+// Play notes(Generate square waves)
 module notePlayer(
     input logic clk, rst,
     input Notes note,
     output logic sig
 );
     integer wav_len;
-    clkDiv wave_div(.clk(clk), .rst(rst), .divx(wav_len), .clk_out(sig))
+    clkDiv wave_div(.clk(clk), .rst(rst), .divx(wav_len), .clk_out(sig));
     always @(posedge clk or posedge rst) begin
         if (rst)
             sig <= 0;
