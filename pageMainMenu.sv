@@ -108,8 +108,10 @@ module pageMenu(
                 else cur_pos <= cur_pos + 1;
             end
             `LEFT: begin
-                auto_play <= 1;
+                auto_play <= 1'b1;
             end
+            `RIGHT:
+                auto_play <= 1'b0;
         endcase
     end
     assign menu_out = '{text, chart_data.notes, 8'd0, "0", TopState.MENU};

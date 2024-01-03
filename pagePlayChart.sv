@@ -28,13 +28,14 @@ module pagePlayChart(
     wire [13:0] cur_score;
     
     ScreenText text;
+
     assign notes = read_chart.notes;
 
     // Instanciate current player
     notePlayer note_player(.clk(clk), .rst(rst), .note(cur_note), .sig(sig));
 
     // Get screen output
-    screenOut screen_out(.prog_clk(prog_clk), .rst(rst), .chart(read_chart), .note_count(note_count), .score(cur_score), .play_st(play_st) .text(text));
+    screenOut screen_out(.prog_clk(prog_clk), .rst(rst), .chart(read_chart), .note_count(note_count), .score(cur_score), .play_st(play_st) .text(text), .seg_text(play_out.seg), .led(play_out.led));
     
     // Countdown func (3s before start)
     wire [1:0] cnt_dn;
@@ -60,7 +61,10 @@ module pagePlayChart(
 
     // Instanciate score manager
     scoreManager sc_m(.clk(clk), .prog_clk(prog_clk), .rst(rst), .play_en(play_en), .user_in(user_in), .chart(read_chart), .note_count(note_count), .score(cur_score));
-    integer clk0;
+    
+    assign play_out.text = text;
+    assign play_out.notes = cur_note;
+    assign play_out.state = TopState.PLAY;
 endmodule
 
 // Manage total screen output
@@ -71,7 +75,9 @@ module screenOut(
     input [13:0] score,
     input [1:0] cnt_dn,
     input logic play_st,
-    output ScreenText text
+    output ScreenText text,
+    output SegDisplayText seg_text,
+    output LedState led
 );
     ScreenText text;
     ScreenText note_area;
@@ -86,9 +92,14 @@ module screenOut(
         // Line 10-25 display notes
         text[27] = "    C  D  E  F  G  A  B   =     ";
     end
-    noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_count(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area));
+    noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_count(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area), .led(led));
     assign text[10:25] = note_area[0:15];
     // Display Score (Line 8, Col 28~32)
+    wire [39:0] sc_str;
+    binary2Str b2sc(.intx(score), .str(sc_str));
+    assign text[8][27*8:32*8 - 1] = sc_str;
+    assign seg_text[0:2*8 - 1] = "SC";
+    assign seg_text[3*8:8*8 - 1] = sc_str;
 endmodule
 
 // Return realtime score according to user input
@@ -118,6 +129,7 @@ module noteAreaController(
     input logic play_st,
     // Only [10:25] is modified
     output ScreenText text
+    output LedState led;
 );
     // Display countdown
     always @(posedge prog_clk or posedge rst) begin
@@ -199,6 +211,7 @@ module noteAreaController(
     displayLine l12(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 2]), .is_line(1'b0), .line(text[12]));
     displayLine l11(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 1]), .is_line(1'b0), .line(text[11]));
     displayLine l10(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt]), .is_line(1'b0), .line(text[10]));
+    displayLed dd(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[cnt]), .led(led));
 endmodule
 
 module displayLine(
@@ -245,6 +258,33 @@ module displayLine(
                 line[0:3*8 - 1] = ">>>";
                 line[30 * 8:32 * 8 - 1] = "<<<";
             end
+        end
+    end
+endmodule
+
+module displayLed(
+    input logic prog_clk, rst, en,
+    input Notes cur_note,
+    output LedState led
+);
+    always @(posedge prog_clk or posedge rst) begin
+        if (rst) led = 8'b0000_0000;
+        else if (en) begin
+            case (cur_note)
+                9'b00_xxxxxxx: led[0] = 1'b0;
+                9'b01_xxxxxxx: led[0] = 1'b1;
+                9'b10_xxxxxxx: led[0] = 1'b1;
+                default: led[0] = 1'b0;
+            endcase
+            case (cur_note)
+                9'bxx_0000001: led[7:1] = 7'b1000000;
+                9'bxx_0000010: led[7:1] = 7'b0100000;
+                9'bxx_0000100: led[7:1] = 7'b0010000;
+                9'bxx_0001000: led[7:1] = 7'b0001000;
+                9'bxx_0010000: led[7:1] = 7'b0000100;
+                9'bxx_0100000: led[7:1] = 7'b0000010;
+                9'bxx_1000000: led[7:1] = 7'b0000010;
+            endcase
         end
     end
 endmodule
