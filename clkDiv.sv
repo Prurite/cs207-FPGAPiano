@@ -1,7 +1,7 @@
 module clkDiv(
     input logic clk, rst,
     input integer divx,
-    output clk_out
+    output reg clk_out
 );
     integer cnt = 0;
     always @(posedge clk or posedge rst) begin

@@ -47,6 +47,15 @@ module pageScoreHistory(
                 LEFT: state <= MENU;
                 default: state <= HISTORY;
             endcase
+            if (read_chart_id != 1) text[1][8:15] <= "1";
+            if (read_chart_id != 2) text[1][8:15] <= "2";
+            if (read_chart_id != 3) text[1][8:15] <= "3";
+            if (read_chart_id != 4) text[1][8:15] <= "4";
+            if (read_chart_id != 5) text[1][8:15] <= "5";
+            if (read_chart_id != 6) text[1][8:15] <= "6";
+            if (read_chart_id != 7) text[1][8:15] <= "7";
+            if (read_chart_id != 8) text[1][8:15] <= "8";
+            if (read_chart_id != 9) text[1][8:15] <= "9";
             text[read_chart_id][8:15] <= mstr;
         end
     end
