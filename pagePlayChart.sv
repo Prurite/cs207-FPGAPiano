@@ -10,7 +10,7 @@ module pagePlayChart(
     output byte write_chart_id,
     output Chart write_chart,
     output byte write_record_id,
-    output Chart write_record
+    output PlayRecord write_record
 );
     // Output sound signal, connected directly to notePlayer
     logic sig = 1'b0;
@@ -30,6 +30,8 @@ module pagePlayChart(
     
     ScreenText text;
 
+    TopState state;
+
     assign notes = read_chart.notes;
 
     // Instanciate current player
@@ -42,6 +44,11 @@ module pagePlayChart(
     wire [1:0] cnt_dn;
     countDown cd(.clk(clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn));
     
+    // Record chart
+    Chart uinc;
+    Notes un [`CHART_LEN-1:0];
+    // Record play status
+    PlayRecord play_record;
     // Refresh current note every 100ms
     logic clk_100ms;
     clkDiv div100(.clk(clk), .rst(rst), .divx(10_000_000), .clk_out(clk_100ms));
@@ -57,6 +64,31 @@ module pagePlayChart(
             if (note_count == read_chart.info.note_count) fin_en <= 1'b0;
             note_count <= note_count + 1;
             cur_note <= notes[note_count];
+            un[note_count] <= {user_in.oct_down, user_in.oct_up, user_in.note_keys};
+        end
+    end
+    assign uinc = '{read_chart.info, un};
+    assign play_record = '{user_in.user_id, read_chart.info.name, cur_score};
+
+    // Management after play ends
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            state <= PLAY;
+        end
+        else begin
+            // Exit
+            if (user_in.arrow_keys == 4'b0010) state <= MENU;
+            if (fin_en) begin
+                if (user_in.arrow_keys == 4'b0001) begin
+                    // Save chart
+                    write_chart_id <= 1;
+                    write_chart <= uinc;
+                    // Save score
+                    write_record_id <= 1;
+                    write_record <= play_record;
+                    state <= MENU;
+                end
+            end
         end
     end
 
@@ -65,7 +97,7 @@ module pagePlayChart(
     
     assign play_out.text = text;
     assign play_out.notes = cur_note;
-    assign play_out.state = TopState.PLAY;
+    assign play_out.state = state;
 endmodule
 
 // Manage total screen output
@@ -82,6 +114,7 @@ module screenOut(
 );
     ScreenText text;
     ScreenText note_area;
+    SegDisplayText seg;
     initial begin
         // Title display
         text[2]  = "=====    Playing Chart    ===== ";
@@ -92,6 +125,7 @@ module screenOut(
         text[8]  = "Prog.    0 /    0    Score     0";
         // Line 10-25 display notes
         text[27] = "    C  D  E  F  G  A  B   =     ";
+        text[29] = "[^] Hi [v] Lo [<] Exit  [>] Save";
     end
     noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_count(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area), .led(led));
     assign text[10:25] = note_area[0:15];
@@ -103,8 +137,9 @@ module screenOut(
     assign text[8][27*8:32*8 - 1] = sc_str;
     assign text[8][13*8:17*8 - 1] = len_str[31:0];
     assign text[8][6*8:10*8 - 1] = cnt_str[31:0];
-    assign seg_text[0:2*8 - 1] = "SC";
-    assign seg_text[3*8:8*8 - 1] = sc_str;
+    assign seg[0:2*8 - 1] = "SC";
+    assign seg[3*8:8*8 - 1] = sc_str;
+    assign seg_text = seg;
     //Display chart name
     assign text[5][9*8:(9+`NAME_LEN)*8 - 1] = chart.info.name;
 endmodule
