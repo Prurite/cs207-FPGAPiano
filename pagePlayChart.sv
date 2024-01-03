@@ -54,6 +54,7 @@ module pagePlayChart(
             fin_en <= 1'b1;
         end
         else if (play_en) begin
+            if (note_cnt == read_chart.info.note_count) fin_en <= 1'b0;
             note_cnt <= note_cnt + 1;
             cur_note <= notes[note_count];
         end
@@ -94,10 +95,14 @@ module screenOut(
     end
     noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_count(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area), .led(led));
     assign text[10:25] = note_area[0:15];
-    // Display Score (Line 8, Col 28~32)
-    wire [39:0] sc_str;
+    // Display Info (Line 8, Col 7~10, 14~17, 28~32)
+    wire [39:0] sc_str, cnt_str, len_str;
     binary2Str b2sc(.intx(score), .str(sc_str));
+    binary2Str b2sc(.intx(note_count), .str(cnt_str));
+    binary2Str b2sc(.intx(chart.note_count), .str(len_str));
     assign text[8][27*8:32*8 - 1] = sc_str;
+    assign text[8][13*8:17*8 - 1] = len_str[31:0];
+    assign text[8][6*8:10*8 - 1] = cnt_str[31:0];
     assign seg_text[0:2*8 - 1] = "SC";
     assign seg_text[3*8:8*8 - 1] = sc_str;
 endmodule
@@ -108,16 +113,32 @@ module scoreManager (
     input UserInput user_in,
     input Chart chart,
     input shortint note_count,
-    output [13:0] score
+    output reg [13:0] score
 );
-    localparam PR_TIME = 50; //ms
-    localparam GR_TIME = 100; //ms
-    localparam GD_TIME = 150; //ms
-    localparam MS_TIME = 200; //ms
-    localparam PR_SCORE = 10;
-    localparam GR_SCORE = 8;
-    localparam GD_SCORE = 5;
-    localparam MS_SCORE = 0;
+    // Perfect 50ms 10p, Great 100ms 8p, Good 150ms 5p, Miss 200ms+ 0p.
+
+    // Scan every 50ms
+    logic clk50ms = 1'b0;
+    clkDiv clk50(.clk(clk), .rst(rst), .divx(5_000_000), .clk_out(clk50ms));
+    Notes uin [chart.info.note_cnt * 2 - 1:0];
+    Notes cur_note, cur_in;
+    shortint uc;
+    always @(posedge clk50 or posedge rst) begin
+        if (rst) begin
+            clk50ms = 1'b0;
+            score = 14'd0;
+            uc = 0;
+        end
+        else if (play_en) begin
+            cur_in = {user_in.oct_down, user_in.oct_up, user_in.note_keys};
+            cur_note = chart.notes[note_count];
+            if (cur_note == cur_in | cur_note == uin[uc - 1]) score = score + 10;
+            else if (cur_note == uin[uc - 2]) score = score + 8;
+            else if (cur_note == uin[uc - 3]) score = score + 5;
+            uin[uc] = cur_in;
+            uc = uc + 1;
+        end
+    end
 endmodule
 
 // Manage note area output
