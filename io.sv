@@ -7,7 +7,7 @@ module unifiedInput (
     input logic ps2_clk, ps2_data,
     // Board in
     input logic [3:0] btn_arr, [6:0] btn_notes,
-        btn_oct_up, btn_oct_down, [3:0] sw_user_id,
+    input logic btn_oct_up, btn_oct_down, [3:0] sw_user_id,
     output UserInput user_in
 );
     UserInput keyboard_in, board_in;
@@ -31,22 +31,22 @@ module unifiedInput (
             user_in = '{default: '0};
         else begin // Merge the two inputs
             // Arrow keys: only 1 key may be pressed, priority: U D L R
-            user_id.arrow_keys = keyboard_in.arrow_keys | board_in.arrow_keys;
-            casex(user_id.arrow_keys)
-                4'bxxx1: user_id.arrow_keys = 4'b0001;
-                4'bxx10: user_id.arrow_keys = 4'b0010;
-                4'bx100: user_id.arrow_keys = 4'b0100;
-                4'b1000: user_id.arrow_keys = 4'b1000;
-                default: user_id.arrow_keys = 4'b0000;
+            user_in.arrow_keys = keyboard_in.arrow_keys | board_in.arrow_keys;
+            casex(user_in.arrow_keys)
+                4'bxxx1: user_in.arrow_keys = 4'b0001;
+                4'bxx10: user_in.arrow_keys = 4'b0010;
+                4'bx100: user_in.arrow_keys = 4'b0100;
+                4'b1000: user_in.arrow_keys = 4'b1000;
+                default: user_in.arrow_keys = 4'b0000;
             endcase
             // Note keys: or together
-            user_id.note_keys = keyboard_in.note_keys | board_in.note_keys;
+            user_in.note_keys = keyboard_in.note_keys | board_in.note_keys;
             // Octave keys: only 1 key may be pressed, priority: +8 -8
-            user_id.oct_up = keyboard_in.oct_up | board_in.oct_up;
-            user_id.oct_down = (~user_id.oct_up)
+            user_in.oct_up = keyboard_in.oct_up | board_in.oct_up;
+            user_in.oct_down = (~user_in.oct_up)
                     & (keyboard_in.oct_down | board_in.oct_down);
             // User ID: only from board
-            user_id.user_id = board_in.user_id;
+            user_in.user_id = board_in.user_id;
         end
     end
 endmodule
@@ -66,19 +66,19 @@ module unifiedOutput (
         [3:0] vga_r, [3:0] vga_g, [3:0] vga_b
 );
     audioOutput audio_handler(
-        .clk(clk), .prog_clk(prog_clk), .sys_rst(sys_rst),
+        .clk(clk), .sys_rst(sys_rst),
         .playing_notes(prog_out.notes),
         .audio_pwm(audio_pwm), .audio_sd(audio_sd)
     );
 
     segDisplayOutput seg_handler(
-        .clk(clk), .prog_clk(prog_clk), .sys_rst(sys_rst),
+        .clk(clk), .sys_rst(sys_rst),
         .text(prog_out.seg),
         .seg(seg), .seg_sel(seg_sel)
     );
 
     ledOutput led_handler(
-        .clk(clk), .prog_clk(prog_clk), .sys_rst(sys_rst),
+        .clk(clk), .sys_rst(sys_rst),
         .led_state(prog_out.led),
         .led(led)
     );
@@ -309,14 +309,14 @@ endmodule
 module ledOutput (
     input logic clk, sys_rst,
     input LedState led_state,
-    output logic led [7:0]
+    output logic [7:0] led
 );
     for (genvar i = 0; i < 8; i++)
         assign led[i] = led_state[i];
 endmodule
 
 module vgaOutput (
-    input logic clk, sys_rst,
+    input logic clk, prog_clk, sys_rst,
     input ScreenText text,
     output logic vga_hsync, vga_vsync,
         [3:0] vga_r, [3:0] vga_g, [3:0] vga_b
@@ -337,18 +337,27 @@ module vgaOutput (
     // Screen coordinates
     int h_count = 0;
     int v_count = 0;
+    
+    ScreenText displayText;
 
     // Pixel_On_Text2 instantiation
     wire pixel_on;
+    
     Pixel_On_Text2_sv text_pixel (
         .clk(clk),
-        .displayText(text),
+        .displayText(displayText),
         .positionX(0),  // Assuming text starts from the top-left corner
         .positionY(0),
         .horzCoord(h_count),
         .vertCoord(v_count),
         .pixel(pixel_on)
     );
+    
+    always_ff @(posedge prog_clk or posedge sys_rst)
+        if (sys_rst)
+            displayText <= '{default: '0};
+        else
+            displayText <= text;
 
     always_ff @(posedge clk or posedge sys_rst) begin
         if (sys_rst) begin

@@ -5,7 +5,7 @@ module pageMenu(
     input UserInput user_in,
     output ProgramOutput menu_out,
     output byte read_chart_id,
-    output Chart chart_data,
+    input Chart chart_data,
     output logic auto_play
 );
     localparam UP = 4'b1000;
@@ -18,7 +18,11 @@ module pageMenu(
     Notes notes [`CHART_LEN-1:0];
     SegDisplayText seg;
     TopState state;
-    ChartStorageManager chart_storage(.clk(clk), .read_chart_id(chart_id), .write_chart_id(0), .read_chart(chart_data));
+
+    assign menu_out.text = text;
+    assign menu_out.seg = seg;
+    assign menu_out.state = state;
+    
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             auto_play <= 0;
@@ -138,5 +142,4 @@ module pageMenu(
             end
         endcase
     end
-    assign menu_out = '{text, chart_data.notes, 8'd0, seg, state};
 endmodule

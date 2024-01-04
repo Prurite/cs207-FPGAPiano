@@ -1,3 +1,6 @@
+`ifndef HEADER_SVH
+`define HEADER_SVH
+
 `timescale 1ns / 1ps
 
 `define SYS_FREQ 100_000_000 // Hz
@@ -109,7 +112,7 @@ typedef struct {
 
 typedef struct {
     ChartInfo info;
-    Note notes [`CHART_LEN-1:0];
+    Notes notes [`CHART_LEN-1:0];
 } Chart;
 
 typedef struct {
@@ -117,3 +120,5 @@ typedef struct {
     bit [0:8*`NAME_LEN-1] chart_name;
     shortint score;
 } PlayRecord;
+
+`endif

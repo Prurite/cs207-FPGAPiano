@@ -112,7 +112,6 @@ module screenOut(
     output SegDisplayText seg_text,
     output LedState led
 );
-    ScreenText text;
     ScreenText note_area;
     SegDisplayText seg;
     initial begin
@@ -369,10 +368,10 @@ module countDown (
             if (cnt == 10) begin
                 cnt <= 0;
                 case (cnt_dn)
-                    1'b11: cnt_dn <= 1'b10;
-                    1'b10: cnt_dn <= 1'b01;
-                    1'b01: cnt_dn <= 1'b00;
-                    1'b00: en <= 1'b1;
+                    2'b11: cnt_dn <= 2'b10;
+                    2'b10: cnt_dn <= 2'b01;
+                    2'b01: cnt_dn <= 2'b00;
+                    2'b00: en <= 1'b1;
                 endcase
             end
         end

@@ -1,3 +1,5 @@
+`include "header.svh"
+
 module pageScoreHistory(
     input logic clk, prog_clk, rst,
     input UserInput user_in,
@@ -15,12 +17,17 @@ module pageScoreHistory(
     LedState led;
     TopState state;
     bit [7:0] mstr;
+    
     matataku m(.prog_clk(prog_clk), .rst(rst), .digit(read_chart_id), .out_str(mstr));
+    assign history_out.text = text;
+    assign history_out.seg = seg;
+    assign history_out.led = led;
+    assign history_out.state = state;
+    
     always @(posedge prog_clk or posedge rst) begin
         if (rst) begin
             read_chart_id <= 0;
             state <= HISTORY;
-            pos <= 0;
             // Initialize text
             text[0] <=  "======    Score  History    ======";
             text[1] <=  "                                  ";
@@ -64,11 +71,11 @@ endmodule
 module matataku(
     input logic prog_clk, rst,
     input byte digit,
-    output [7:0] out_str
+    output reg [7:0] out_str
 );
     wire [39:0] raw_str;
     wire loc_clk;
-    wire cnt;
+    reg cnt;
     clkDiv clk30Hz(.clk(prog_clk), .rst(rst), .divx(30), .clk_out(loc_clk));
     binary2Str b2s(.intx(digit), .str(raw_str));
     always @(posedge loc_clk or posedge rst) begin
