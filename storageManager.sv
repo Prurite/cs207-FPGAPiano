@@ -40,12 +40,12 @@ module RecordStorageManager(
             recordStorage <= '{default: '0};
         else begin
             if (read_record_id != 0)
-                current_record_data <= recordStorage[read_record_id-1];
+                current_record_data <= recordStorage[read_record_id];
             else
                 current_record_data <= current_record_data;
             if (write_record_id != 0)
-                recordStorage[write_record_id-1] <= new_record_data;
+                recordStorage[write_record_id] <= new_record_data;
             else
-                recordStorage[write_record_id-1] <= recordStorage[write_record_id-1];
+                recordStorage[write_record_id] <= recordStorage[write_record_id];
         end
 endmodule
