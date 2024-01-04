@@ -1,5 +1,6 @@
 
 /* https://github.com/Derek-X-Wang/VGA-Text-Generator/blob/master/VGA-Text-Generator.srcs/sources_1/new/Pixel_On_Text2.vhd
+ * Rewritten in SystemVerilog
 
  * Pixel_On_Text2 determines if the current pixel is on text and make it easiler to call from verilog
  * param:
