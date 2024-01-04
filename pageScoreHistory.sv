@@ -78,13 +78,13 @@ endmodule
 module displayHisLine(
     input logic clk, rst,
     input byte rec_id,
-    output [0:32*8-1] line
+    output reg [0:32*8-1] line
 );
     PlayRecord rec;
     bit [39:0] uid_raw, score_raw;
     RecordStorageManager rec_m(.clk(clk), .sys_rst(rst), .read_record_id(rec_id), .write_record_id(0), .current_record_data(rec));
-    binary2Str b2(.intx(rec.score), .out_str(score_raw));
-    binary2Str b3(.intx(rec.user_id), .out_str(uid_raw));
+    binary2Str b2(.intx(rec.score), .str(score_raw));
+    binary2Str b3(.intx(rec.user_id), .str(uid_raw));
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             line[2*8:3*8-1] <= "|";
@@ -93,7 +93,7 @@ module displayHisLine(
         end
         else begin
             line[3*8:8*8-1] <= {"User", uid_raw[7:0]};
-            line[10*8:26*8-1] <= rec.name;
+            line[10*8:26*8-1] <= rec.chart_name;
             line[27*8:32*8-1] <= score_raw;
         end
     end

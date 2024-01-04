@@ -15,7 +15,6 @@ module pageMenu(
     byte cur_pos;
     byte chart_id;
     ScreenText text;
-    Notes notes [`CHART_LEN-1:0];
     SegDisplayText seg;
     TopState state;
 
