@@ -134,7 +134,7 @@ module pageMenu(
                 auto_play <= 1'b1;
             end
             RIGHT: begin
-                if (cur_pos == 0) state = HISTORY;
+                if (cur_pos == 0) state <= HISTORY;
                 else begin
                     state <= PLAY;
                     auto_play <= 1'b0;
