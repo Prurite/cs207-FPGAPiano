@@ -23,7 +23,7 @@ module pageMenu(
     assign menu_out.seg = seg;
     assign menu_out.state = state;
     
-    always @(posedge clk or posedge rst) begin
+    always @(posedge prog_clk) begin
         if (rst) begin
             auto_play <= 0;
             cur_pos <= 0;
@@ -119,7 +119,7 @@ module pageMenu(
         end
     end
     // Input key actions
-    always @(posedge clk) begin
+    always @(posedge prog_clk) begin
         case (user_in.arrow_keys)
             UP: begin
                 if (cur_pos == 0) cur_pos <= 5;

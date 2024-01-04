@@ -52,7 +52,7 @@ module pagePlayChart(
     // Refresh current note every 100ms
     logic clk_100ms;
     clkDiv div100(.clk(clk), .rst(rst), .divx(10_000_000), .clk_out(clk_100ms));
-    always @(posedge clk_100ms or posedge rst) begin
+    always @(posedge clk_100ms) begin
         if (rst) begin
             note_count <= 0;
             cur_note <= 9'b00_0000000;
@@ -61,17 +61,18 @@ module pagePlayChart(
             fin_en <= 1'b1;
         end
         else if (play_en) begin
-            if (note_count == read_chart.info.note_count) fin_en <= 1'b0;
+            if (note_count == read_chart.info.note_cnt) fin_en <= 1'b0;
             note_count <= note_count + 1;
             cur_note <= notes[note_count];
             un[note_count] <= {user_in.oct_down, user_in.oct_up, user_in.note_keys};
         end
     end
-    assign uinc = '{read_chart.info, un};
+    assign uinc.info = read_chart.info;
+    assign uinc.notes = un; 
     assign play_record = '{user_in.user_id, read_chart.info.name, cur_score};
 
     // Management after play ends
-    always @(posedge clk or posedge rst) begin
+    always @(posedge clk) begin
         if (rst) begin
             state <= PLAY;
         end
@@ -126,13 +127,13 @@ module screenOut(
         text[27] = "    C  D  E  F  G  A  B   =     ";
         text[29] = "[^] Hi [v] Lo [<] Exit  [>] Save";
     end
-    noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_count(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area), .led(led));
+    noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_cnt(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area), .led(led));
     assign text[10:25] = note_area[0:15];
     // Display Info (Line 8, Col 7~10, 14~17, 28~32)
     wire [39:0] sc_str, cnt_str, len_str;
     binary2Str b2sc(.intx(score), .str(sc_str));
     binary2Str b2sn(.intx(note_count), .str(cnt_str));
-    binary2Str b2snc(.intx(chart.note_count), .str(len_str));
+    binary2Str b2snc(.intx(chart.info.note_cnt), .str(len_str));
     assign text[8][27*8:32*8 - 1] = sc_str;
     assign text[8][13*8:17*8 - 1] = len_str[31:0];
     assign text[8][6*8:10*8 - 1] = cnt_str[31:0];
@@ -156,10 +157,10 @@ module scoreManager (
     // Scan every 50ms
     logic clk50ms = 1'b0;
     clkDiv clk50(.clk(clk), .rst(rst), .divx(5_000_000), .clk_out(clk50ms));
-    Notes uin [chart.info.note_cnt * 2 - 1:0];
+    Notes uin [`CHART_LEN - 1:0];
     Notes cur_note, cur_in;
     shortint uc;
-    always @(posedge clk50ms or posedge rst) begin
+    always @(posedge clk50ms) begin
         if (rst) begin
             clk50ms = 1'b0;
             score = 14'd0;
@@ -181,15 +182,15 @@ endmodule
 module noteAreaController(
     input logic prog_clk, rst, en,
     input [1:0] cnt_dn,
-    input shortint note_count,
-    input Notes [0:`MAX_DISPLAY_HEIGHT - 1] notes,
+    input shortint note_cnt,
+    input Notes notes [`CHART_LEN-1:0],
     input logic play_st,
     // Only [10:25] is modified
     output ScreenText text,
     output LedState led
 );
     // Display countdown
-    always @(posedge prog_clk or posedge rst) begin
+    always @(posedge prog_clk) begin
         if (~en) begin
             case (cnt_dn)
                 2'b11: begin
@@ -247,28 +248,32 @@ module noteAreaController(
                     text[25] = "                                ";
                 end
                 default:
-                    text = "";
+                    text = '{default: '0};
             endcase
         end
     end
+    
+    shortint note_id; // Make sure it does not go out of bound
+    assign note_id = (note_cnt+15) >= `CHART_LEN ? `CHART_LEN-16 : note_cnt;
+
     // Display Notes
-    displayLine l25(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 15]), .is_line(1'b1), .line(text[25]));
-    displayLine l24(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 14]), .is_line(1'b0), .line(text[24]));
-    displayLine l23(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 13]), .is_line(1'b0), .line(text[23]));
-    displayLine l22(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 12]), .is_line(1'b0), .line(text[22]));
-    displayLine l21(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 11]), .is_line(1'b0), .line(text[21]));
-    displayLine l20(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 10]), .is_line(1'b0), .line(text[20]));
-    displayLine l19(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 9]), .is_line(1'b0), .line(text[19]));
-    displayLine l18(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 8]), .is_line(1'b0), .line(text[18]));
-    displayLine l17(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 7]), .is_line(1'b0), .line(text[17]));
-    displayLine l16(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 6]), .is_line(1'b0), .line(text[16]));
-    displayLine l15(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 5]), .is_line(1'b0), .line(text[15]));
-    displayLine l14(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 4]), .is_line(1'b0), .line(text[14]));
-    displayLine l13(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 3]), .is_line(1'b0), .line(text[13]));
-    displayLine l12(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 2]), .is_line(1'b0), .line(text[12]));
-    displayLine l11(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt + 1]), .is_line(1'b0), .line(text[11]));
-    displayLine l10(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_cnt]), .is_line(1'b0), .line(text[10]));
-    displayLed dd(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[cnt]), .led(led));
+    displayLine l25(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 15]), .is_line(1'b1), .line(text[25]));
+    displayLine l24(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 14]), .is_line(1'b0), .line(text[24]));
+    displayLine l23(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 13]), .is_line(1'b0), .line(text[23]));
+    displayLine l22(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 12]), .is_line(1'b0), .line(text[22]));
+    displayLine l21(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 11]), .is_line(1'b0), .line(text[21]));
+    displayLine l20(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 10]), .is_line(1'b0), .line(text[20]));
+    displayLine l19(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 9]), .is_line(1'b0), .line(text[19]));
+    displayLine l18(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 8]), .is_line(1'b0), .line(text[18]));
+    displayLine l17(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 7]), .is_line(1'b0), .line(text[17]));
+    displayLine l16(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 6]), .is_line(1'b0), .line(text[16]));
+    displayLine l15(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 5]), .is_line(1'b0), .line(text[15]));
+    displayLine l14(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 4]), .is_line(1'b0), .line(text[14]));
+    displayLine l13(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 3]), .is_line(1'b0), .line(text[13]));
+    displayLine l12(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 2]), .is_line(1'b0), .line(text[12]));
+    displayLine l11(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 1]), .is_line(1'b0), .line(text[11]));
+    displayLine l10(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id]), .is_line(1'b0), .line(text[10]));
+    displayLed dd(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id]), .led(led));
 endmodule
 
 // Display each line in note area
@@ -278,7 +283,7 @@ module displayLine(
     input logic is_line,
     output reg [0:`SCREEN_TEXT_WIDTH * 8 - 1] line
 );
-    always @(posedge prog_clk or posedge rst) begin
+    always @(posedge prog_clk) begin
         if (rst)
             line = "                                ";
         else begin
@@ -326,7 +331,7 @@ module displayLed(
     input Notes cur_note,
     output LedState led
 );
-    always @(posedge prog_clk or posedge rst) begin
+    always @(posedge prog_clk) begin
         if (rst) led = 8'b0000_0000;
         else if (en) begin
             case (cur_note)
@@ -357,7 +362,7 @@ module countDown (
     byte cnt;
     logic clk_100ms;
     clkDiv div100(.clk(clk), .rst(rst), .divx(10_000_000), .clk_out(clk_100ms));
-    always @(posedge clk_100ms or posedge rst) begin
+    always @(posedge clk_100ms) begin
         if (rst) begin
             cnt <= 0;
             en <= 1'b0;
@@ -386,7 +391,7 @@ module notePlayer(
 );
     integer wav_len;
     clkDiv wave_div(.clk(clk), .rst(rst), .divx(wav_len), .clk_out(sig));
-    always @(posedge clk or posedge rst) begin
+    always @(posedge clk) begin
         if (rst)
             sig <= 0;
         else begin

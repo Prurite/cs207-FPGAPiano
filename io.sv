@@ -123,7 +123,7 @@ module keyboardInput (
     end
 
     // PS/2 data state machine
-    always_ff @(posedge clk or posedge sys_rst)
+    always_ff @(posedge clk)
         if (sys_rst) begin
             state <= IDLE; bit_count <= 4'd0; data_reg <= 8'h00; last_key <= 8'h00;
         end else if (ps2_clk_sync[1] && !ps2_clk_sync[0]) // negedge of ps2_clk
@@ -144,10 +144,12 @@ module keyboardInput (
                 STOP: if (ps2_data) begin
                     last_key <= data_reg; state <= IDLE;
                 end
+                default:
+                    state <= IDLE;
             endcase
 
     // Mapping keycodes to UserInput structure
-    always_ff @(posedge clk or posedge sys_rst)
+    always_ff @(posedge clk)
         if (sys_rst) begin
             keyboard_in <= '{default: '0};
             keyboard_in_next <= '{default: '0};
@@ -180,7 +182,7 @@ module boardInput (
         btn_oct_up, btn_oct_down, [3:0] sw_user_id,
     output UserInput board_in
 );
-    always_ff @(posedge prog_clk or posedge sys_rst)
+    always_ff @(posedge prog_clk)
         if (sys_rst)
             board_in <= '{default: '0};
         else begin
@@ -234,7 +236,7 @@ module audioOutput (
             note = note + BASE;
     end
 
-    always @(posedge clk or posedge sys_rst)
+    always @(posedge clk)
         if (sys_rst) begin
             counter <= 0;
             audio_pwm <= 0;
@@ -293,7 +295,7 @@ module segDisplayOutput (
         endcase
     end
 
-    always_ff @(posedge clk or posedge sys_rst)
+    always_ff @(posedge clk)
         if (sys_rst) begin
             i <= 1;
             seg_sel[0] <= 4'b0;
@@ -353,13 +355,13 @@ module vgaOutput (
         .pixel(pixel_on)
     );
     
-    always_ff @(posedge prog_clk or posedge sys_rst)
+    always_ff @(posedge prog_clk)
         if (sys_rst)
             displayText <= '{default: '0};
         else
             displayText <= text;
 
-    always_ff @(posedge clk or posedge sys_rst) begin
+    always_ff @(posedge clk) begin
         if (sys_rst) begin
             h_count <= 0;
             v_count <= 0;
@@ -378,8 +380,8 @@ module vgaOutput (
             end
 
             // Generating sync signals
-            vga_hsync <= (h_count < H_SYNC_PULSE) ? 0 : 1;
-            vga_vsync <= (v_count < V_SYNC_PULSE) ? 0 : 1;
+            vga_hsync <= (h_count >= H_SYNC_PULSE);
+            vga_vsync <= (v_count >= V_SYNC_PULSE);
 
             // Generating RGB output
             if (h_count < H_DISPLAY_TIME && v_count < V_DISPLAY_TIME) begin

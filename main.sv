@@ -7,7 +7,7 @@ module progClkGen (
     parameter FREQ_DIV = `SYS_FREQ / `PROG_FREQ;
 
 	shortint cnt;
-	always @(posedge clk or posedge sys_rst)
+	always @(posedge clk)
 		if (sys_rst || cnt == FREQ_DIV - 1)
 			cnt <= 0;
 		else
@@ -110,7 +110,7 @@ module main(
     );
     pagePlayChart page_play(
         .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(user_in), .play_out(play_out),
-        .cur_chart(read_chart), .auto_play(auto_play),
+        .read_chart(read_chart), .auto_play(auto_play),
         .write_chart_id(write_chart_id), .write_chart(write_chart),
         .write_record_id(write_record_id), .write_record(write_record)
     );
@@ -121,7 +121,7 @@ module main(
      * MENU -(chart_id, auto_play)-> PLAY -> MENU
      */
 
-    always @(posedge prog_clk or posedge sys_rst)
+    always @(posedge prog_clk)
         if (sys_rst)
             cur_state <= INIT;
         else

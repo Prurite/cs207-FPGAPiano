@@ -4,8 +4,8 @@ module pageScoreHistory(
     input logic clk, prog_clk, rst,
     input UserInput user_in,
     output ProgramOutput history_out,
-    output byte read_chart_id,
-    output Chart read_chart
+    output byte read_record_id,
+    input PlayRecord record_data
 );
     localparam UP = 4'b1000;
     localparam DOWN = 4'b0100;
@@ -23,10 +23,12 @@ module pageScoreHistory(
     assign history_out.seg = seg;
     assign history_out.led = led;
     assign history_out.state = state;
+
+    int i;
     
-    always @(posedge prog_clk or posedge rst) begin
+    always @(posedge prog_clk) begin
         if (rst) begin
-            read_chart_id <= 0;
+            read_record_id <= 0;
             state <= HISTORY;
             // Initialize text
             text[0] <=  "======    Score  History    ======";
@@ -46,24 +48,19 @@ module pageScoreHistory(
         else begin
             case (user_in.arrow_keys)
                 UP:
-                    if (read_chart_id == 1) read_chart_id <= 9;
-                    else read_chart_id <= read_chart_id - 1;
+                    if (read_record_id == 1) read_record_id <= 9;
+                    else read_record_id <= read_record_id - 1;
                 DOWN:
-                    if (read_chart_id == 9) read_chart_id <= 1;
-                    else read_chart_id <= read_chart_id + 1;
+                    if (read_record_id == 9) read_record_id <= 1;
+                    else read_record_id <= read_record_id + 1;
                 LEFT: state <= MENU;
                 default: state <= HISTORY;
             endcase
-            if (read_chart_id != 1) text[1][8:15] <= "1";
-            if (read_chart_id != 2) text[1][8:15] <= "2";
-            if (read_chart_id != 3) text[1][8:15] <= "3";
-            if (read_chart_id != 4) text[1][8:15] <= "4";
-            if (read_chart_id != 5) text[1][8:15] <= "5";
-            if (read_chart_id != 6) text[1][8:15] <= "6";
-            if (read_chart_id != 7) text[1][8:15] <= "7";
-            if (read_chart_id != 8) text[1][8:15] <= "8";
-            if (read_chart_id != 9) text[1][8:15] <= "9";
-            text[read_chart_id][8:15] <= mstr;
+            for (i = 1; i <= 9; i++)
+                if (i == read_record_id)
+                    text[i][8:15] <= mstr;
+                else
+                    text[i][8:15] <= "0" + i;
         end
     end
 endmodule
@@ -78,8 +75,8 @@ module matataku(
     reg cnt;
     clkDiv clk30Hz(.clk(prog_clk), .rst(rst), .divx(30), .clk_out(loc_clk));
     binary2Str b2s(.intx(digit), .str(raw_str));
-    always @(posedge loc_clk or posedge rst) begin
-        if (rst | digit == 0) begin
+    always @(posedge loc_clk) begin
+        if (rst || digit == 0) begin
             out_str <= " ";
             cnt <= 0;
         end

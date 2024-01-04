@@ -4,7 +4,7 @@ module clkDiv(
     output reg clk_out
 );
     integer cnt = 0;
-    always @(posedge clk or posedge rst) begin
+    always @(posedge clk) begin
         if (rst)
             clk_out <= 0;
         else begin

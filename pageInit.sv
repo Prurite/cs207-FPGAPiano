@@ -7,7 +7,7 @@ module pageInit(
 );
     ScreenText text;
     TopState state;
-    always @(posedge prog_clk or posedge rst) begin
+    always @(posedge prog_clk) begin
         if (rst) begin
             state <= INIT;
             text[14] <= "            Welcome!            ";
