@@ -43,80 +43,46 @@ module pageMenu(
         end
         else begin
         // Pointer actions
+            text[1][0:3*8-1] <= (cur_pos == 0) ? ">>>" : "   ";
+            text[3][0:3*8-1] <= (cur_pos == 1) ? ">>>" : "   ";
+            text[4][0:3*8-1] <= (cur_pos == 2) ? ">>>" : "   ";
+            text[5][0:3*8-1] <= (cur_pos == 3) ? ">>>" : "   ";
+            text[6][0:3*8-1] <= (cur_pos == 4) ? ">>>" : "   ";
+            text[7][0:3*8-1] <= (cur_pos == 5) ? ">>>" : "   ";
+            
             case (cur_pos)
                 0: begin
                     read_chart_id <= 0;
                     seg <= "HIS     ";
-                    text[1][0 * 8 : 3 * 8 - 1] <= ">>>";
-                    text[3][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[4][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[5][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[6][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[7][0 * 8 : 3 * 8 - 1] <= "   ";
                 end
                 1: begin
                     read_chart_id <= 0;
                     seg <= "FREE    ";
-                    text[1][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[3][0 * 8 : 3 * 8 - 1] <= ">>>";
-                    text[4][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[5][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[6][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[7][0 * 8 : 3 * 8 - 1] <= "   ";
                 end
                 2: begin
                     read_chart_id <= 1;
                     seg <= "SO    01";
-                    text[1][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[3][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[4][0 * 8 : 3 * 8 - 1] <= ">>>";
-                    text[5][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[6][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[7][0 * 8 : 3 * 8 - 1] <= "   ";
                 end
                 3: begin
                     read_chart_id <= 2;
                     seg <= "SO    02";
-                    text[1][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[3][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[4][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[5][0 * 8 : 3 * 8 - 1] <= ">>>";
-                    text[6][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[7][0 * 8 : 3 * 8 - 1] <= "   ";
                 end
                 4: begin
                     read_chart_id <= 3;
                     seg <= "SO    03";
-                    text[1][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[3][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[4][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[5][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[6][0 * 8 : 3 * 8 - 1] <= ">>>";
-                    text[7][0 * 8 : 3 * 8 - 1] <= "   ";
                 end
                 5: begin
                     read_chart_id <= 4;
                     seg <= "SO    04";
-                    text[1][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[3][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[4][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[5][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[6][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[7][0 * 8 : 3 * 8 - 1] <= ">>>";
                 end
                 default: begin
                     read_chart_id <= 5;
                     seg <= "SO    05";
-                    text[1][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[3][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[4][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[5][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[6][0 * 8 : 3 * 8 - 1] <= "   ";
-                    text[7][0 * 8 : 3 * 8 - 1] <= "   ";
                 end
             endcase
         end
     end
+    
     // Input key actions
     always @(posedge prog_clk) begin
         case (user_in.arrow_keys)
