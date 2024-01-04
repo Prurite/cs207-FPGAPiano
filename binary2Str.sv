@@ -41,7 +41,6 @@ module binary2Str(
     adder3 add26(.x({th[4][2:0], t[7][3]}), .y(th[5]));
     adder3 add27(.x({th[5][2:0], t[8][3]}), .y(th[6]));
     adder3 add28(.x({th[6][2:0], t[9][3]}), .y(th[7]));
-    adder3 add29(.x({th[7][2:0], t[10][3]}), .y(th[7]));
     bit [3:0] thh [4:0];
     adder3 add31(.x({1'b0, th[0][3], th[1][3], th[2][3]}), .y(thh[0]));
     adder3 add32(.x({thh[0][2:0], th[3][3]}), .y(thh[1]));
@@ -61,7 +60,7 @@ endmodule
 // Add 3 when x exceeds 4.
 module adder3(
     input bit [3:0] x,
-    output bit [3:0] y
+    output reg [3:0] y
 );
     always_comb begin
         case (x)
