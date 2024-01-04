@@ -30,7 +30,7 @@ module main(
     // LED out
     output logic [7:0] led,
     // VGA out
-    output logic vga_clk, vga_hsync, vga_vsync,
+    output logic vga_hsync, vga_vsync,
         [3:0] vga_r, [3:0] vga_g, [3:0] vga_b
 );
 	// Generate the program clock, used to sync all program logic
@@ -59,7 +59,7 @@ module main(
         .audio_pwm(audio_pwm), .audio_sd(audio_sd),
         .seg(seg), .seg_sel(seg_sel),
         .led(led),
-        .vga_clk(vga_clk), .vga_hsync(vga_hsync), .vga_vsync(vga_vsync),
+        .vga_hsync(vga_hsync), .vga_vsync(vga_vsync),
         .vga_r(vga_r), .vga_g(vga_g), .vga_b(vga_b)
     );
     

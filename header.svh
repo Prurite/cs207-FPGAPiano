@@ -7,12 +7,15 @@
 `define NOTE_WIDTH 7
 `define CHART_LEN 2048
 `define CHARTS_MAX 10
-`define SCREEN_WIDTH 32
-`define SCREEN_HEIGHT 30
+`define SCREEN_TEXT_WIDTH 60 // Shift right a bit, by 20 chars
+`define SCREEN_TEXT_HEIGHT 30
 `define NOTE_TIME 100 // ms
 `define SEG_WIDTH 8
 `define PLAY_RECS_MAX 10
 `define MAX_DISPLAY_HEIGHT 16
+
+`define VGA_WIDTH 640
+`define VGA_HEIGHT 480
 
 // Arrow keys
 `define UP 4'b1000;
@@ -60,7 +63,7 @@
 `define A6s	107258
 `define B6	101238
 
-typedef bit [0:8*`SCREEN_WIDTH-1] ScreenText [`SCREEN_HEIGHT-1:0];
+typedef bit [0:8*`SCREEN_TEXT_WIDTH-1] ScreenText [`SCREEN_TEXT_HEIGHT-1:0];
 // An unpacked array of packed chars in ASCII
 // Note that strings MUST be used with small index to the left
 // ALWAYS pad the string literal to the expected length (32 chars)

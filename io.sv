@@ -62,7 +62,7 @@ module unifiedOutput (
     // LED out
     output logic [7:0] led,
     // VGA out
-    output logic vga_clk, vga_hsync, vga_vsync,
+    output logic vga_hsync, vga_vsync,
         [3:0] vga_r, [3:0] vga_g, [3:0] vga_b
 );
     audioOutput audio_handler(
@@ -86,7 +86,7 @@ module unifiedOutput (
     vgaOutput vga_handler(
         .clk(clk), .prog_clk(prog_clk), .sys_rst(sys_rst),
         .text(prog_out.text),
-        .vga_clk(vga_clk), .vga_hsync(vga_hsync), .vga_vsync(vga_vsync),
+        .vga_hsync(vga_hsync), .vga_vsync(vga_vsync),
         .vga_r(vga_r), .vga_g(vga_g), .vga_b(vga_b)
     );
 endmodule
@@ -318,7 +318,80 @@ endmodule
 module vgaOutput (
     input logic clk, sys_rst,
     input ScreenText text,
-    output logic vga_clk, vga_hsync, vga_vsync,
-        vga_r [3:0], vga_g [3:0], vga_b [3:0]
+    output logic vga_hsync, vga_vsync,
+        [3:0] vga_r, [3:0] vga_g, [3:0] vga_b
 );
+    // VGA timing constants
+    localparam H_SYNC_PULSE = 96;
+    localparam H_BACK_PORCH = 48;
+    localparam H_DISPLAY_TIME = `VGA_WIDTH;
+    localparam H_FRONT_PORCH = 16;
+    localparam H_LINE_TOTAL = H_SYNC_PULSE + H_BACK_PORCH + H_DISPLAY_TIME + H_FRONT_PORCH;
+
+    localparam V_SYNC_PULSE = 2;
+    localparam V_BACK_PORCH = 33;
+    localparam V_DISPLAY_TIME = `VGA_HEIGHT;
+    localparam V_FRONT_PORCH = 10;
+    localparam V_FRAME_TOTAL = V_SYNC_PULSE + V_BACK_PORCH + V_DISPLAY_TIME + V_FRONT_PORCH;
+
+    // Screen coordinates
+    int h_count = 0;
+    int v_count = 0;
+
+    // Pixel_On_Text2 instantiation
+    wire pixel_on;
+    Pixel_On_Text2_sv text_pixel (
+        .clk(clk),
+        .displayText(text),
+        .positionX(0),  // Assuming text starts from the top-left corner
+        .positionY(0),
+        .horzCoord(h_count),
+        .vertCoord(v_count),
+        .pixel(pixel_on)
+    );
+
+    always_ff @(posedge clk or posedge sys_rst) begin
+        if (sys_rst) begin
+            h_count <= 0;
+            v_count <= 0;
+        end else begin
+            // Horizontal count logic
+            if (h_count < H_LINE_TOTAL - 1) begin
+                h_count <= h_count + 1;
+            end else begin
+                h_count <= 0;
+                // Vertical count logic
+                if (v_count < V_FRAME_TOTAL - 1) begin
+                    v_count <= v_count + 1;
+                end else begin
+                    v_count <= 0;
+                end
+            end
+
+            // Generating sync signals
+            vga_hsync <= (h_count < H_SYNC_PULSE) ? 0 : 1;
+            vga_vsync <= (v_count < V_SYNC_PULSE) ? 0 : 1;
+
+            // Generating RGB output
+            if (h_count < H_DISPLAY_TIME && v_count < V_DISPLAY_TIME) begin
+                if (pixel_on) begin
+                    // White text
+                    vga_r <= 4'b1111;
+                    vga_g <= 4'b1111;
+                    vga_b <= 4'b1111;
+                end else begin
+                    // Black background
+                    vga_r <= 4'b0000;
+                    vga_g <= 4'b0000;
+                    vga_b <= 4'b0000;
+                end
+            end else begin
+                // Black during blanking interval
+                vga_r <= 4'b0000;
+                vga_g <= 4'b0000;
+                vga_b <= 4'b0000;
+            end
+        end
+    end
+
 endmodule

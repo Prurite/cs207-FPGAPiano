@@ -127,7 +127,7 @@ storageManager.sv
 ## 字符串的处理
 
 ```systemverilog
-typedef bit [0:8*`SCREEN_WIDTH-1] ScreenText [`SCREEN_HEIGHT-1:0];
+typedef bit [0:8*`SCREEN_TEXT_WIDTH-1] ScreenText [`SCREEN_TEXT_HEIGHT-1:0];
 /* An unpacked array of packed chars in ASCII
  * Note that strings MUST be used with small index to the left
  * ALWAYS pad the string literal to the expected length (32 chars)

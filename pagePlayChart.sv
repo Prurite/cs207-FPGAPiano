@@ -277,7 +277,7 @@ module displayLine(
     input logic prog_clk, rst, en,
     input Notes cur_note,
     input logic is_line,
-    output reg [0:`SCREEN_WIDTH * 8 - 1] line
+    output reg [0:`SCREEN_TEXT_WIDTH * 8 - 1] line
 );
     always @(posedge prog_clk or posedge rst) begin
         if (rst)
