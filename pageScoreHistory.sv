@@ -12,14 +12,14 @@ module pageScoreHistory(
     localparam LEFT     = 4'b0010;
     localparam RIGHT    = 4'b0001;
 
-    ScreenText text;
+    ScreenText his_text;
     SegDisplayText seg;
     LedState led;
     TopState state;
     bit [7:0] mstr;
     
     matataku m(.prog_clk(prog_clk), .rst(rst), .digit(read_chart_id), .out_str(mstr));
-    assign history_out.text = text;
+    assign history_out.text = his_text;
     assign history_out.seg = seg;
     assign history_out.led = led;
     assign history_out.state = state;
@@ -30,20 +30,20 @@ module pageScoreHistory(
         if (rst) begin
             read_record_id <= 0;
             state <= HISTORY;
-            // Initialize text
-            text[0] <=  "======    Score  History    ======";
-            text[1] <=  "                                  ";
-            text[2] <=  " 1|User1 | Tiny Stars     | 4487";
-            text[3] <=  " 2|      |                |     ";
-            text[4] <=  " 3|      |                |     ";
-            text[5] <=  " 4|      |                |     ";
-            text[6] <=  " 5|      |                |     ";
-            text[7] <=  " 6|      |                |     ";
-            text[8] <=  " 7|      |                |     ";
-            text[9] <=  " 8|      |                |     ";
-            text[10] <= " 9|      |                |     ";
-            text[11] <= "                                ";
-            text[12] <= " [<] Back                       ";
+            // Initialize his_text
+            his_text[0] <=  "=====    Score History    ===== ";
+            his_text[1] <=  "                                ";
+            his_text[2] <=  " 1|User1 | Tiny Stars     | 4487";
+            his_text[3] <=  " 2|      |                |     ";
+            his_text[4] <=  " 3|      |                |     ";
+            his_text[5] <=  " 4|      |                |     ";
+            his_text[6] <=  " 5|      |                |     ";
+            his_text[7] <=  " 6|      |                |     ";
+            his_text[8] <=  " 7|      |                |     ";
+            his_text[9] <=  " 8|      |                |     ";
+            his_text[10] <= " 9|      |                |     ";
+            his_text[11] <= "                                ";
+            his_text[12] <= " [<] Back                       ";
         end
         else begin
             case (user_in.arrow_keys)
@@ -58,21 +58,21 @@ module pageScoreHistory(
             endcase
             for (i = 1; i <= 9; i++)
                 if (i == read_record_id)
-                    text[i][8:15] <= mstr;
+                    his_text[i][8:15] <= mstr;
                 else
-                    text[i][8:15] <= "0" + i;
+                    his_text[i][8:15] <= "0" + i;
         end
     end
 
-    displayHisLine d1(.clk(prog_clk), .rst(rst), .rec_id(1), .line(text[2]));
-    displayHisLine d2(.clk(prog_clk), .rst(rst), .rec_id(2), .line(text[3]));
-    displayHisLine d3(.clk(prog_clk), .rst(rst), .rec_id(3), .line(text[4]));
-    displayHisLine d4(.clk(prog_clk), .rst(rst), .rec_id(4), .line(text[5]));
-    displayHisLine d5(.clk(prog_clk), .rst(rst), .rec_id(5), .line(text[6]));
-    displayHisLine d6(.clk(prog_clk), .rst(rst), .rec_id(6), .line(text[7]));
-    displayHisLine d7(.clk(prog_clk), .rst(rst), .rec_id(7), .line(text[8]));
-    displayHisLine d8(.clk(prog_clk), .rst(rst), .rec_id(8), .line(text[9]));
-    displayHisLine d9(.clk(prog_clk), .rst(rst), .rec_id(9), .line(text[10]));
+    displayHisLine d1(.clk(prog_clk), .rst(rst), .rec_id(1), .line(his_text[2]));
+    displayHisLine d2(.clk(prog_clk), .rst(rst), .rec_id(2), .line(his_text[3]));
+    displayHisLine d3(.clk(prog_clk), .rst(rst), .rec_id(3), .line(his_text[4]));
+    displayHisLine d4(.clk(prog_clk), .rst(rst), .rec_id(4), .line(his_text[5]));
+    displayHisLine d5(.clk(prog_clk), .rst(rst), .rec_id(5), .line(his_text[6]));
+    displayHisLine d6(.clk(prog_clk), .rst(rst), .rec_id(6), .line(his_text[7]));
+    displayHisLine d7(.clk(prog_clk), .rst(rst), .rec_id(7), .line(his_text[8]));
+    displayHisLine d8(.clk(prog_clk), .rst(rst), .rec_id(8), .line(his_text[9]));
+    displayHisLine d9(.clk(prog_clk), .rst(rst), .rec_id(9), .line(his_text[10]));
 endmodule
 
 module displayHisLine(

@@ -42,7 +42,7 @@ module pageMenu(
             text[10] <= "[<] Auto          [>] Play Chart";
         end
         else begin
-        // Pointer actions
+            // Pointer actions
             text[1][0:3*8-1] <= (cur_pos == 0) ? ">>>" : "   ";
             text[3][0:3*8-1] <= (cur_pos == 1) ? ">>>" : "   ";
             text[4][0:3*8-1] <= (cur_pos == 2) ? ">>>" : "   ";
@@ -80,31 +80,29 @@ module pageMenu(
                     seg <= "SO    05";
                 end
             endcase
+            
+            // Input key actions
+            case (user_in.arrow_keys)
+                 UP: begin
+                     if (cur_pos == 0) cur_pos <= 5;
+                     else cur_pos <= cur_pos - 1;
+                 end
+                 DOWN: begin
+                     if (cur_pos == 5) cur_pos <= 1;
+                     else cur_pos <= cur_pos + 1;
+                 end
+                 LEFT: begin
+                     state <= PLAY;
+                     auto_play <= 1'b1;
+                 end
+                 RIGHT: begin
+                     if (cur_pos == 0) state <= HISTORY;
+                     else begin
+                         state <= PLAY;
+                         auto_play <= 1'b0;
+                     end
+                 end
+             endcase
         end
-    end
-    
-    // Input key actions
-    always @(posedge prog_clk) begin
-        case (user_in.arrow_keys)
-            UP: begin
-                if (cur_pos == 0) cur_pos <= 5;
-                else cur_pos <= cur_pos - 1;
-            end
-            DOWN: begin
-                if (cur_pos == 5) cur_pos <= 1;
-                else cur_pos <= cur_pos + 1;
-            end
-            LEFT: begin
-                state <= PLAY;
-                auto_play <= 1'b1;
-            end
-            RIGHT: begin
-                if (cur_pos == 0) state <= HISTORY;
-                else begin
-                    state <= PLAY;
-                    auto_play <= 1'b0;
-                end
-            end
-        endcase
     end
 endmodule

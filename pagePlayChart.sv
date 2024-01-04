@@ -38,7 +38,7 @@ module pagePlayChart(
     notePlayer note_player(.clk(clk), .rst(rst), .note(cur_note), .sig(sig));
 
     // Get screen output
-    screenOut screen_out(.prog_clk(prog_clk), .rst(rst), .chart(read_chart), .note_count(note_count), .score(cur_score), .play_st(play_st), .text(text), .seg_text(play_out.seg), .led(play_out.led));
+    screenOut screen_out(.prog_clk(prog_clk), .rst(rst), .chart(read_chart), .note_count(note_count), .user_in(user_in), .score(cur_score), .play_st(play_st), .text(text), .seg_text(play_out.seg), .led(play_out.led));
     
     // Countdown func (3s before start)
     wire [1:0] cnt_dn;
@@ -106,6 +106,7 @@ module screenOut(
     input logic prog_clk, rst,
     input Chart chart,
     input shortint note_count,
+    input UserInput user_in,
     input [13:0] score,
     input [1:0] cnt_dn,
     input logic play_st,
@@ -115,33 +116,39 @@ module screenOut(
 );
     ScreenText note_area;
     SegDisplayText seg;
-    initial begin
-        // Title display
-        text[2]  = "=====    Playing Chart    ===== ";
-        text[4]  = "Current User ID: 0              ";
-        text[5]  = "Playing: -                      ";
-        text[6]  = "Save to chart ID: 0             ";
-        // Progress & Score display
-        text[8]  = "Prog.    0 /    0    Score     0";
-        // Line 10-25 display notes
-        text[27] = "    C  D  E  F  G  A  B   =     ";
-        text[29] = "[^] Hi [v] Lo [<] Exit  [>] Save";
-    end
-    noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_cnt(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area), .led(led));
-    assign text[10:25] = note_area[0:15];
-    // Display Info (Line 8, Col 7~10, 14~17, 28~32)
-    wire [39:0] sc_str, cnt_str, len_str;
+    
+    wire [39:0] sc_str, cnt_str, len_str, uid_raw;
+    // Display Info (Line 8, Col 7~10, 14~17, 28~32)    
     binary2Str b2sc(.intx(score), .str(sc_str));
     binary2Str b2sn(.intx(note_count), .str(cnt_str));
     binary2Str b2snc(.intx(chart.info.note_cnt), .str(len_str));
-    assign text[8][27*8:32*8 - 1] = sc_str;
-    assign text[8][13*8:17*8 - 1] = len_str[31:0];
-    assign text[8][6*8:10*8 - 1] = cnt_str[31:0];
+    binary2Str b2suid(.intx(user_in.user_id), .str(uid_raw));
+    always @(posedge prog_clk or posedge rst) begin
+        if (rst) begin
+            // Title display
+            text[2]  <= "=====    Playing Chart    ===== ";
+            text[4]  <= "Current User ID: 0              ";
+            text[5]  <= "Playing: -                      ";
+            text[6]  <= "Save to chart ID: 1             ";
+            // Progress & Score display
+            text[8]  <= "Prog.    0 /    0    Score     0";
+            // Line 10-25 display notes
+            text[27] <= "    C  D  E  F  G  A  B   =     ";
+            text[29] <= "[^] Hi [v] Lo [<] Exit  [>] Save";
+        end
+        else begin
+            // Display prog info
+            text[8][0:32*8-1] <= {"Prog. ", cnt_str[31:0], " / ", len_str[31:0], "    Score ", sc_str};
+            // Display chart info
+            text[4][17*8:18*8-1] <= uid_raw[7:0];
+            text[5][9*8:(9+`NAME_LEN)*8 - 1] <= chart.info.name;
+        end
+    end
+    noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_cnt(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area), .led(led));
+    assign text[10:25] = note_area[0:15];
     assign seg[0:2*8 - 1] = "SC";
     assign seg[3*8:8*8 - 1] = sc_str;
     assign seg_text = seg;
-    //Display chart name
-    assign text[5][9*8:(9+`NAME_LEN)*8 - 1] = chart.info.name;
 endmodule
 
 // Return realtime score according to user input
