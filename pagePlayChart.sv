@@ -16,8 +16,7 @@ module pagePlayChart(
     logic sig = 1'b0;
 
     // Status control
-    logic play_en;
-    logic play_st = 1'b0, fin_en = 1'b1;
+    logic play_en, play_st, fin_en;
     assign play_en = play_st & fin_en;
     
     // Iterate notes 
@@ -42,7 +41,7 @@ module pagePlayChart(
     
     // Countdown func (3s before start)
     wire [1:0] cnt_dn;
-    countDown cd(.clk(clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn));
+    countDown cd(.clk(clk), .rst(rst), .play_st(play_st), .cnt_dn(cnt_dn));
     
     // Record chart
     Chart uinc;
@@ -57,8 +56,6 @@ module pagePlayChart(
             note_count <= 0;
             cur_note <= 9'b00_0000000;
             sig <= 1'b0;
-            play_st <= 1'b0;
-            fin_en <= 1'b1;
         end
         else if (play_en) begin
             if (note_count == read_chart.info.note_cnt) fin_en <= 1'b0;
@@ -360,11 +357,11 @@ endmodule
 // Perform countdown before a chart starts
 module countDown (
     input logic clk, rst,
-    output logic en = 1'b0,
+    output reg play_st,
     output reg [1:0] cnt_dn
 );
     byte cnt;
-    logic clk_100ms;
+    logic clk_100ms, en;
     clkDiv div100(.clk(clk), .rst(rst), .divx(10_000_000), .clk_out(clk_100ms));
     always @(posedge clk_100ms) begin
         if (rst) begin
@@ -385,6 +382,7 @@ module countDown (
             end
         end
     end
+    assign play_st = en;
 endmodule
 
 // Play notes(Generate square waves)
