@@ -126,22 +126,22 @@ module screenOut(
     always @(posedge prog_clk or posedge rst) begin
         if (rst) begin
             // Title display
-            text[2]  <= "=====    Playing Chart    ===== ";
-            text[4]  <= "Current User ID: 0              ";
-            text[5]  <= "Playing: -                      ";
-            text[6]  <= "Save to chart ID: 1             ";
+            text[2]  = "=====    Playing Chart    ===== ";
+            text[4]  = "Current User ID: 0              ";
+            text[5]  = "Playing: -                      ";
+            text[6]  = "Save to chart ID: 1             ";
             // Progress & Score display
-            text[8]  <= "Prog.    0 /    0    Score     0";
+            text[8]  = "Prog.    0 /    0    Score     0";
             // Line 10-25 display notes
-            text[27] <= "    C  D  E  F  G  A  B   =     ";
-            text[29] <= "[^] Hi [v] Lo [<] Exit  [>] Save";
+            text[27] = "    C  D  E  F  G  A  B   =     ";
+            text[29] = "[^] Hi [v] Lo [<] Exit  [>] Save";
         end
         else begin
             // Display prog info
-            text[8][0:32*8-1] <= {"Prog. ", cnt_str[31:0], " / ", len_str[31:0], "    Score ", sc_str};
+            text[8][0:32*8-1] = {"Prog. ", cnt_str[31:0], " / ", len_str[31:0], "    Score ", sc_str};
             // Display chart info
-            text[4][17*8:18*8-1] <= uid_raw[7:0];
-            text[5][9*8:(9+`NAME_LEN)*8 - 1] <= chart.info.name;
+            text[4][17*8:18*8-1] = uid_raw[7:0];
+            text[5][9*8:(9+`NAME_LEN)*8 - 1] = chart.info.name;
         end
     end
     noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_cnt(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area), .led(led));
