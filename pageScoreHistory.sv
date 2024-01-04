@@ -16,9 +16,7 @@ module pageScoreHistory(
     SegDisplayText seg;
     LedState led;
     TopState state;
-    bit [7:0] mstr;
     
-    matataku m(.prog_clk(prog_clk), .rst(rst), .digit(read_chart_id), .out_str(mstr));
     assign history_out.text = his_text;
     assign history_out.seg = seg;
     assign history_out.led = led;
@@ -26,26 +24,17 @@ module pageScoreHistory(
 
     int i;
     
-    always @(posedge prog_clk) begin
+    assign his_text[0] =  "=====    Score History    ===== ";
+    assign his_text[1] =  "                                ";
+    assign his_text[11] = "                                ";
+    assign his_text[12] = " [<] Back                       ";
+
+    always @(posedge prog_clk)
         if (rst) begin
             read_record_id <= 0;
             state <= HISTORY;
             // Initialize his_text
-            his_text[0] <=  "=====    Score History    ===== ";
-            his_text[1] <=  "                                ";
-            his_text[2] <=  " 1|User1 | Tiny Stars     | 4487";
-            his_text[3] <=  " 2|      |                |     ";
-            his_text[4] <=  " 3|      |                |     ";
-            his_text[5] <=  " 4|      |                |     ";
-            his_text[6] <=  " 5|      |                |     ";
-            his_text[7] <=  " 6|      |                |     ";
-            his_text[8] <=  " 7|      |                |     ";
-            his_text[9] <=  " 8|      |                |     ";
-            his_text[10] <= " 9|      |                |     ";
-            his_text[11] <= "                                ";
-            his_text[12] <= " [<] Back                       ";
-        end
-        else begin
+        end else
             case (user_in.arrow_keys)
                 UP:
                     if (read_record_id == 1) read_record_id <= 9;
@@ -56,28 +45,21 @@ module pageScoreHistory(
                 LEFT: state <= MENU;
                 default: state <= HISTORY;
             endcase
-            for (i = 1; i <= 9; i++)
-                if (i == read_record_id)
-                    his_text[i][8:15] <= mstr;
-                else
-                    his_text[i][8:15] <= "0" + i;
-        end
-    end
 
-    displayHisLine d1(.clk(prog_clk), .rst(rst), .rec_id(1), .line(his_text[2]));
-    displayHisLine d2(.clk(prog_clk), .rst(rst), .rec_id(2), .line(his_text[3]));
-    displayHisLine d3(.clk(prog_clk), .rst(rst), .rec_id(3), .line(his_text[4]));
-    displayHisLine d4(.clk(prog_clk), .rst(rst), .rec_id(4), .line(his_text[5]));
-    displayHisLine d5(.clk(prog_clk), .rst(rst), .rec_id(5), .line(his_text[6]));
-    displayHisLine d6(.clk(prog_clk), .rst(rst), .rec_id(6), .line(his_text[7]));
-    displayHisLine d7(.clk(prog_clk), .rst(rst), .rec_id(7), .line(his_text[8]));
-    displayHisLine d8(.clk(prog_clk), .rst(rst), .rec_id(8), .line(his_text[9]));
-    displayHisLine d9(.clk(prog_clk), .rst(rst), .rec_id(9), .line(his_text[10]));
+    displayHisLine d1(.clk(prog_clk), .rst(rst), .rec_id(1), .active(read_record_id), .line(his_text[2]));
+    displayHisLine d2(.clk(prog_clk), .rst(rst), .rec_id(2), .active(read_record_id), .line(his_text[3]));
+    displayHisLine d3(.clk(prog_clk), .rst(rst), .rec_id(3), .active(read_record_id), .line(his_text[4]));
+    displayHisLine d4(.clk(prog_clk), .rst(rst), .rec_id(4), .active(read_record_id), .line(his_text[5]));
+    displayHisLine d5(.clk(prog_clk), .rst(rst), .rec_id(5), .active(read_record_id), .line(his_text[6]));
+    displayHisLine d6(.clk(prog_clk), .rst(rst), .rec_id(6), .active(read_record_id), .line(his_text[7]));
+    displayHisLine d7(.clk(prog_clk), .rst(rst), .rec_id(7), .active(read_record_id), .line(his_text[8]));
+    displayHisLine d8(.clk(prog_clk), .rst(rst), .rec_id(8), .active(read_record_id), .line(his_text[9]));
+    displayHisLine d9(.clk(prog_clk), .rst(rst), .rec_id(9), .active(read_record_id), .line(his_text[10]));
 endmodule
 
 module displayHisLine(
     input logic clk, rst,
-    input byte rec_id,
+    input byte rec_id, active,
     output reg [0:32*8-1] line
 );
     PlayRecord rec;
@@ -85,13 +67,28 @@ module displayHisLine(
     RecordStorageManager rec_m(.clk(clk), .sys_rst(rst), .read_record_id(rec_id), .write_record_id(0), .current_record_data(rec));
     binary2Str b2(.intx(rec.score), .str(score_raw));
     binary2Str b3(.intx(rec.user_id), .str(uid_raw));
+
+    bit [7:0] mstr;
+    matataku m(.prog_clk(prog_clk), .rst(rst), .digit(rec_id), .out_str(mstr));
+
     always @(posedge clk or posedge rst) begin
         if (rst) begin
-            line[2*8:3*8-1] <= "|";
-            line[9*8:10*8-1] <= "|";
-            line[26*8:27*8-1] <= "|";
+            case (rec_id)
+                1: line <=  " 1|User1 | Tiny Stars     | 4487";
+                2: line <=  " 2|      |                |     ";
+                3: line <=  " 3|      |                |     ";
+                4: line <=  " 4|      |                |     ";
+                5: line <=  " 5|      |                |     ";
+                6: line <=  " 6|      |                |     ";
+                7: line <=  " 7|      |                |     ";
+                8: line <=  " 8|      |                |     ";
+                9: line <=  " 9|      |                |     ";
+                default:
+                    line <= "  |      |                |     ";
+            endcase
         end
         else begin
+            line[1*8:2*8-1] <= rec_id == active ? mstr : "0" + rec_id;
             line[3*8:8*8-1] <= {"User", uid_raw[7:0]};
             line[10*8:26*8-1] <= rec.chart_name;
             line[27*8:32*8-1] <= score_raw;
