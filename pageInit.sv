@@ -9,7 +9,7 @@ module pageInit(
     TopState state;
     always @(posedge prog_clk or posedge rst) begin
         if (rst) begin
-            state <= TopState.INIT;
+            state <= INIT;
             text[14] <= "            Welcome!            ";
             text[16] <= "    Press [>] to continue...    ";
         end
