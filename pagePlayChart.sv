@@ -283,44 +283,41 @@ module displayLine(
     input logic is_line,
     output reg [0:`SCREEN_TEXT_WIDTH * 8 - 1] line
 );
+    reg [0 : 23 * 8 - 1] line_notes;
+
     always @(posedge prog_clk) begin
-        if (rst)
-            line = "                                ";
+        if (rst || !en)
+            line <= "                                ";
         else begin
-            if (en) begin
-                case (cur_note)
-                    //                          C  D  E  F  G  A  B   O
-                    9'b00_0000001:  line = "    #  .  .  .  .  .  .   .     ";
-                    9'b00_0000010:  line = "    .  #  .  .  .  .  .   .     ";
-                    9'b00_0000100:  line = "    .  .  #  .  .  .  .   .     ";
-                    9'b00_0001000:  line = "    .  .  .  #  .  .  .   .     ";
-                    9'b00_0010000:  line = "    .  .  .  .  #  .  .   .     ";
-                    9'b00_0100000:  line = "    .  .  .  .  .  #  .   .     ";
-                    9'b00_1000000:  line = "    .  .  .  .  .  .  #   .     ";
-                    9'b01_0000001:  line = "    #  .  .  .  .  .  .   +     ";
-                    9'b01_0000010:  line = "    .  #  .  .  .  .  .   +     ";
-                    9'b01_0000100:  line = "    .  .  #  .  .  .  .   +     ";
-                    9'b01_0001000:  line = "    .  .  .  #  .  .  .   +     ";
-                    9'b01_0010000:  line = "    .  .  .  .  #  .  .   +     ";
-                    9'b01_0100000:  line = "    .  .  .  .  .  #  .   +     ";
-                    9'b01_1000000:  line = "    .  .  .  .  .  .  #   +     ";
-                    9'b10_0000001:  line = "    #  .  .  .  .  .  .   -     ";
-                    9'b10_0000010:  line = "    .  #  .  .  .  .  .   -     ";
-                    9'b10_0000100:  line = "    .  .  #  .  .  .  .   -     ";
-                    9'b10_0001000:  line = "    .  .  .  #  .  .  .   -     ";
-                    9'b10_0010000:  line = "    .  .  .  .  #  .  .   -     ";
-                    9'b10_0100000:  line = "    .  .  .  .  .  #  .   -     ";
-                    9'b10_1000000:  line = "    .  .  .  .  .  .  #   -     ";
-                    default:        line = "    .  .  .  .  .  .  .   .     ";
-                endcase
-            end
-            else
-                line = "                                ";
-            // Add marks at the last line
-            if (is_line) begin
-                line[0:3*8 - 1] = ">>>";
-                line[30 * 8:32 * 8 - 1] = "<<<";
-            end
+            case (cur_note)
+                //                            C  D  E  F  G  A  B   O
+                9'b00_0000001:  line_notes = "#  .  .  .  .  .  .   .";
+                9'b00_0000010:  line_notes = ".  #  .  .  .  .  .   .";
+                9'b00_0000100:  line_notes = ".  .  #  .  .  .  .   .";
+                9'b00_0001000:  line_notes = ".  .  .  #  .  .  .   .";
+                9'b00_0010000:  line_notes = ".  .  .  .  #  .  .   .";
+                9'b00_0100000:  line_notes = ".  .  .  .  .  #  .   .";
+                9'b00_1000000:  line_notes = ".  .  .  .  .  .  #   .";
+                9'b01_0000001:  line_notes = "#  .  .  .  .  .  .   +";
+                9'b01_0000010:  line_notes = ".  #  .  .  .  .  .   +";
+                9'b01_0000100:  line_notes = ".  .  #  .  .  .  .   +";
+                9'b01_0001000:  line_notes = ".  .  .  #  .  .  .   +";
+                9'b01_0010000:  line_notes = ".  .  .  .  #  .  .   +";
+                9'b01_0100000:  line_notes = ".  .  .  .  .  #  .   +";
+                9'b01_1000000:  line_notes = ".  .  .  .  .  .  #   +";
+                9'b10_0000001:  line_notes = "#  .  .  .  .  .  .   -";
+                9'b10_0000010:  line_notes = ".  #  .  .  .  .  .   -";
+                9'b10_0000100:  line_notes = ".  .  #  .  .  .  .   -";
+                9'b10_0001000:  line_notes = ".  .  .  #  .  .  .   -";
+                9'b10_0010000:  line_notes = ".  .  .  .  #  .  .   -";
+                9'b10_0100000:  line_notes = ".  .  .  .  .  #  .   -";
+                9'b10_1000000:  line_notes = ".  .  .  .  .  .  #   -";
+                default:        line_notes = ".  .  .  .  .  .  .   .";
+            endcase
+            line[0 : 4 * 8 - 1] <= is_line ? ">>> " : "    ";
+            line[4 * 8 : 27 * 8 - 1] <= line_notes;
+            line[27 * 8 : 32 * 8 - 1] <= is_line ? " <<< " : "     ";
+            line[32 * 8 : `SCREEN_TEXT_WIDTH * 8 - 1] <= '{default: '0};
         end
     end
 endmodule
