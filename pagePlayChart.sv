@@ -81,6 +81,7 @@ module pagePlayChart(
         else begin
             // Exit
             if (user_in.arrow_keys == LEFT) state <= MENU;
+            // Save
             if (fin_en) begin
                 if (user_in.arrow_keys == RIGHT) begin
                     // Save chart
@@ -96,7 +97,7 @@ module pagePlayChart(
     end
 
     // Instanciate score manager
-    scoreManager sc_m(.clk(clk), .prog_clk(prog_clk), .rst(rst), .play_en(play_en), .user_in(user_in), .chart(read_chart), .note_count(note_count), .score(cur_score));
+    scoreManager sc_m(.clk(clk), .prog_clk(prog_clk), .rst(rst), .play_en(play_en), .auto_play(auto_play), .user_in(user_in), .chart(read_chart), .note_count(note_count), .score(cur_score));
     
     assign play_out.text = text;
     assign play_out.notes = cur_note;
@@ -151,7 +152,7 @@ endmodule
 
 // Return realtime score according to user input
 module scoreManager (
-    input logic clk, prog_clk, rst, play_en,
+    input logic clk, prog_clk, rst, play_en, auto_play,
     input UserInput user_in,
     input Chart chart,
     input shortint note_count,
@@ -172,13 +173,16 @@ module scoreManager (
             uc = 0;
         end
         else if (play_en) begin
-            cur_in = {user_in.oct_down, user_in.oct_up, user_in.note_keys};
-            cur_note = chart.notes[note_count];
-            if (cur_note == cur_in | cur_note == uin[uc - 1]) score = score + 10;
-            else if (cur_note == uin[uc - 2]) score = score + 8;
-            else if (cur_note == uin[uc - 3]) score = score + 5;
-            uin[uc] = cur_in;
-            uc = uc + 1;
+            if (auto_play) score = score + 10;
+            else begin
+                cur_in = {user_in.oct_down, user_in.oct_up, user_in.note_keys};
+                cur_note = chart.notes[note_count];
+                if (cur_note == cur_in | cur_note == uin[uc - 1]) score = score + 10;
+                else if (cur_note == uin[uc - 2]) score = score + 8;
+                else if (cur_note == uin[uc - 3]) score = score + 5;
+                uin[uc] = cur_in;
+                uc = uc + 1;
+            end
         end
     end
 endmodule
