@@ -53,6 +53,10 @@ module pageScoreHistory(
                 history_out.text[read_record_id][10*8 : 10*8 + `NAME_LEN*8 - 1] <= record_data.chart_name;
                 history_out.text[read_record_id][11*8 + `NAME_LEN*8 : 16*8 + `NAME_LEN*8 - 1] <= score_text;
             end
+            history_out.text[1] <=     "                                ";
+            for (int i = 13; i <= 32; i = i + 1) begin
+                history_out.text[i] <= "                                ";    
+            end
         end else begin
             read_record_id <= 0;
             case (edged_user_in.arrow_keys)
