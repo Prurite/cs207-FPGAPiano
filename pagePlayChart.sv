@@ -190,6 +190,7 @@ module noteAreaController(
     output SegDisplayText seg,
     output LedState led
 );
+    ScreenText temp_text;
     // Display countdown
     always @(posedge prog_clk) begin
         if (~en) begin
@@ -252,6 +253,9 @@ module noteAreaController(
                     text = '{default: '0};
             endcase
         end
+        else begin
+            text[10:25] = temp_text[10:25];
+        end
     end
     
     shortint note_id; // Make sure it does not go out of bound
@@ -287,24 +291,25 @@ module noteAreaController(
     end
 
     // Display Notes
-    displayLine l25(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 15]), .is_line(1'b1), .line(text[25]));
-    displayLine l24(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 14]), .is_line(1'b0), .line(text[24]));
-    displayLine l23(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 13]), .is_line(1'b0), .line(text[23]));
-    displayLine l22(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 12]), .is_line(1'b0), .line(text[22]));
-    displayLine l21(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 11]), .is_line(1'b0), .line(text[21]));
-    displayLine l20(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 10]), .is_line(1'b0), .line(text[20]));
-    displayLine l19(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 9]), .is_line(1'b0), .line(text[19]));
-    displayLine l18(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 8]), .is_line(1'b0), .line(text[18]));
-    displayLine l17(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 7]), .is_line(1'b0), .line(text[17]));
-    displayLine l16(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 6]), .is_line(1'b0), .line(text[16]));
-    displayLine l15(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 5]), .is_line(1'b0), .line(text[15]));
-    displayLine l14(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 4]), .is_line(1'b0), .line(text[14]));
-    displayLine l13(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 3]), .is_line(1'b0), .line(text[13]));
-    displayLine l12(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 2]), .is_line(1'b0), .line(text[12]));
-    displayLine l11(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 1]), .is_line(1'b0), .line(text[11]));
-    displayLine l10(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id]), .is_line(1'b0), .line(text[10]));
+    displayLine l25(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 15]), .is_line(1'b1), .line(temp_text[25]));
+    displayLine l24(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 14]), .is_line(1'b0), .line(temp_text[24]));
+    displayLine l23(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 13]), .is_line(1'b0), .line(temp_text[23]));
+    displayLine l22(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 12]), .is_line(1'b0), .line(temp_text[22]));
+    displayLine l21(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 11]), .is_line(1'b0), .line(temp_text[21]));
+    displayLine l20(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 10]), .is_line(1'b0), .line(temp_text[20]));
+    displayLine l19(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 9]), .is_line(1'b0), .line(temp_text[19]));
+    displayLine l18(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 8]), .is_line(1'b0), .line(temp_text[18]));
+    displayLine l17(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 7]), .is_line(1'b0), .line(temp_text[17]));
+    displayLine l16(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 6]), .is_line(1'b0), .line(temp_text[16]));
+    displayLine l15(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 5]), .is_line(1'b0), .line(temp_text[15]));
+    displayLine l14(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 4]), .is_line(1'b0), .line(temp_text[14]));
+    displayLine l13(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 3]), .is_line(1'b0), .line(temp_text[13]));
+    displayLine l12(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 2]), .is_line(1'b0), .line(temp_text[12]));
+    displayLine l11(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 1]), .is_line(1'b0), .line(temp_text[11]));
+    displayLine l10(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id]), .is_line(1'b0), .line(temp_text[10]));
     displayLed dd(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id]), .led(led));
 endmodule
+
 
 // Display each line in note area
 module displayLine(
@@ -317,7 +322,7 @@ module displayLine(
 
     always @(posedge prog_clk) begin
         if (rst || !en)
-            line <= "                                ";
+            line_notes = "                       ";
         else begin
             case (cur_note)
                 //                            C  D  E  F  G  A  B   O
@@ -364,16 +369,17 @@ module displayLed(
                 9'b00_xxxxxxx: led[0] = 1'b0;
                 9'b01_xxxxxxx: led[0] = 1'b1;
                 9'b10_xxxxxxx: led[0] = 1'b1;
-                default: led[0] = 1'b0;
+                default:       led[0] = 1'b0;
             endcase
             case (cur_note)
-                9'bxx_0000001: led[7:1] = 7'b1000000;
-                9'bxx_0000010: led[7:1] = 7'b0100000;
-                9'bxx_0000100: led[7:1] = 7'b0010000;
-                9'bxx_0001000: led[7:1] = 7'b0001000;
-                9'bxx_0010000: led[7:1] = 7'b0000100;
-                9'bxx_0100000: led[7:1] = 7'b0000010;
-                9'bxx_1000000: led[7:1] = 7'b0000010;
+                9'bxx_xxxxxx1: led[7:1] = 7'b1000000;
+                9'bxx_xxxxx1x: led[7:1] = 7'b0100000;
+                9'bxx_xxxx1xx: led[7:1] = 7'b0010000;
+                9'bxx_xxx1xxx: led[7:1] = 7'b0001000;
+                9'bxx_xx1xxxx: led[7:1] = 7'b0000100;
+                9'bxx_x1xxxxx: led[7:1] = 7'b0000010;
+                9'bxx_1xxxxxx: led[7:1] = 7'b0000001;
+                default:       led[7:1] = 7'b0000000;
             endcase
         end
     end
