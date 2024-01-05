@@ -365,21 +365,21 @@ module displayLed(
     always @(posedge prog_clk) begin
         if (rst) led = 8'b0000_0000;
         else if (en) begin
-            case (cur_note)
-                9'b00_xxxxxxx: led[0] = 1'b0;
-                9'b01_xxxxxxx: led[0] = 1'b1;
-                9'b10_xxxxxxx: led[0] = 1'b1;
-                default:       led[0] = 1'b0;
+            case (cur_note[8:7])
+                2'b00:      led[0] = 1'b0;
+                2'b01:      led[0] = 1'b1;
+                2'b10:      led[0] = 1'b1;
+                default:    led[0] = 1'b0;
             endcase
-            case (cur_note)
-                9'bxx_xxxxxx1: led[7:1] = 7'b1000000;
-                9'bxx_xxxxx1x: led[7:1] = 7'b0100000;
-                9'bxx_xxxx1xx: led[7:1] = 7'b0010000;
-                9'bxx_xxx1xxx: led[7:1] = 7'b0001000;
-                9'bxx_xx1xxxx: led[7:1] = 7'b0000100;
-                9'bxx_x1xxxxx: led[7:1] = 7'b0000010;
-                9'bxx_1xxxxxx: led[7:1] = 7'b0000001;
-                default:       led[7:1] = 7'b0000000;
+            case (cur_note[6:0])
+                7'b0000001: led[7:1] = 7'b1000000;
+                7'b0000010: led[7:1] = 7'b0100000;
+                7'b0000100: led[7:1] = 7'b0010000;
+                7'b0001000: led[7:1] = 7'b0001000;
+                7'b0010000: led[7:1] = 7'b0000100;
+                7'b0100000: led[7:1] = 7'b0000010;
+                7'b1000000: led[7:1] = 7'b0000001;
+                default:    led[7:1] = 7'b0000000;
             endcase
         end
     end
