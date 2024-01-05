@@ -12,31 +12,38 @@ module pageMenu(
     localparam DOWN = 4'b0100;
     localparam LEFT = 4'b0010;
     localparam RIGHT = 4'b0001;
+
     byte cur_pos;
-    byte chart_id;
+    UserInput edged_user_in;
     ScreenText text;
     SegDisplayText seg;
     TopState state;
+    byte updating_chart_id;
+    // Everytime a reset happens, it loops back to the first chart
 
     assign menu_out.text = text;
     assign menu_out.seg = seg;
     assign menu_out.state = state;
+
+    edgeDetector edge_detector( .clk(prog_clk), .rst(rst),
+        .user_in(user_in), .edge_out(edged_user_in) );
     
     always @(posedge prog_clk) begin
         if (rst) begin
             auto_play <= 0;
             cur_pos <= 0;
-            chart_id <= 0;
-            seg <= "";
+            seg <= "        ";
             state <= MENU;
+            read_chart_id <= 0;
+            updating_chart_id <= 0;
             text[0] <=  "=======    Main  Menu    =======";
             text[1] <=  ">>> Score History               ";
             text[2] <=  "-----      Chart List      -----";
-            text[3] <=  "    [0]  Free Play              ";
-            text[4] <=  "    [1]  Tiny Stars             ";
-            text[5] <=  "    [2]  Song 1                 ";
-            text[6] <=  "    [3]  Song 2                 ";
-            text[7] <=  "    [4]  Recorded Song          ";
+            text[3] <=  "    [0]  Free play      .       ";
+            text[4] <=  "    [1]                         ";
+            text[5] <=  "    [2]                         ";
+            text[6] <=  "    [3]                         ";
+            text[7] <=  "    [4]                         ";
             text[8] <=  "                                ";
             text[9] <=  "[^][v] Move Up / Down           ";
             text[10] <= "[<] Auto          [>] Play Chart";
@@ -49,8 +56,13 @@ module pageMenu(
             text[5][0:3*8-1] <= (cur_pos == 3) ? ">>>" : "   ";
             text[6][0:3*8-1] <= (cur_pos == 4) ? ">>>" : "   ";
             text[7][0:3*8-1] <= (cur_pos == 5) ? ">>>" : "   ";
-            
-            case (cur_pos)
+
+            if (updating_chart_id <= 5) begin
+                read_chart_id <= updating_chart_id;
+                updating_chart_id <= updating_chart_id + 1;
+                if (read_chart_id - 1 >= 1) // Current chart_data's id is read_chart_id - 1
+                    text[2+read_chart_id][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
+            end else case (cur_pos)
                 0: begin
                     read_chart_id <= 0;
                     seg <= "HIS     ";
@@ -82,7 +94,7 @@ module pageMenu(
             endcase
             
             // Input key actions
-            case (user_in.arrow_keys)
+            case (edged_user_in.arrow_keys)
                  UP: begin
                      if (cur_pos == 0) cur_pos <= 5;
                      else cur_pos <= cur_pos - 1;
@@ -92,14 +104,15 @@ module pageMenu(
                      else cur_pos <= cur_pos + 1;
                  end
                  LEFT: begin
-                     state <= PLAY;
-                     auto_play <= 1'b1;
+                     if (cur_pos == 0) state <= HISTORY;
+                     else begin
+                        state <= PLAY; auto_play <= 1'b1;
+                     end
                  end
                  RIGHT: begin
                      if (cur_pos == 0) state <= HISTORY;
                      else begin
-                         state <= PLAY;
-                         auto_play <= 1'b0;
+                         state <= PLAY; auto_play <= 1'b0;
                      end
                  end
              endcase

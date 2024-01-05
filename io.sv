@@ -1,5 +1,26 @@
 `include "header.svh"
 
+module edgeDetector (
+    input logic clk, rst,
+    input UserInput user_in,
+    output UserInput edge_out
+);
+    UserInput user_in_reg;
+    for (genvar i = 0; i < 4; i++)
+        assign edge_out.arrow_keys[i] = user_in.arrow_keys[i] & ~user_in_reg.arrow_keys[i] & ~rst;
+    for (genvar i = 0; i < 7; i++)
+        assign edge_out.note_keys[i] = user_in.note_keys[i] & ~user_in_reg.note_keys[i] & ~rst;
+    assign edge_out.oct_up = user_in.oct_up & ~user_in_reg.oct_up & ~rst;
+    assign edge_out.oct_down = user_in.oct_down & ~user_in_reg.oct_down & ~rst;
+    assign edge_out.user_id = user_in.user_id;
+
+    always_ff @(posedge clk)
+        if (rst) begin
+            user_in_reg <= '{default: '0};
+        end else
+            user_in_reg <= user_in;
+endmodule
+
 // Unified input processing func, physical signals => UserInput struct
 module unifiedInput (
     input logic clk, prog_clk, sys_rst,

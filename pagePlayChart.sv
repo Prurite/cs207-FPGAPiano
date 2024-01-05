@@ -321,7 +321,6 @@ module displayLine(
             line[0 : 4 * 8 - 1] <= is_line ? ">>> " : "    ";
             line[4 * 8 : 27 * 8 - 1] <= line_notes;
             line[27 * 8 : 32 * 8 - 1] <= is_line ? " <<< " : "     ";
-            line[32 * 8 : `SCREEN_TEXT_WIDTH * 8 - 1] <= '{default: '0};
         end
     end
 endmodule
