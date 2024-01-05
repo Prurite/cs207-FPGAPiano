@@ -173,13 +173,13 @@ module scoreManager (
             uc = 0;
         end
         else if (play_en) begin
-            if (auto_play) score = score + 10;
+            if (auto_play) score = score + 4;
             else begin
                 cur_in = {user_in.oct_down, user_in.oct_up, user_in.note_keys};
                 cur_note = chart.notes[note_count];
-                if (cur_note == cur_in | cur_note == uin[uc - 1]) score = score + 10;
-                else if (cur_note == uin[uc - 2]) score = score + 8;
-                else if (cur_note == uin[uc - 3]) score = score + 5;
+                if (cur_note == cur_in | cur_note == uin[uc - 1]) score = score + 4;
+                else if (cur_note == uin[uc - 2]) score = score + 2;
+                else if (cur_note == uin[uc - 3]) score = score + 1;
                 uin[uc] = cur_in;
                 uc = uc + 1;
             end
