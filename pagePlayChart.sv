@@ -142,7 +142,7 @@ module screenOut(
         end
     end
     noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_cnt(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area), .led(led));
-    assign text[10:25] = note_area[0:15];
+    assign text[10:25] = note_area[10:25];
     assign seg[0:2*8 - 1] = "SC";
     assign seg[3*8:8*8 - 1] = sc_str;
     assign seg_text = seg;
