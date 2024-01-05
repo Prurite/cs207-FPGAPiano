@@ -12,6 +12,11 @@ module pagePlayChart(
     output byte write_record_id,
     output PlayRecord write_record
 );
+    localparam UP = `UP;
+    localparam DOWN = `DOWN;
+    localparam LEFT = `LEFT;
+    localparam RIGHT = `RIGHT;
+
     // Output sound signal, connected directly to notePlayer
     logic sig = 1'b0;
 
@@ -51,7 +56,7 @@ module pagePlayChart(
     // Refresh current note every 100ms
     logic clk_100ms;
     clkDiv div100(.clk(clk), .rst(rst), .divx(10_000_000), .clk_out(clk_100ms));
-    always @(posedge clk_100ms) begin
+    always @(posedge clk_100ms or posedge rst) begin
         if (rst) begin
             note_count <= 0;
             cur_note <= 9'b00_0000000;
@@ -69,15 +74,15 @@ module pagePlayChart(
     assign play_record = '{user_in.user_id, read_chart.info.name, cur_score};
 
     // Management after play ends
-    always @(posedge clk) begin
+    always @(posedge clk or posedge rst) begin
         if (rst) begin
             state <= PLAY;
         end
         else begin
             // Exit
-            if (user_in.arrow_keys == 4'b0010) state <= MENU;
+            if (user_in.arrow_keys == LEFT) state <= MENU;
             if (fin_en) begin
-                if (user_in.arrow_keys == 4'b0001) begin
+                if (user_in.arrow_keys == RIGHT) begin
                     // Save chart
                     write_chart_id <= 1;
                     write_chart <= uinc;
@@ -130,7 +135,7 @@ module screenOut(
             text[8]  = "Prog.    0 /    0    Score     0";
             // Line 10-25 display notes
             text[27] = "    C  D  E  F  G  A  B   =     ";
-            text[29] = "[^] Hi [v] Lo [<] Exit  [>] Save";
+            text[29] = "[+] Hi [-] Lo [<] Exit  [>] Save";
         end
         else begin
             // Display prog info
@@ -160,7 +165,7 @@ module scoreManager (
     Notes uin [`CHART_LEN - 1:0];
     Notes cur_note, cur_in;
     shortint uc;
-    always @(posedge clk50ms) begin
+    always @(posedge clk50ms or posedge rst) begin
         if (rst) begin
             clk50ms = 1'b0;
             score = 14'd0;
@@ -263,30 +268,30 @@ module noteAreaController(
     assign note_id = (note_cnt+15) >= `CHART_LEN ? `CHART_LEN-16 : note_cnt;
 
     // Display seg
-    always @(posedge prog_clk) begin
+    always @(posedge prog_clk or posedge rst) begin
         if (rst) seg <= "        ";
         else if (en) case (notes[note_cnt])
-            9'b00_0000001: seg <= "C   1   ";
-            9'b00_0000010: seg <= "D   2   ";
-            9'b00_0000100: seg <= "E   3   ";
-            9'b00_0001000: seg <= "F   4   ";
-            9'b00_0010000: seg <= "G   5   ";
-            9'b00_0100000: seg <= "A   6   ";
-            9'b00_1000000: seg <= "B   7   ";
-            9'b01_0000001: seg <= "C + 1   ";
-            9'b01_0000010: seg <= "D + 2   ";
-            9'b01_0000100: seg <= "E + 3   ";
-            9'b01_0001000: seg <= "F + 4   ";
-            9'b01_0010000: seg <= "G + 5   ";
-            9'b01_0100000: seg <= "A + 6   ";
-            9'b01_1000000: seg <= "B + 7   ";
-            9'b10_0000001: seg <= "C - 1   ";
-            9'b10_0000010: seg <= "D - 2   ";
-            9'b10_0000100: seg <= "E - 3   ";
-            9'b10_0001000: seg <= "F - 4   ";
-            9'b10_0010000: seg <= "G - 5   ";
-            9'b10_0100000: seg <= "A - 6   ";
-            9'b10_1000000: seg <= "B - 7   ";
+            9'b00_0000001: seg <= "c   1   ";
+            9'b00_0000010: seg <= "d   2   ";
+            9'b00_0000100: seg <= "e   3   ";
+            9'b00_0001000: seg <= "f   4   ";
+            9'b00_0010000: seg <= "g   5   ";
+            9'b00_0100000: seg <= "a   6   ";
+            9'b00_1000000: seg <= "b   7   ";
+            9'b01_0000001: seg <= "c u 1   ";
+            9'b01_0000010: seg <= "d u 2   ";
+            9'b01_0000100: seg <= "e u 3   ";
+            9'b01_0001000: seg <= "f u 4   ";
+            9'b01_0010000: seg <= "g u 5   ";
+            9'b01_0100000: seg <= "a u 6   ";
+            9'b01_1000000: seg <= "b u 7   ";
+            9'b10_0000001: seg <= "c d 1   ";
+            9'b10_0000010: seg <= "d d 2   ";
+            9'b10_0000100: seg <= "e d 3   ";
+            9'b10_0001000: seg <= "f d 4   ";
+            9'b10_0010000: seg <= "g d 5   ";
+            9'b10_0100000: seg <= "a d 6   ";
+            9'b10_1000000: seg <= "b d 7   ";
             default:       seg <= "        ";
         endcase
     end
@@ -321,7 +326,7 @@ module displayLine(
 );
     reg [0 : 23 * 8 - 1] line_notes;
 
-    always @(posedge prog_clk) begin
+    always @(posedge prog_clk or posedge rst) begin
         if (rst || !en)
             line_notes = "                       ";
         else begin
@@ -363,7 +368,7 @@ module displayLed(
     input Notes cur_note,
     output LedState led
 );
-    always @(posedge prog_clk) begin
+    always @(posedge prog_clk or posedge rst) begin
         if (rst) led = 8'b0000_0000;
         else if (en) begin
             case (cur_note[8:7])
@@ -395,7 +400,7 @@ module countDown (
     byte cnt;
     logic clk_100ms, en;
     clkDiv div100(.clk(clk), .rst(rst), .divx(10_000_000), .clk_out(clk_100ms));
-    always @(posedge clk_100ms) begin
+    always @(posedge clk_100ms or posedge rst) begin
         if (rst) begin
             cnt <= 0;
             en <= 1'b0;
@@ -425,7 +430,7 @@ module notePlayer(
 );
     integer wav_len;
     clkDiv wave_div(.clk(clk), .rst(rst), .divx(wav_len), .clk_out(sig));
-    always @(posedge clk) begin
+    always @(posedge clk or posedge rst) begin
         if (rst)
             sig <= 0;
         else begin

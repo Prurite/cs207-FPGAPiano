@@ -16,7 +16,7 @@ module edgeDetector (
 
     const UserInput default_user_in = '{default: '0};
 
-    always_ff @(posedge clk)
+    always @(posedge clk or posedge rst)
         if (rst) begin
             user_in_reg <= default_user_in;
         end else
@@ -92,6 +92,14 @@ module unifiedOutput (
     output logic vga_hsync, vga_vsync,
         [3:0] vga_r, [3:0] vga_g, [3:0] vga_b
 );
+    localparam CLOCK_DIVX = 700_000;
+    logic seg_clk;
+
+    clkDiv seg_clk_gen(
+        .clk(clk), .rst(sys_rst),
+        .divx(CLOCK_DIVX), .clk_out(seg_clk)
+    );
+
     audioOutput audio_handler(
         .clk(clk), .sys_rst(sys_rst),
         .playing_notes(prog_out.notes),
@@ -99,7 +107,7 @@ module unifiedOutput (
     );
 
     segDisplayOutput seg_handler(
-        .clk(clk), .sys_rst(sys_rst),
+        .clk(seg_clk), .sys_rst(sys_rst),
         .text(prog_out.seg),
         .seg(seg), .seg_sel(seg_sel)
     );
@@ -150,7 +158,7 @@ module keyboardInput (
     end
 
     // PS/2 data state machine
-    always_ff @(posedge clk)
+    always @(posedge clk or posedge sys_rst)
         if (sys_rst) begin
             state <= IDLE; bit_count <= 4'd0; data_reg <= 8'h00; last_key <= 8'h00;
         end else if (ps2_clk_sync[1] && !ps2_clk_sync[0]) // negedge of ps2_clk
@@ -178,7 +186,7 @@ module keyboardInput (
     // Mapping keycodes to UserInput structure
     const UserInput default_keyboard_in = '{default: '0};
 
-    always_ff @(posedge clk)
+    always @(posedge clk or posedge sys_rst)
         if (sys_rst) begin
             keyboard_in <= default_keyboard_in;
             keyboard_in_next <= default_keyboard_in;
@@ -213,7 +221,7 @@ module boardInput (
 );
     const UserInput default_board_in = '{default: '0};
 
-    always_ff @(posedge prog_clk)
+    always @(posedge prog_clk or posedge sys_rst)
         if (sys_rst)
             board_in <= default_board_in;
         else begin
@@ -267,7 +275,7 @@ module audioOutput (
             note = note + BASE;
     end
 
-    always @(posedge clk)
+    always @(posedge clk or posedge sys_rst)
         if (sys_rst) begin
             counter <= 0;
             audio_pwm <= 0;
@@ -326,7 +334,7 @@ module segDisplayOutput (
         endcase
     end
 
-    always_ff @(posedge clk)
+    always @(posedge clk or posedge sys_rst)
         if (sys_rst) begin
             i <= 4'd1;
             seg_sel[0] <= 4'b0;
@@ -393,7 +401,7 @@ module vgaOutput (
         .pos_x(pos_x), .pos_y(pos_y)
     );
 
-    always_ff @(posedge prog_clk)
+    always @(posedge prog_clk or posedge sys_rst)
         if (sys_rst)
             displayText <= '{default: '0};
         else

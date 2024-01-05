@@ -8,13 +8,12 @@ module pageMenu(
     input Chart chart_data,
     output logic auto_play
 );
-    localparam UP = 4'b1000;
-    localparam DOWN = 4'b0100;
-    localparam LEFT = 4'b0010;
-    localparam RIGHT = 4'b0001;
+    localparam UP = `UP;
+    localparam DOWN = `DOWN;
+    localparam LEFT = `LEFT;
+    localparam RIGHT = `RIGHT;
 
     byte cur_pos;
-    UserInput edged_user_in;
     ScreenText text;
     SegDisplayText seg;
     TopState state;
@@ -25,10 +24,7 @@ module pageMenu(
     assign menu_out.seg = seg;
     assign menu_out.state = state;
 
-    edgeDetector edge_detector( .clk(prog_clk), .rst(rst),
-        .user_in(user_in), .edge_out(edged_user_in) );
-    
-    always @(posedge prog_clk) begin
+    always @(posedge prog_clk or posedge rst) begin
         if (rst) begin
             auto_play <= 0;
             cur_pos <= 0;
@@ -94,17 +90,17 @@ module pageMenu(
             endcase
             
             // Input key actions
-            case (edged_user_in.arrow_keys)
+            case (user_in.arrow_keys)
                  UP: begin
                      if (cur_pos == 0) cur_pos <= 5;
                      else cur_pos <= cur_pos - 1;
                  end
                  DOWN: begin
-                     if (cur_pos == 5) cur_pos <= 1;
+                     if (cur_pos == 5) cur_pos <= 0;
                      else cur_pos <= cur_pos + 1;
                  end
                  LEFT: begin
-                     if (cur_pos == 0) state <= HISTORY;
+                     if (cur_pos == 0) state <= state;
                      else begin
                         state <= PLAY; auto_play <= 1'b1;
                      end

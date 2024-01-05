@@ -20,7 +20,7 @@ module ChartStorageManager(
 
     localparam NOTE_CNT = 282;
     ChartInfo ts_info;
-    assign ts_info.name = "Tiny Stars      ";
+    assign ts_info.name = "Little Stars    ";
     assign ts_info.note_cnt = NOTE_CNT;
     typedef Notes note_t [NOTE_CNT];
     note_t ts_notes = {
@@ -117,7 +117,7 @@ module ChartStorageManager(
     };
 
     // When id's are not 0, read or write accordingly
-    always @(posedge clk)
+    always @(posedge clk or posedge sys_rst)
         if (sys_rst) begin
             chartStorage[1].info <= ts_info;
             for (int i = 0; i < NOTE_CNT; i++)
@@ -145,7 +145,7 @@ module RecordStorageManager(
     PlayRecord recordStorage [`PLAY_RECS_MAX-1:0] = '{default: '0};
 
     // When id's are not 0, read or write accordingly
-    always @(posedge clk)
+    always @(posedge clk or posedge sys_rst)
         if (sys_rst)
             recordStorage <= '{default: '0};
         else begin
