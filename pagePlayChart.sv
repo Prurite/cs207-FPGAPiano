@@ -191,6 +191,7 @@ module noteAreaController(
     output LedState led
 );
     ScreenText temp_text;
+    const ScreenText text_init = '{default: '0};
     // Display countdown
     always @(posedge prog_clk) begin
         if (~en) begin
@@ -250,7 +251,7 @@ module noteAreaController(
                     text[25] = "                                ";
                 end
                 default:
-                    text = '{default: '0};
+                    text = text_init;
             endcase
         end
         else begin

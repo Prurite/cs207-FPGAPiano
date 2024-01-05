@@ -136,7 +136,7 @@ module main(
             default: prog_out = init_out;
         endcase
         next_state = prog_out.state;
-        rst = next_state != cur_state;
+        rst = sys_rst || next_state != cur_state;
     end
     
 endmodule

@@ -7,7 +7,7 @@ module ChartStorageManager(
     input Chart new_chart_data,
     output Chart current_chart_data
 );
-    Chart chartStorage [`CHARTS_MAX-1:0];
+    Chart chartStorage [`CHARTS_MAX-1:0] = '{default: '0};
 
     // When id's are not 0, read or write accordingly
     always @(posedge clk)
@@ -32,7 +32,7 @@ module RecordStorageManager(
     input PlayRecord new_record_data,
     output PlayRecord current_record_data
 );
-    PlayRecord recordStorage [`PLAY_RECS_MAX-1:0];
+    PlayRecord recordStorage [`PLAY_RECS_MAX-1:0] = '{default: '0};
 
     // When id's are not 0, read or write accordingly
     always @(posedge clk)

@@ -14,9 +14,11 @@ module edgeDetector (
     assign edge_out.oct_down = user_in.oct_down & ~user_in_reg.oct_down & ~rst;
     assign edge_out.user_id = user_in.user_id;
 
+    const UserInput default_user_in = '{default: '0};
+
     always_ff @(posedge clk)
         if (rst) begin
-            user_in_reg <= '{default: '0};
+            user_in_reg <= default_user_in;
         end else
             user_in_reg <= user_in;
 endmodule
@@ -174,10 +176,12 @@ module keyboardInput (
             endcase
 
     // Mapping keycodes to UserInput structure
+    const UserInput default_keyboard_in = '{default: '0};
+
     always_ff @(posedge clk)
         if (sys_rst) begin
-            keyboard_in <= '{default: '0};
-            keyboard_in_next <= '{default: '0};
+            keyboard_in <= default_keyboard_in;
+            keyboard_in_next <= default_keyboard_in;
         end else begin
             case (last_key)
                 KEY_1: keyboard_in_next.note_keys[0] <= 1'b1;
@@ -207,9 +211,11 @@ module boardInput (
         btn_oct_up, btn_oct_down, [3:0] sw_user_id,
     output UserInput board_in
 );
+    const UserInput default_board_in = '{default: '0};
+
     always_ff @(posedge prog_clk)
         if (sys_rst)
-            board_in <= '{default: '0};
+            board_in <= default_board_in;
         else begin
             board_in.arrow_keys <= btn_arr;
             board_in.note_keys <= btn_notes;
