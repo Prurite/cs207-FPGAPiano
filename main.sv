@@ -17,7 +17,7 @@ endmodule
 
 module main(
     // System clock and reset signals
-    input logic clk, sys_rst,
+    input logic clk, sys_rst_n,
     // PS2 keyboard in
     input logic ps2_clk, ps2_data,
     // Board in
@@ -33,6 +33,9 @@ module main(
     output logic vga_hsync, vga_vsync,
         [3:0] vga_r, [3:0] vga_g, [3:0] vga_b
 );
+    logic sys_rst;
+    assign sys_rst = ~sys_rst_n;
+
 	// Generate the program clock, used to sync all program logic
 	// The system clock is used for IO
 	logic prog_clk;
