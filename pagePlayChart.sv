@@ -112,7 +112,6 @@ module screenOut(
     output LedState led
 );
     ScreenText note_area;
-    SegDisplayText seg;
     
     wire [39:0] sc_str, cnt_str, len_str, uid_raw;
     // Display Info (Line 8, Col 7~10, 14~17, 28~32)    
@@ -141,11 +140,8 @@ module screenOut(
             text[5][9*8:(9+`NAME_LEN)*8 - 1] = chart.info.name;
         end
     end
-    noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_cnt(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area), .led(led));
+    noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_cnt(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area), .seg(seg_text), .led(led));
     assign text[10:25] = note_area[10:25];
-    assign seg[0:2*8 - 1] = "SC";
-    assign seg[3*8:8*8 - 1] = sc_str;
-    assign seg_text = seg;
 endmodule
 
 // Return realtime score according to user input
@@ -191,6 +187,7 @@ module noteAreaController(
     input logic play_st,
     // Only [10:25] is modified
     output ScreenText text,
+    output SegDisplayText seg,
     output LedState led
 );
     // Display countdown
@@ -259,6 +256,35 @@ module noteAreaController(
     
     shortint note_id; // Make sure it does not go out of bound
     assign note_id = (note_cnt+15) >= `CHART_LEN ? `CHART_LEN-16 : note_cnt;
+
+    // Display seg
+    always @(posedge prog_clk) begin
+        if (rst) seg <= "        ";
+        else case (notes[note_cnt])
+            9'b00_0000001: seg <= "C   1   ";
+            9'b00_0000010: seg <= "D   2   ";
+            9'b00_0000100: seg <= "E   3   ";
+            9'b00_0001000: seg <= "F   4   ";
+            9'b00_0010000: seg <= "G   5   ";
+            9'b00_0100000: seg <= "A   6   ";
+            9'b00_1000000: seg <= "B   7   ";
+            9'b01_0000001: seg <= "C + 1   ";
+            9'b01_0000010: seg <= "D + 2   ";
+            9'b01_0000100: seg <= "E + 3   ";
+            9'b01_0001000: seg <= "F + 4   ";
+            9'b01_0010000: seg <= "G + 5   ";
+            9'b01_0100000: seg <= "A + 6   ";
+            9'b01_1000000: seg <= "B + 7   ";
+            9'b10_0000001: seg <= "C - 1   ";
+            9'b10_0000010: seg <= "D - 2   ";
+            9'b10_0000100: seg <= "E - 3   ";
+            9'b10_0001000: seg <= "F - 4   ";
+            9'b10_0010000: seg <= "G - 5   ";
+            9'b10_0100000: seg <= "A - 6   ";
+            9'b10_1000000: seg <= "B - 7   ";
+            default:       seg <= "        ";
+        endcase
+    end
 
     // Display Notes
     displayLine l25(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 15]), .is_line(1'b1), .line(text[25]));
