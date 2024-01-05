@@ -3,16 +3,16 @@
 set_property IOSTANDARD LVCMOS33 [get_ports *]
 
 set_property PACKAGE_PIN P17 [get_ports clk]
-set_property PACKAGE_PIN S6 [get_ports sys_rst]
+set_property PACKAGE_PIN P15 [get_ports sys_rst_n]
 
 set_property PACKAGE_PIN K5 [get_ports ps2_clk]
 set_property PACKAGE_PIN L4 [get_ports ps2_data]
 
 # 0-3: U D L R
-set_property PACKAGE_PIN S4 [get_ports {btn_arr[0]}]
-set_property PACKAGE_PIN S1 [get_ports {btn_arr[1]}]
-set_property PACKAGE_PIN S3 [get_ports {btn_arr[2]}]
-set_property PACKAGE_PIN S0 [get_ports {btn_arr[3]}]
+set_property PACKAGE_PIN U4 [get_ports {btn_arr[0]}]
+set_property PACKAGE_PIN R17 [get_ports {btn_arr[1]}]
+set_property PACKAGE_PIN V1 [get_ports {btn_arr[2]}]
+set_property PACKAGE_PIN R11 [get_ports {btn_arr[3]}]
 # 0-6 C D E F G A B
 set_property PACKAGE_PIN P5 [get_ports {btn_notes[0]}]
 set_property PACKAGE_PIN P4 [get_ports {btn_notes[1]}]
@@ -40,6 +40,7 @@ set_property PACKAGE_PIN B1 [get_ports {seg[0][3]}]
 set_property PACKAGE_PIN A1 [get_ports {seg[0][4]}]
 set_property PACKAGE_PIN B3 [get_ports {seg[0][5]}]
 set_property PACKAGE_PIN B2 [get_ports {seg[0][6]}]
+set_property PACKAGE_PIN D5 [get_ports {seg[0][7]}]
 
 set_property PACKAGE_PIN D4 [get_ports {seg[1][0]}]
 set_property PACKAGE_PIN E3 [get_ports {seg[1][1]}]
@@ -48,6 +49,7 @@ set_property PACKAGE_PIN F4 [get_ports {seg[1][3]}]
 set_property PACKAGE_PIN F3 [get_ports {seg[1][4]}]
 set_property PACKAGE_PIN E2 [get_ports {seg[1][5]}]
 set_property PACKAGE_PIN D2 [get_ports {seg[1][6]}]
+set_property PACKAGE_PIN H2 [get_ports {seg[1][7]}]
 
 set_property PACKAGE_PIN G2 [get_ports {seg_sel[0][0]}]
 set_property PACKAGE_PIN C2 [get_ports {seg_sel[0][1]}]
