@@ -3,13 +3,32 @@
 set_property IOSTANDARD LVCMOS33 [get_ports *]
 
 set_property PACKAGE_PIN P17 [get_ports clk]
-set_property PACKAGE_PIN R11 [get_ports sys_rst]
+set_property PACKAGE_PIN S6 [get_ports sys_rst]
 
 set_property PACKAGE_PIN K5 [get_ports ps2_clk]
 set_property PACKAGE_PIN L4 [get_ports ps2_data]
 
-# btn_arr => buttons, btn_notes => switches, btn_oct_up, btn_oct_down;
-# sw_user_id => small switches
+# 0-3: U D L R
+set_property PACKAGE_PIN S4 [get_ports {btn_arr[0]}]
+set_property PACKAGE_PIN S1 [get_ports {btn_arr[1]}]
+set_property PACKAGE_PIN S3 [get_ports {btn_arr[2]}]
+set_property PACKAGE_PIN S0 [get_ports {btn_arr[3]}]
+# 0-6 C D E F G A B
+set_property PACKAGE_PIN P5 [get_ports {btn_notes[0]}]
+set_property PACKAGE_PIN P4 [get_ports {btn_notes[1]}]
+set_property PACKAGE_PIN P3 [get_ports {btn_notes[2]}]
+set_property PACKAGE_PIN P2 [get_ports {btn_notes[3]}]
+set_property PACKAGE_PIN R2 [get_ports {btn_notes[4]}]
+set_property PACKAGE_PIN M4 [get_ports {btn_notes[5]}]
+set_property PACKAGE_PIN N4 [get_ports {btn_notes[6]}]
+
+set_property PACKAGE_PIN U3 [get_ports {btn_oct_up}]
+set_property PACKAGE_PIN U2 [get_ports {btn_oct_down}]
+
+set_property PACKAGE_PIN V4 [get_ports {sw_user_id[3]}]
+set_property PACKAGE_PIN R3 [get_ports {sw_user_id[2]}]
+set_property PACKAGE_PIN T3 [get_ports {sw_user_id[1]}]
+set_property PACKAGE_PIN T5 [get_ports {sw_user_id[0]}]
 
 set_property PACKAGE_PIN T1 [get_ports audio_pwm]
 set_property PACKAGE_PIN M6 [get_ports audio_sd]
@@ -39,7 +58,14 @@ set_property PACKAGE_PIN F1 [get_ports {seg_sel[1][1]}]
 set_property PACKAGE_PIN E1 [get_ports {seg_sel[1][2]}]
 set_property PACKAGE_PIN G6 [get_ports {seg_sel[1][3]}]
 
-# led displays
+set_property PACKAGE_PIN F6 [get_ports {led[0]}]
+set_property PACKAGE_PIN G4 [get_ports {led[1]}]
+set_property PACKAGE_PIN G3 [get_ports {led[2]}]
+set_property PACKAGE_PIN J4 [get_ports {led[3]}]
+set_property PACKAGE_PIN H4 [get_ports {led[4]}]
+set_property PACKAGE_PIN J3 [get_ports {led[5]}]
+set_property PACKAGE_PIN J2 [get_ports {led[6]}]
+set_property PACKAGE_PIN K2 [get_ports {led[7]}]
 
 set_property PACKAGE_PIN F5 [get_ports {vga_r[0]}]
 set_property PACKAGE_PIN C6 [get_ports {vga_r[1]}]
