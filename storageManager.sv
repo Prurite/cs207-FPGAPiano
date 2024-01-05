@@ -9,6 +9,14 @@ module ChartStorageManager(
 );
     Chart chartStorage [`CHARTS_MAX-1:0];
 
+    localparam C4 = 9'b00_0000001;
+    localparam D4 = 9'b00_0000010;
+    localparam E4 = 9'b00_0000100;
+    localparam F4 = 9'b00_0001000;
+    localparam G4 = 9'b00_0010000;
+    localparam A5 = 9'b00_0100000;
+    localparam B5 = 9'b00_1000000;
+
     // When id's are not 0, read or write accordingly
     always @(posedge clk)
         if (sys_rst)
@@ -23,6 +31,103 @@ module ChartStorageManager(
             else
                 chartStorage[write_chart_id] <= chartStorage[write_chart_id];
         end
+
+    Chart ts;
+    assign ts.info.name = "Tiny Stars      ";
+    assign ts.info.note_cnt = 240;
+    assign ts.notes = {
+        // 1
+        C4, C4, C4, C4, C4,
+        // 1
+        C4, C4, C4, C4, C4,
+        // 5
+        G4, G4, G4, G4, G4,
+        // 5
+        G4, G4, G4, G4, G4,
+        // 6
+        A5, A5, A5, A5, A5,
+        // 6
+        A5, A5, A5, A5, A5,
+        // 5 5
+        G4, G4, G4, G4, G4,
+        G4, G4, G4, G4, G4,
+        // 4
+        F4, F4, F4, F4, F4,
+        // 4
+        F4, F4, F4, F4, F4,
+        // 3
+        E4, E4, E4, E4, E4,
+        // 3
+        E4, E4, E4, E4, E4,
+        // 2
+        D4, D4, D4, D4, D4,
+        // 2
+        D4, D4, D4, D4, D4,
+        // 1 1
+        C4, C4, C4, C4, C4,
+        C4, C4, C4, C4, C4,
+        // 5
+        G4, G4, G4, G4, G4,
+        // 5
+        G4, G4, G4, G4, G4,
+        // 4
+        F4, F4, F4, F4, F4,
+        // 4
+        F4, F4, F4, F4, F4,
+        // 3
+        E4, E4, E4, E4, E4,
+        // 3
+        E4, E4, E4, E4, E4,
+        // 2 2
+        D4, D4, D4, D4, D4,
+        D4, D4, D4, D4, D4,
+        // 5
+        G4, G4, G4, G4, G4,
+        // 5
+        G4, G4, G4, G4, G4,
+        // 4
+        F4, F4, F4, F4, F4,
+        // 4
+        F4, F4, F4, F4, F4,
+        // 3
+        E4, E4, E4, E4, E4,
+        // 3
+        E4, E4, E4, E4, E4,
+        // 2 2
+        D4, D4, D4, D4, D4,
+        D4, D4, D4, D4, D4,
+         // 1
+        C4, C4, C4, C4, C4,
+        // 1
+        C4, C4, C4, C4, C4,
+        // 5
+        G4, G4, G4, G4, G4,
+        // 5
+        G4, G4, G4, G4, G4,
+        // 6
+        A5, A5, A5, A5, A5,
+        // 6
+        A5, A5, A5, A5, A5,
+        // 5 5
+        G4, G4, G4, G4, G4,
+        G4, G4, G4, G4, G4,
+        // 4
+        F4, F4, F4, F4, F4,
+        // 4
+        F4, F4, F4, F4, F4,
+        // 3
+        E4, E4, E4, E4, E4,
+        // 3
+        E4, E4, E4, E4, E4,
+        // 2
+        D4, D4, D4, D4, D4,
+        // 2
+        D4, D4, D4, D4, D4,
+        // 1 1
+        C4, C4, C4, C4, C4,
+        C4, C4, C4, C4, C4
+    };
+    assign chartStorage[0] = ts;
 endmodule
 
 module RecordStorageManager(
