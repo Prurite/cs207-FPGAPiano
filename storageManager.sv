@@ -117,7 +117,7 @@ module ChartStorageManager(
     };
 
     // When id's are not 0, read or write accordingly
-    always @(posedge clk or posedge sys_rst)
+    always @(posedge clk)
         if (sys_rst) begin
             chartStorage[1].info <= ts_info;
             for (int i = 0; i < NOTE_CNT; i++)
@@ -145,7 +145,7 @@ module RecordStorageManager(
     PlayRecord recordStorage [`PLAY_RECS_MAX-1:0] = '{default: '0};
 
     // When id's are not 0, read or write accordingly
-    always @(posedge clk or posedge sys_rst)
+    always @(posedge clk)
         if (sys_rst)
             recordStorage <= '{default: '0};
         else begin

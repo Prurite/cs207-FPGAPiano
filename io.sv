@@ -16,7 +16,7 @@ module edgeDetector (
 
     const UserInput default_user_in = '{default: '0};
 
-    always @(posedge clk or posedge rst)
+    always @(posedge clk)
         if (rst) begin
             user_in_reg <= default_user_in;
         end else
@@ -158,7 +158,7 @@ module keyboardInput (
     end
 
     // PS/2 data state machine
-    always @(posedge clk or posedge sys_rst)
+    always @(posedge clk)
         if (sys_rst) begin
             state <= IDLE; bit_count <= 4'd0; data_reg <= 8'h00; last_key <= 8'h00;
         end else if (ps2_clk_sync[1] && !ps2_clk_sync[0]) // negedge of ps2_clk
@@ -186,7 +186,7 @@ module keyboardInput (
     // Mapping keycodes to UserInput structure
     const UserInput default_keyboard_in = '{default: '0};
 
-    always @(posedge clk or posedge sys_rst)
+    always @(posedge clk)
         if (sys_rst) begin
             keyboard_in <= default_keyboard_in;
             keyboard_in_next <= default_keyboard_in;
@@ -221,7 +221,7 @@ module boardInput (
 );
     const UserInput default_board_in = '{default: '0};
 
-    always @(posedge prog_clk or posedge sys_rst)
+    always @(posedge prog_clk)
         if (sys_rst)
             board_in <= default_board_in;
         else begin
@@ -275,7 +275,7 @@ module audioOutput (
             note = note + BASE;
     end
 
-    always @(posedge clk or posedge sys_rst)
+    always @(posedge clk)
         if (sys_rst) begin
             counter <= 0;
             audio_pwm <= 0;
@@ -334,7 +334,7 @@ module segDisplayOutput (
         endcase
     end
 
-    always @(posedge clk or posedge sys_rst)
+    always @(posedge clk)
         if (sys_rst) begin
             i <= 4'd1;
             seg_sel[0] <= 4'b0;
@@ -401,7 +401,7 @@ module vgaOutput (
         .pos_x(pos_x), .pos_y(pos_y)
     );
 
-    always @(posedge prog_clk or posedge sys_rst)
+    always @(posedge prog_clk)
         if (sys_rst)
             displayText <= '{default: '0};
         else

@@ -24,7 +24,7 @@ module pageMenu(
     assign menu_out.seg = seg;
     assign menu_out.state = state;
 
-    always @(posedge prog_clk or posedge rst) begin
+    always @(posedge prog_clk) begin
         if (rst) begin
             auto_play <= 0;
             cur_pos <= 0;

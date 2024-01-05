@@ -50,7 +50,7 @@ module pagePlayChart(
     countDown cd(.clk(clk), .rst(rst), .play_st(cd_end), .cnt_dn(cnt_dn));
 
     // Status control
-    always @(posedge prog_clk or posedge rst) begin
+    always @(posedge prog_clk) begin
         if (rst) begin
             play_st <= 1'b0;
             fin_en <= 1'b1;
@@ -69,7 +69,7 @@ module pagePlayChart(
     // Refresh current note every 100ms
     logic clk_100ms;
     clkDiv div100(.clk(clk), .rst(rst), .divx(10_000_000), .clk_out(clk_100ms));
-    always @(posedge clk_100ms or posedge rst) begin
+    always @(posedge clk_100ms) begin
         if (rst) begin
             note_count <= 0;
             cur_note <= 9'b00_0000000;
@@ -86,7 +86,7 @@ module pagePlayChart(
     assign play_record = '{user_in.user_id, read_chart.info.name, cur_score};
 
     // Management after play ends
-    always @(posedge prog_clk or posedge rst) begin
+    always @(posedge prog_clk) begin
         if (rst) begin
             state <= PLAY;
         end
@@ -178,7 +178,7 @@ module scoreManager (
     Notes uin [`CHART_LEN - 1:0];
     Notes cur_note, cur_in;
     shortint uc;
-    always @(posedge clk50ms or posedge rst) begin
+    always @(posedge clk50ms) begin
         if (rst) begin
             clk50ms = 1'b0;
             score = 14'd0;
@@ -284,7 +284,7 @@ module noteAreaController(
     assign note_id = (note_cnt+15) >= `CHART_LEN ? `CHART_LEN-16 : note_cnt;
 
     // Display seg
-    always @(posedge prog_clk or posedge rst) begin
+    always @(posedge prog_clk) begin
         if (rst) seg <= "        ";
         else if (en) case (notes[note_cnt])
             9'b00_0000001: seg <= "c   1   ";
@@ -342,7 +342,7 @@ module displayLine(
 );
     reg [0 : 23 * 8 - 1] line_notes;
 
-    always @(posedge prog_clk or posedge rst) begin
+    always @(posedge prog_clk) begin
         if (rst || !en)
             line_notes = "                       ";
         else begin
@@ -384,7 +384,7 @@ module displayLed(
     input Notes cur_note,
     output LedState led
 );
-    always @(posedge prog_clk or posedge rst) begin
+    always @(posedge prog_clk) begin
         if (rst) led = 8'b0000_0000;
         else if (en) begin
             case (cur_note[8:7])
@@ -416,7 +416,7 @@ module countDown (
     byte cnt;
     logic clk_100ms, en;
     clkDiv div100(.clk(clk), .rst(rst), .divx(10_000_000), .clk_out(clk_100ms));
-    always @(posedge clk_100ms or posedge rst) begin
+    always @(posedge clk_100ms) begin
         if (rst) begin
             cnt <= 0;
             en <= 1'b0;
@@ -446,7 +446,7 @@ module notePlayer(
 );
     integer wav_len;
     clkDiv wave_div(.clk(clk), .rst(rst), .divx(wav_len), .clk_out(sig));
-    always @(posedge clk or posedge rst) begin
+    always @(posedge clk) begin
         if (rst)
             sig <= 0;
         else begin

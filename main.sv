@@ -7,7 +7,7 @@ module progClkGen (
     parameter FREQ_DIV = `SYS_FREQ / `PROG_FREQ;
 
 	int cnt;
-	always @(posedge clk or posedge sys_rst)
+	always @(posedge clk)
 		if (sys_rst || cnt == FREQ_DIV - 1)
 			cnt <= 0;
 		else

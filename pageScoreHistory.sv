@@ -22,7 +22,7 @@ module pageScoreHistory(
 
     byte updating_record_id;
 
-    always @(posedge prog_clk or posedge rst)
+    always @(posedge prog_clk)
         if (rst) begin
             read_record_id <= 0;
             updating_record_id <= 0;
