@@ -47,6 +47,9 @@ module unifiedInput (
         .board_in(board_in)
     );
 
+    assign user_in = board_in;
+
+    /*
     always_comb begin
         if (sys_rst)
             user_in = '{default: '0};
@@ -70,6 +73,7 @@ module unifiedInput (
             user_in.user_id = board_in.user_id;
         end
     end
+    */
 endmodule
 
 // Unified output processing func, ProgramOutput struct => physical signals
@@ -277,54 +281,66 @@ module segDisplayOutput (
     // Local parameters for 7-seg display
     logic [3:0] i; // 1 to 4; 0 off
 
-    always_comb begin
+    always_ff @(posedge clk) begin
         // 1st group
-        // text is an up vec, use up_vect[msb_base_expr +: width_expr]
-        case(text[i*8-1 +: 8])
-            "0": seg[0] <= 7'b0111111; "1": seg[0] <= 7'b0000110; "2": seg[0] <= 7'b1011011;
-            "3": seg[0] <= 7'b1001111; "4": seg[0] <= 7'b1100110; "5": seg[0] <= 7'b1101101;
-            "6": seg[0] <= 7'b1111101; "7": seg[0] <= 7'b0000111; "8": seg[0] <= 7'b1111111;
-            "9": seg[0] <= 7'b1101111;
-            "a": seg[0] <= 7'b1110111; "b": seg[0] <= 7'b1111100; "c": seg[0] <= 7'b0111001;
-            "d": seg[0] <= 7'b1011110; "e": seg[0] <= 7'b1111001; "f": seg[0] <= 7'b1110001;
-            "g": seg[0] <= 7'b0111101; "h": seg[0] <= 7'b1110110; "i": seg[0] <= 7'b0000110;
-            "j": seg[0] <= 7'b0011110; "k": seg[0] <= 7'b1110101; "l": seg[0] <= 7'b0111000;
-            "m": seg[0] <= 7'b0010101; "n": seg[0] <= 7'b1010100; "o": seg[0] <= 7'b1011100;
-            "p": seg[0] <= 7'b1110011; "q": seg[0] <= 7'b1100111; "r": seg[0] <= 7'b1010000;
-            "s": seg[0] <= 7'b1101101; "t": seg[0] <= 7'b1111000; "u": seg[0] <= 7'b0111110;
-            "v": seg[0] <= 7'b0011100; "w": seg[0] <= 7'b0010101; "x": seg[0] <= 7'b1110111;
-            "y": seg[0] <= 7'b1101110; "z": seg[0] <= 7'b1011011;
-            default: seg[0] <= 7'b0;
+        // text is an up vec, use up_vect[lsb_base_expr +: width_expr]
+        case(text[(i-1)*8 +: 8])
+            "0": seg[0] <= 8'b00111111; "1": seg[0] <= 8'b00000110; "2": seg[0] <= 8'b01011011;
+            "3": seg[0] <= 8'b01001111; "4": seg[0] <= 8'b01100110; "5": seg[0] <= 8'b01101101;
+            "6": seg[0] <= 8'b01111101; "7": seg[0] <= 8'b00000111; "8": seg[0] <= 8'b01111111;
+            "9": seg[0] <= 8'b01101111;
+            "a": seg[0] <= 8'b01110111; "b": seg[0] <= 8'b01111100; "c": seg[0] <= 8'b00111001;
+            "d": seg[0] <= 8'b01011110; "e": seg[0] <= 8'b01111001; "f": seg[0] <= 8'b01110001;
+            "g": seg[0] <= 8'b00111101; "h": seg[0] <= 8'b01110110; "i": seg[0] <= 8'b00000110;
+            "j": seg[0] <= 8'b00011110; "k": seg[0] <= 8'b01110101; "l": seg[0] <= 8'b00111000;
+            "m": seg[0] <= 8'b00010101; "n": seg[0] <= 8'b01010100; "o": seg[0] <= 8'b01011100;
+            "p": seg[0] <= 8'b01110011; "q": seg[0] <= 8'b01100111; "r": seg[0] <= 8'b01010000;
+            "s": seg[0] <= 8'b01101101; "t": seg[0] <= 8'b01111000; "u": seg[0] <= 8'b00111110;
+            "v": seg[0] <= 8'b00011100; "w": seg[0] <= 8'b00010101; "x": seg[0] <= 8'b01110111;
+            "y": seg[0] <= 8'b01101110; "z": seg[0] <= 8'b01011011;
+            default: seg[0] <= 8'b10000000;
         endcase
 
         // 2nd group
-        case(text[4*8 + i*8-1 +: 8])
-            "0": seg[1] <= 7'b0111111; "1": seg[1] <= 7'b0000110; "2": seg[1] <= 7'b1011011;
-            "3": seg[1] <= 7'b1001111; "4": seg[1] <= 7'b1100110; "5": seg[1] <= 7'b1101101;
-            "6": seg[1] <= 7'b1111101; "7": seg[1] <= 7'b0000111; "8": seg[1] <= 7'b1111111;
-            "9": seg[1] <= 7'b1101111;
-            "a": seg[1] <= 7'b1110111; "b": seg[1] <= 7'b1111100; "c": seg[1] <= 7'b0111001;
-            "d": seg[1] <= 7'b1011110; "e": seg[1] <= 7'b1111001; "f": seg[1] <= 7'b1110001;
-            "g": seg[1] <= 7'b0111101; "h": seg[1] <= 7'b1110110; "i": seg[1] <= 7'b0000110;
-            "j": seg[1] <= 7'b0011110; "k": seg[1] <= 7'b1110101; "l": seg[1] <= 7'b0111000;
-            "m": seg[1] <= 7'b0010101; "n": seg[1] <= 7'b1010100; "o": seg[1] <= 7'b1011100;
-            "p": seg[1] <= 7'b1110011; "q": seg[1] <= 7'b1100111; "r": seg[1] <= 7'b1010000;
-            "s": seg[1] <= 7'b1101101; "t": seg[1] <= 7'b1111000; "u": seg[1] <= 7'b0111110;
-            "v": seg[1] <= 7'b0011100; "w": seg[1] <= 7'b0010101; "x": seg[1] <= 7'b1110111;
-            "y": seg[1] <= 7'b1101110; "z": seg[1] <= 7'b1011011;
-            default: seg[1] <= 7'b0;
+        case(text[(4+i-1)*8 +: 8])
+            "0": seg[1] <= 8'b00111111; "1": seg[1] <= 8'b00000110; "2": seg[1] <= 8'b01011011;
+            "3": seg[1] <= 8'b01001111; "4": seg[1] <= 8'b01100110; "5": seg[1] <= 8'b01101101;
+            "6": seg[1] <= 8'b01111101; "7": seg[1] <= 8'b00000111; "8": seg[1] <= 8'b01111111;
+            "9": seg[1] <= 8'b01101111;
+            "a": seg[1] <= 8'b01110111; "b": seg[1] <= 8'b01111100; "c": seg[1] <= 8'b00111001;
+            "d": seg[1] <= 8'b01011110; "e": seg[1] <= 8'b01111001; "f": seg[1] <= 8'b01110001;
+            "g": seg[1] <= 8'b00111101; "h": seg[1] <= 8'b01110110; "i": seg[1] <= 8'b00000110;
+            "j": seg[1] <= 8'b00011110; "k": seg[1] <= 8'b01110101; "l": seg[1] <= 8'b00111000;
+            "m": seg[1] <= 8'b00010101; "n": seg[1] <= 8'b01010100; "o": seg[1] <= 8'b01011100;
+            "p": seg[1] <= 8'b01110011; "q": seg[1] <= 8'b01100111; "r": seg[1] <= 8'b01010000;
+            "s": seg[1] <= 8'b01101101; "t": seg[1] <= 8'b01111000; "u": seg[1] <= 8'b00111110;
+            "v": seg[1] <= 8'b00011100; "w": seg[1] <= 8'b00010101; "x": seg[1] <= 8'b01110111;
+            "y": seg[1] <= 8'b01101110; "z": seg[1] <= 8'b01011011;
+            default: seg[1] <= 8'b10000000;
         endcase
     end
 
     always_ff @(posedge clk)
         if (sys_rst) begin
-            i <= 1;
+            i <= 4'd1;
             seg_sel[0] <= 4'b0;
             seg_sel[1] <= 4'b0;
         end else begin
-            i <= i == 4'd4 ? 4'd1 : i + 1;
-            seg_sel[0] <= 1 << (i-1);
-            seg_sel[1] <= 1 << (i-1);
+            i <= i == 4'd4 ? 4'd1 : i + 4'd1;
+            case(i)
+                4'd1: seg_sel[0] <= 4'b0001;
+                4'd2: seg_sel[0] <= 4'b0010;
+                4'd3: seg_sel[0] <= 4'b0100;
+                4'd4: seg_sel[0] <= 4'b1000;
+                default: seg_sel[0] <= 4'b0000;
+            endcase
+            case(i)
+                4'd1: seg_sel[1] <= 4'b0001;
+                4'd2: seg_sel[1] <= 4'b0010;
+                4'd3: seg_sel[1] <= 4'b0100;
+                4'd4: seg_sel[1] <= 4'b1000;
+                default: seg_sel[1] <= 4'b0000;
+            endcase
         end
 
 endmodule
@@ -344,86 +360,37 @@ module vgaOutput (
     output logic vga_hsync, vga_vsync,
         [3:0] vga_r, [3:0] vga_g, [3:0] vga_b
 );
-    // VGA timing constants
-    localparam H_SYNC_PULSE = 96;
-    localparam H_BACK_PORCH = 48;
-    localparam H_DISPLAY_TIME = `VGA_WIDTH;
-    localparam H_FRONT_PORCH = 16;
-    localparam H_LINE_TOTAL = H_SYNC_PULSE + H_BACK_PORCH + H_DISPLAY_TIME + H_FRONT_PORCH;
-
-    localparam V_SYNC_PULSE = 2;
-    localparam V_BACK_PORCH = 33;
-    localparam V_DISPLAY_TIME = `VGA_HEIGHT;
-    localparam V_FRONT_PORCH = 10;
-    localparam V_FRAME_TOTAL = V_SYNC_PULSE + V_BACK_PORCH + V_DISPLAY_TIME + V_FRONT_PORCH;
-
     // Screen coordinates
-    int h_count = 0;
-    int v_count = 0;
-    
+    shortint pos_x, pos_y;
     ScreenText displayText;
+    wire pixel_on;
+    logic [11:0] color;
 
     // Pixel_On_Text2 instantiation
-    wire pixel_on;
-    
     Pixel_On_Text2_sv text_pixel (
         .clk(clk),
         .displayText(displayText),
         .positionX(0),  // Assuming text starts from the top-left corner
         .positionY(0),
-        .horzCoord(h_count),
-        .vertCoord(v_count),
+        .horzCoord(pos_x),
+        .vertCoord(pos_y),
         .pixel(pixel_on)
     );
-    
+
+    assign color = pixel_on ? 12'hfff : 12'h000;
+
+    VGA_DRIVER(
+        .clk(clk), .rst_n(sys_rst),
+        .v_data(color),
+        .red(vga_r), .green(vga_g), .blue(vga_b),
+        .hsync(vga_hsync), .vsync(vga_vsync),
+        .pos_x(pos_x), .pos_y(pos_y)
+    );
+
     always_ff @(posedge prog_clk)
         if (sys_rst)
             displayText <= '{default: '0};
         else
             displayText <= text;
-
-    always_ff @(posedge clk) begin
-        if (sys_rst) begin
-            h_count <= 0;
-            v_count <= 0;
-        end else begin
-            // Horizontal count logic
-            if (h_count < H_LINE_TOTAL - 1) begin
-                h_count <= h_count + 1;
-            end else begin
-                h_count <= 0;
-                // Vertical count logic
-                if (v_count < V_FRAME_TOTAL - 1) begin
-                    v_count <= v_count + 1;
-                end else begin
-                    v_count <= 0;
-                end
-            end
-
-            // Generating sync signals
-            vga_hsync <= (h_count >= H_SYNC_PULSE);
-            vga_vsync <= (v_count >= V_SYNC_PULSE);
-
-            // Generating RGB output
-            if (h_count < H_DISPLAY_TIME && v_count < V_DISPLAY_TIME) begin
-                if (pixel_on) begin
-                    // White text
-                    vga_r <= 4'b1111;
-                    vga_g <= 4'b1111;
-                    vga_b <= 4'b1111;
-                end else begin
-                    // Black background
-                    vga_r <= 4'b0000;
-                    vga_g <= 4'b0000;
-                    vga_b <= 4'b0000;
-                end
-            end else begin
-                // Black during blanking interval
-                vga_r <= 4'b0000;
-                vga_g <= 4'b0000;
-                vga_b <= 4'b0000;
-            end
-        end
-    end
 
 endmodule
