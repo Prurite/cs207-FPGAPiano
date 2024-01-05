@@ -260,7 +260,7 @@ module noteAreaController(
     // Display seg
     always @(posedge prog_clk) begin
         if (rst) seg <= "        ";
-        else case (notes[note_cnt])
+        else if (en) case (notes[note_cnt])
             9'b00_0000001: seg <= "C   1   ";
             9'b00_0000010: seg <= "D   2   ";
             9'b00_0000100: seg <= "E   3   ";
