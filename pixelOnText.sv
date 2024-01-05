@@ -46,7 +46,7 @@ module Pixel_On_Text2_sv #(
         charCol = (horzCoord - positionX) / FONT_WIDTH;
         bitPosition = (horzCoord - positionX) % FONT_WIDTH;
 
-        charCode = displayText[charRow][charCol*8 + 8 - 1 +: 8];
+        charCode = displayText[charRow][charCol*8 +: 8];
 
         // Calculating the font address based on the character and its position
         lineBase = charRow * FONT_HEIGHT + positionY;
