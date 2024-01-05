@@ -46,7 +46,20 @@ module pagePlayChart(
     
     // Countdown func (3s before start)
     wire [1:0] cnt_dn;
-    countDown cd(.clk(clk), .rst(rst), .play_st(play_st), .cnt_dn(cnt_dn));
+    logic cd_end = 1'b0;
+    countDown cd(.clk(clk), .rst(rst), .play_st(cd_end), .cnt_dn(cnt_dn));
+
+    // Status control
+    always @(posedge prog_clk or posedge rst) begin
+        if (rst) begin
+            play_st <= 1'b0;
+            fin_en <= 1'b1;
+        end
+        else begin
+            if (cd_end) play_st <= 1'b1;
+            if (note_count == read_chart.info.note_cnt) fin_en <= 1'b0;
+        end
+    end
     
     // Record chart
     Chart uinc;
@@ -63,7 +76,6 @@ module pagePlayChart(
             sig <= 1'b0;
         end
         else if (play_en) begin
-            if (note_count == read_chart.info.note_cnt) fin_en <= 1'b0;
             note_count <= note_count + 1;
             cur_note <= notes[note_count];
             un[note_count] <= {user_in.oct_down, user_in.oct_up, user_in.note_keys};
@@ -74,7 +86,7 @@ module pagePlayChart(
     assign play_record = '{user_in.user_id, read_chart.info.name, cur_score};
 
     // Management after play ends
-    always @(posedge clk or posedge rst) begin
+    always @(posedge prog_clk or posedge rst) begin
         if (rst) begin
             state <= PLAY;
         end
