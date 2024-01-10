@@ -92,6 +92,14 @@ module unifiedOutput (
     output logic vga_hsync, vga_vsync,
         [3:0] vga_r, [3:0] vga_g, [3:0] vga_b
 );
+    localparam CLOCK_DIVX = 700_000;
+    logic seg_clk;
+
+    clkDiv seg_clk_gen(
+        .clk(clk), .rst(sys_rst),
+        .divx(CLOCK_DIVX), .clk_out(seg_clk)
+    );
+
     audioOutput audio_handler(
         .clk(clk), .sys_rst(sys_rst),
         .playing_notes(prog_out.notes),
