@@ -11,9 +11,9 @@ module pageInit(
         if (rst) begin
             state <= INIT;
             text[14] <= "            Welcome!            ";
-            text[16] <= "    Press [>] to continue...    ";
+            text[16] <= "  Press any key to continue...  ";
         end
-        else if (state == INIT && user_in.arrow_keys == 4'b0001)
+        else if (state == INIT && user_in.arrow_keys != 4'b0000)
             state <= MENU;
     end
     assign init_out.text = text;
