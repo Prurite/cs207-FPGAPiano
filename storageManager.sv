@@ -117,7 +117,7 @@ module ChartStorageManager(
     };
 
     // When id's are not 0, read or write accordingly
-    always @(posedge clk)
+    always @(posedge clk or posedge sys_rst)
         if (sys_rst) begin
             chartStorage[1].info <= ts_info;
             for (int i = 0; i < NOTE_CNT; i++)
@@ -142,12 +142,19 @@ module RecordStorageManager(
     input PlayRecord new_record_data,
     output PlayRecord current_record_data
 );
+    PlayRecord pr;
+    assign pr.user_id = 1;
+    assign pr.chart_name = "Little Stars    ";
+    assign pr.score = 4487;
+    
     PlayRecord recordStorage [`PLAY_RECS_MAX-1:0] = '{default: '0};
 
     // When id's are not 0, read or write accordingly
-    always @(posedge clk)
-        if (sys_rst)
-            recordStorage <= '{default: '0};
+    always @(posedge clk or posedge sys_rst)
+        if (sys_rst) begin
+            recordStorage[1] <= pr;
+            recordStorage[2] <= pr;
+        end
         else begin
             if (read_record_id != 0)
                 current_record_data <= recordStorage[read_record_id];

@@ -31,7 +31,7 @@ module pageMenu(
             seg <= "        ";
             state <= MENU;
             read_chart_id <= 0;
-            updating_chart_id <= 0;
+            updating_chart_id <= 1;
             text[0] <=  "=======    Main  Menu    =======";
             text[1] <=  ">>> Score History               ";
             text[2] <=  "-----      Chart List      -----";
@@ -39,7 +39,7 @@ module pageMenu(
             text[4] <=  "    [1]                         ";
             text[5] <=  "    [2]                         ";
             text[6] <=  "    [3]                         ";
-            text[7] <=  "    [4]                         ";
+            text[7] <=  "    [4]  Something              ";
             text[8] <=  "                                ";
             text[9] <=  "[^][v] Move Up / Down           ";
             text[10] <= "[<] Auto          [>] Play Chart";
@@ -53,64 +53,67 @@ module pageMenu(
             text[6][0:3*8-1] <= (cur_pos == 4) ? ">>>" : "   ";
             text[7][0:3*8-1] <= (cur_pos == 5) ? ">>>" : "   ";
 
+            // Read chart name
             if (updating_chart_id <= 5) begin
                 read_chart_id <= updating_chart_id;
                 updating_chart_id <= updating_chart_id + 1;
-                if (read_chart_id - 1 >= 1) // Current chart_data's id is read_chart_id - 1
-                    text[2+read_chart_id][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
-            end else case (cur_pos)
-                0: begin
-                    read_chart_id <= 0;
-                    seg <= "history ";
-                end
-                1: begin
-                    read_chart_id <= 0;
-                    seg <= "free    ";
-                end
-                2: begin
-                    read_chart_id <= 1;
-                    seg <= "song  01";
-                end
-                3: begin
-                    read_chart_id <= 2;
-                    seg <= "song  02";
-                end
-                4: begin
-                    read_chart_id <= 3;
-                    seg <= "song  03";
-                end
-                5: begin
-                    read_chart_id <= 4;
-                    seg <= "song  04";
-                end
-                default: begin
-                    read_chart_id <= 5;
-                    seg <= "song  05";
-                end
-            endcase
-            
-            // Input key actions
-            case (user_in.arrow_keys)
-                UP: begin
-                    if (cur_pos == 0) cur_pos <= 5;
-                    else cur_pos <= cur_pos - 1;
-                end
-                DOWN: begin
-                    if (cur_pos == 5) cur_pos <= 0;
-                    else cur_pos <= cur_pos + 1;
-                end
-                LEFT: begin
-                    if (cur_pos != 0) begin
-                        state <= PLAY; auto_play <= 1'b1;
+                if (read_chart_id >= 1 && read_chart_id <= 4)
+                    text[3 + read_chart_id][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
+            end else begin
+                case (cur_pos)
+                    0: begin
+                        read_chart_id <= 0;
+                        seg <= "history ";
                     end
-                end
-                RIGHT: begin
-                    if (cur_pos == 0) state <= HISTORY;
-                    else begin
-                        state <= PLAY; auto_play <= 1'b0;
+                    1: begin
+                        read_chart_id <= 0;
+                        seg <= "free    ";
                     end
-                end
-            endcase
+                    2: begin
+                        read_chart_id <= 1;
+                        seg <= "song  01";
+                    end
+                    3: begin
+                        read_chart_id <= 2;
+                        seg <= "song  02";
+                    end
+                    4: begin
+                        read_chart_id <= 3;
+                        seg <= "song  03";
+                    end
+                    5: begin
+                        read_chart_id <= 4;
+                        seg <= "song  04";
+                    end
+                    default: begin
+                        read_chart_id <= 0;
+                        seg <= "ykns inu";
+                    end
+                endcase
+
+                // Input key actions
+                case (user_in.arrow_keys)
+                    UP: begin
+                        if (cur_pos == 0) cur_pos <= 5;
+                        else cur_pos <= cur_pos - 1;
+                    end
+                    DOWN: begin
+                        if (cur_pos == 5) cur_pos <= 0;
+                        else cur_pos <= cur_pos + 1;
+                    end
+                    LEFT: begin
+                        if (cur_pos != 0) begin
+                            state <= PLAY; auto_play <= 1'b1;
+                        end
+                    end
+                    RIGHT: begin
+                        if (cur_pos == 0) state <= HISTORY;
+                        else begin
+                            state <= PLAY; auto_play <= 1'b0;
+                        end
+                    end
+                endcase
+            end
         end
     end
 endmodule
