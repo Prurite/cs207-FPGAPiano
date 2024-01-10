@@ -93,7 +93,7 @@ module pagePlayChart(
         else begin
             // Exit
             if (user_in.arrow_keys == LEFT) state <= MENU;
-            if (fin_en) begin
+            if (~fin_en) begin
                 if (user_in.arrow_keys == RIGHT) begin
                     // Save chart
                     write_chart_id <= 1;
@@ -130,7 +130,7 @@ module screenOut(
 );
     ScreenText note_area;
     
-    wire [39:0] sc_str, cnt_str, len_str, uid_raw;
+    wire [0:39] sc_str, cnt_str, len_str, uid_raw;
     // Display Info (Line 8, Col 7~10, 14~17, 28~32)    
     binary2Str b2sc(.intx(score), .str(sc_str));
     binary2Str b2sn(.intx(note_count), .str(cnt_str));
@@ -151,9 +151,9 @@ module screenOut(
         end
         else begin
             // Display prog info
-            text[8][0:32*8-1] = {"Prog. ", cnt_str[31:0], " / ", len_str[31:0], "    Score ", sc_str};
+            text[8][0:32*8-1] = {"Prog. ", cnt_str[8:39], " / ", len_str[8:39], "    Score ", sc_str};
             // Display chart info
-            text[4][17*8:18*8-1] = uid_raw[7:0];
+            text[4][17*8:19*8-1] = uid_raw[3*8:5*8-1];
             text[5][9*8:(9+`NAME_LEN)*8 - 1] = chart.info.name;
         end
     end
@@ -414,7 +414,7 @@ module countDown (
     byte cnt;
     logic clk_100ms, en;
     clkDiv div100(.clk(clk), .rst(rst), .divx(10_000_000), .clk_out(clk_100ms));
-    always @(posedge clk_100ms) begin
+    always @(posedge clk_100ms or posedge rst) begin
         if (rst) begin
             cnt <= 0;
             en <= 1'b0;

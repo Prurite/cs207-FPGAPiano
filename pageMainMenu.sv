@@ -31,7 +31,7 @@ module pageMenu(
             seg <= "        ";
             state <= MENU;
             read_chart_id <= 0;
-            updating_chart_id <= 1;
+            updating_chart_id <= 0;
             text[0] <=  "=======    Main  Menu    =======";
             text[1] <=  ">>> Score History               ";
             text[2] <=  "-----      Chart List      -----";

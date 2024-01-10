@@ -49,7 +49,7 @@ module pageScoreHistory(
             updating_record_id <= updating_record_id + 1;
             // Current record data is for read_record_id - 1
             if (read_record_id >= 1 && read_record_id <= 9) begin
-                history_out.text[read_record_id + 1][7*8 : 9*8 - 1] <= user_id_text[0 : 2*8 - 1];
+                history_out.text[read_record_id + 1][7*8 : 9*8 - 1] <= user_id_text[3*8 : 5*8 - 1];
                 history_out.text[read_record_id + 1][10*8 : 10*8 + `NAME_LEN*8 - 1] <= record_data.chart_name;
                 history_out.text[read_record_id + 1][11*8 + `NAME_LEN*8 : 16*8 + `NAME_LEN*8 - 1] <= score_text;
             end

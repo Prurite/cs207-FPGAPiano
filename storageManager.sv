@@ -7,7 +7,7 @@ module ChartStorageManager(
     input Chart new_chart_data,
     output Chart current_chart_data
 );
-    Chart chartStorage [`CHARTS_MAX-1:0] = '{default: '0};
+    Chart chartStorage [`CHARTS_MAX-1:0];
 
     localparam NU = 9'b00_0000000;
     localparam C4 = 9'b00_0000001;
@@ -141,28 +141,30 @@ module RecordStorageManager(
     input byte write_record_id,
     input PlayRecord new_record_data,
     output PlayRecord current_record_data
-);
+);  
+    //PlayRecord record_storage [`PLAY_RECS_MAX-1:0] = '{default: '0};
+    PlayRecord record_storage [`PLAY_RECS_MAX-1:0];
     PlayRecord pr;
-    assign pr.user_id = 1;
+    assign pr.user_id = 2;
     assign pr.chart_name = "Little Stars    ";
-    assign pr.score = 4487;
-    
-    PlayRecord recordStorage [`PLAY_RECS_MAX-1:0] = '{default: '0};
+    assign pr.score = 4406;
 
     // When id's are not 0, read or write accordingly
     always @(posedge clk or posedge sys_rst)
         if (sys_rst) begin
-            recordStorage[1] <= pr;
-            recordStorage[2] <= pr;
+            record_storage[2].user_id <= 1;
+            record_storage[2].chart_name <= "Ringing Bloom   ";
+            record_storage[2].score <= 10940;
+            record_storage[3] <= pr;
         end
         else begin
             if (read_record_id != 0)
-                current_record_data <= recordStorage[read_record_id];
+                current_record_data <= record_storage[read_record_id];
             else
                 current_record_data <= current_record_data;
             if (write_record_id != 0)
-                recordStorage[write_record_id] <= new_record_data;
+                record_storage[write_record_id] <= new_record_data;
             else
-                recordStorage[write_record_id] <= recordStorage[write_record_id];
+                record_storage[write_record_id] <= record_storage[write_record_id];
         end
 endmodule

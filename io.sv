@@ -92,7 +92,7 @@ module unifiedOutput (
     output logic vga_hsync, vga_vsync,
         [3:0] vga_r, [3:0] vga_g, [3:0] vga_b
 );
-    localparam CLOCK_DIVX = 700_000;
+    localparam CLOCK_DIVX = 70_000;
     logic seg_clk;
 
     clkDiv seg_clk_gen(
