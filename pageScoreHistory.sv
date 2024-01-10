@@ -26,7 +26,7 @@ module pageScoreHistory(
         if (rst) begin
             read_record_id <= 0;
             updating_record_id <= 0;
-            history_out.state <= HISTORY;
+            //history_out.state <= HISTORY;
             history_out.text[0] <=  "=====    Score History    ===== ";
             history_out.text[1] <=  "                                ";
             history_out.text[2] <=  " 1|User1 | Little Stars   | 4487";
@@ -53,11 +53,13 @@ module pageScoreHistory(
                 history_out.text[read_record_id][10*8 : 10*8 + `NAME_LEN*8 - 1] <= record_data.chart_name;
                 history_out.text[read_record_id][11*8 + `NAME_LEN*8 : 16*8 + `NAME_LEN*8 - 1] <= score_text;
             end
-        end else begin
-            updating_record_id <= 0;
+        end
+
+    // Individual state control
+    always @(posedge prog_clk)
+        if (!rst)
             if (user_in.arrow_keys == LEFT)
                 history_out.state <= MENU;
             else
-                history_out.state <= HISTORY;
-        end
+                history_out.state <= HISTORY; 
 endmodule
