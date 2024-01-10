@@ -13,7 +13,7 @@ module pageInit(
             state <= INIT;
             text[14] <= "            Welcome!            ";
             text[16] <= "  Press any key to continue...  ";
-        end1
+        end
         else if (state == INIT && user_in.arrow_keys != 4'b0000)
             state <= MENU;
     end
