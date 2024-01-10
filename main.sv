@@ -33,6 +33,7 @@ module main(
     output logic vga_hsync, vga_vsync,
         [3:0] vga_r, [3:0] vga_g, [3:0] vga_b
 );
+    logic[7:0] dummy_led;
     logic sys_rst;
     assign sys_rst = ~sys_rst_n;
 
@@ -61,7 +62,7 @@ module main(
         .prog_out(prog_out),
         .audio_pwm(audio_pwm), .audio_sd(audio_sd),
         .seg(seg), .seg_sel(seg_sel),
-        .led(led),
+        .led(dummy_led),
         .vga_hsync(vga_hsync), .vga_vsync(vga_vsync),
         .vga_r(vga_r), .vga_g(vga_g), .vga_b(vga_b)
     );
@@ -96,6 +97,10 @@ module main(
         .new_record_data(write_record), .current_record_data(read_record)
     );
 
+    UserInput edged_user_in;
+    edgeDetector edge_detector( .clk(prog_clk), .rst(sys_rst),
+        .user_in(user_in), .edge_out(edged_user_in) );
+
     logic auto_play; // 0: normal play; 1: auto play
 
     // Bind the pages
@@ -103,16 +108,16 @@ module main(
         .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(user_in), .init_out(init_out)
     ); // pageInit resets things, loads charts from ROM then jumps to MENU
     pageMenu page_menu(
-        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(user_in), .menu_out(menu_out),
+        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(edged_user_in), .menu_out(menu_out),
         .read_chart_id(read_chart_id), .chart_data(read_chart),
         .auto_play(auto_play)
     );
     pageScoreHistory page_history(
-        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(user_in), .history_out(history_out),
+        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(edged_user_in), .history_out(history_out),
         .read_record_id(read_record_id), .record_data(read_record)
     );
     pagePlayChart page_play(
-        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(user_in), .play_out(play_out),
+        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(edged_user_in), .play_out(play_out),
         .read_chart(read_chart), .auto_play(auto_play),
         .write_chart_id(write_chart_id), .write_chart(write_chart),
         .write_record_id(write_record_id), .write_record(write_record)
@@ -141,5 +146,10 @@ module main(
         next_state = prog_out.state;
         rst = sys_rst || next_state != cur_state;
     end
-    
+
+    assign led[0] = cur_state == INIT;
+    assign led[1] = cur_state == MENU;
+    assign led[2] = cur_state == HISTORY;
+    assign led[3] = cur_state == PLAY;
+    assign led[7] = sys_rst;
 endmodule

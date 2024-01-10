@@ -7,10 +7,10 @@ module pageScoreHistory(
     output byte read_record_id,
     input PlayRecord record_data
 );
-    localparam UP       = 4'b1000;
-    localparam DOWN     = 4'b0100;
-    localparam LEFT     = 4'b0010;
-    localparam RIGHT    = 4'b0001;
+    localparam UP = `UP;
+    localparam DOWN = `DOWN;
+    localparam LEFT = `LEFT;
+    localparam RIGHT = `RIGHT;
 
     UserInput edged_user_in;
     bit [0:39] user_id_text;
@@ -32,7 +32,8 @@ module pageScoreHistory(
             updating_record_id <= 0;
             history_out.state <= HISTORY;
             history_out.text[0] <=  "=====    Score History    ===== ";
-            history_out.text[2] <=  " 1|User1 | Tiny Stars     | 4487";
+            history_out.text[1] <=  "                                ";
+            history_out.text[2] <=  " 1|User1 | Little Stars   | 4487";
             history_out.text[3] <=  " 2|User  |                |     ";
             history_out.text[4] <=  " 3|User  |                |     ";
             history_out.text[5] <=  " 4|User  |                |     ";
@@ -41,8 +42,11 @@ module pageScoreHistory(
             history_out.text[8] <=  " 7|User  |                |     ";
             history_out.text[9] <=  " 8|User  |                |     ";
             history_out.text[10] <= " 9|User  |                |     ";
+            history_out.text[11] <= "                                ";
             history_out.text[12] <= " [<] Back                       ";
-                // Initialize history_out.text
+            // Initialize history_out.text
+            for (int i = 13; i < `SCREEN_TEXT_HEIGHT; i = i + 1)
+                history_out.text[i] <= "                                ";
             history_out.seg <= "rec     ";
         end else if (updating_record_id <= 9) begin
             read_record_id <= updating_record_id;       
@@ -53,15 +57,11 @@ module pageScoreHistory(
                 history_out.text[read_record_id][10*8 : 10*8 + `NAME_LEN*8 - 1] <= record_data.chart_name;
                 history_out.text[read_record_id][11*8 + `NAME_LEN*8 : 16*8 + `NAME_LEN*8 - 1] <= score_text;
             end
-            history_out.text[1] <=     "                                ";
-            for (int i = 13; i <= 32; i = i + 1) begin
-                history_out.text[i] <= "                                ";    
-            end
         end else begin
-            read_record_id <= 0;
-            case (edged_user_in.arrow_keys)
-                LEFT: history_out.state <= MENU;
-                default: history_out.state <= HISTORY;
-            endcase
+            updating_record_id <= 0;
+            if (user_in.arrow_keys == LEFT)
+                history_out.state <= MENU;
+            else
+                history_out.state <= HISTORY;
         end
 endmodule

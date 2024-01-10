@@ -8,10 +8,10 @@ module pageMenu(
     input Chart chart_data,
     output logic auto_play
 );
-    localparam UP = 4'b1000;
-    localparam DOWN = 4'b0100;
-    localparam LEFT = 4'b0010;
-    localparam RIGHT = 4'b0001;
+    localparam UP = `UP;
+    localparam DOWN = `DOWN;
+    localparam LEFT = `LEFT;
+    localparam RIGHT = `RIGHT;
 
     byte cur_pos;
     UserInput edged_user_in;
@@ -95,27 +95,26 @@ module pageMenu(
             
             // Input key actions
             case (edged_user_in.arrow_keys)
-                 UP: begin
-                     if (cur_pos == 0) cur_pos <= 5;
-                     else cur_pos <= cur_pos - 1;
-                 end
-                 DOWN: begin
-                     if (cur_pos == 5) cur_pos <= 1;
-                     else cur_pos <= cur_pos + 1;
-                 end
-                 LEFT: begin
-                     if (cur_pos == 0) state <= HISTORY;
-                     else begin
+                UP: begin
+                    if (cur_pos == 0) cur_pos <= 5;
+                    else cur_pos <= cur_pos - 1;
+                end
+                DOWN: begin
+                    if (cur_pos == 5) cur_pos <= 0;
+                    else cur_pos <= cur_pos + 1;
+                end
+                LEFT: begin
+                    if (cur_pos != 0) begin
                         state <= PLAY; auto_play <= 1'b1;
-                     end
-                 end
-                 RIGHT: begin
-                     if (cur_pos == 0) state <= HISTORY;
-                     else begin
-                         state <= PLAY; auto_play <= 1'b0;
-                     end
-                 end
-             endcase
+                    end
+                end
+                RIGHT: begin
+                    if (cur_pos == 0) state <= HISTORY;
+                    else begin
+                        state <= PLAY; auto_play <= 1'b0;
+                    end
+                end
+            endcase
         end
     end
 endmodule

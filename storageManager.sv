@@ -20,7 +20,7 @@ module ChartStorageManager(
 
     localparam NOTE_CNT = 282;
     ChartInfo ts_info;
-    assign ts_info.name = "Tiny Stars      ";
+    assign ts_info.name = "Little Stars    ";
     assign ts_info.note_cnt = NOTE_CNT;
     typedef Notes note_t [NOTE_CNT];
     note_t ts_notes = {

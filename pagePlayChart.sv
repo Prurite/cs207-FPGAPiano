@@ -12,6 +12,11 @@ module pagePlayChart(
     output byte write_record_id,
     output PlayRecord write_record
 );
+    localparam UP = `UP;
+    localparam DOWN = `DOWN;
+    localparam LEFT = `LEFT;
+    localparam RIGHT = `RIGHT;
+
     // Output sound signal, connected directly to notePlayer
     logic sig = 1'b0;
 
@@ -75,9 +80,9 @@ module pagePlayChart(
         end
         else begin
             // Exit
-            if (user_in.arrow_keys == 4'b0010) state <= MENU;
+            if (user_in.arrow_keys == LEFT) state <= MENU;
             if (fin_en) begin
-                if (user_in.arrow_keys == 4'b0001) begin
+                if (user_in.arrow_keys == RIGHT) begin
                     // Save chart
                     write_chart_id <= 1;
                     write_chart <= uinc;
@@ -130,7 +135,7 @@ module screenOut(
             text[8]  = "Prog.    0 /    0    Score     0";
             // Line 10-25 display notes
             text[27] = "    C  D  E  F  G  A  B   =     ";
-            text[29] = "[^] Hi [v] Lo [<] Exit  [>] Save";
+            text[29] = "[+] Hi [-] Lo [<] Exit  [>] Save";
         end
         else begin
             // Display prog info
@@ -266,27 +271,27 @@ module noteAreaController(
     always @(posedge prog_clk) begin
         if (rst) seg <= "        ";
         else if (en) case (notes[note_cnt])
-            9'b00_0000001: seg <= "C   1   ";
-            9'b00_0000010: seg <= "D   2   ";
-            9'b00_0000100: seg <= "E   3   ";
-            9'b00_0001000: seg <= "F   4   ";
-            9'b00_0010000: seg <= "G   5   ";
-            9'b00_0100000: seg <= "A   6   ";
-            9'b00_1000000: seg <= "B   7   ";
-            9'b01_0000001: seg <= "C + 1   ";
-            9'b01_0000010: seg <= "D + 2   ";
-            9'b01_0000100: seg <= "E + 3   ";
-            9'b01_0001000: seg <= "F + 4   ";
-            9'b01_0010000: seg <= "G + 5   ";
-            9'b01_0100000: seg <= "A + 6   ";
-            9'b01_1000000: seg <= "B + 7   ";
-            9'b10_0000001: seg <= "C - 1   ";
-            9'b10_0000010: seg <= "D - 2   ";
-            9'b10_0000100: seg <= "E - 3   ";
-            9'b10_0001000: seg <= "F - 4   ";
-            9'b10_0010000: seg <= "G - 5   ";
-            9'b10_0100000: seg <= "A - 6   ";
-            9'b10_1000000: seg <= "B - 7   ";
+            9'b00_0000001: seg <= "c   1   ";
+            9'b00_0000010: seg <= "d   2   ";
+            9'b00_0000100: seg <= "e   3   ";
+            9'b00_0001000: seg <= "f   4   ";
+            9'b00_0010000: seg <= "g   5   ";
+            9'b00_0100000: seg <= "a   6   ";
+            9'b00_1000000: seg <= "b   7   ";
+            9'b01_0000001: seg <= "c u 1   ";
+            9'b01_0000010: seg <= "d u 2   ";
+            9'b01_0000100: seg <= "e u 3   ";
+            9'b01_0001000: seg <= "f u 4   ";
+            9'b01_0010000: seg <= "g u 5   ";
+            9'b01_0100000: seg <= "a u 6   ";
+            9'b01_1000000: seg <= "b u 7   ";
+            9'b10_0000001: seg <= "c d 1   ";
+            9'b10_0000010: seg <= "d d 2   ";
+            9'b10_0000100: seg <= "e d 3   ";
+            9'b10_0001000: seg <= "f d 4   ";
+            9'b10_0010000: seg <= "g d 5   ";
+            9'b10_0100000: seg <= "a d 6   ";
+            9'b10_1000000: seg <= "b d 7   ";
             default:       seg <= "        ";
         endcase
     end
