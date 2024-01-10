@@ -61,57 +61,56 @@ module pageMenu(
             end else case (cur_pos)
                 0: begin
                     read_chart_id <= 0;
-                    seg <= "HIS     ";
+                    seg <= "history ";
                 end
                 1: begin
                     read_chart_id <= 0;
-                    seg <= "FREE    ";
+                    seg <= "free    ";
                 end
                 2: begin
                     read_chart_id <= 1;
-                    seg <= "SO    01";
+                    seg <= "song  01";
                 end
                 3: begin
                     read_chart_id <= 2;
-                    seg <= "SO    02";
+                    seg <= "song  02";
                 end
                 4: begin
                     read_chart_id <= 3;
-                    seg <= "SO    03";
+                    seg <= "song  03";
                 end
                 5: begin
                     read_chart_id <= 4;
-                    seg <= "SO    04";
+                    seg <= "song  04";
                 end
                 default: begin
                     read_chart_id <= 5;
-                    seg <= "SO    05";
+                    seg <= "song  05";
                 end
             endcase
             
             // Input key actions
-            case (user_in.arrow_keys)
-                 UP: begin
-                     if (cur_pos == 0) cur_pos <= 5;
-                     else cur_pos <= cur_pos - 1;
-                 end
-                 DOWN: begin
-                     if (cur_pos == 5) cur_pos <= 0;
-                     else cur_pos <= cur_pos + 1;
-                 end
-                 LEFT: begin
-                     if (cur_pos == 0) state <= state;
-                     else begin
+            case (edged_user_in.arrow_keys)
+                UP: begin
+                    if (cur_pos == 0) cur_pos <= 5;
+                    else cur_pos <= cur_pos - 1;
+                end
+                DOWN: begin
+                    if (cur_pos == 5) cur_pos <= 0;
+                    else cur_pos <= cur_pos + 1;
+                end
+                LEFT: begin
+                    if (cur_pos != 0) begin
                         state <= PLAY; auto_play <= 1'b1;
-                     end
-                 end
-                 RIGHT: begin
-                     if (cur_pos == 0) state <= HISTORY;
-                     else begin
-                         state <= PLAY; auto_play <= 1'b0;
-                     end
-                 end
-             endcase
+                    end
+                end
+                RIGHT: begin
+                    if (cur_pos == 0) state <= HISTORY;
+                    else begin
+                        state <= PLAY; auto_play <= 1'b0;
+                    end
+                end
+            endcase
         end
     end
 endmodule

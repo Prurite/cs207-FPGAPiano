@@ -33,10 +33,7 @@ module main(
     output logic vga_hsync, vga_vsync,
         [3:0] vga_r, [3:0] vga_g, [3:0] vga_b
 );
-    //////////////////////////////
-    logic [7:0] dummy_led;
-    //////////////////////////////
-
+    logic[7:0] dummy_led;
     logic sys_rst;
     assign sys_rst = ~sys_rst_n;
 
@@ -120,7 +117,7 @@ module main(
         .read_record_id(read_record_id), .record_data(read_record)
     );
     pagePlayChart page_play(
-        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(user_in), .play_out(play_out),
+        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(edged_user_in), .play_out(play_out),
         .read_chart(read_chart), .auto_play(auto_play),
         .write_chart_id(write_chart_id), .write_chart(write_chart),
         .write_record_id(write_record_id), .write_record(write_record)
@@ -155,5 +152,4 @@ module main(
     assign led[2] = cur_state == HISTORY;
     assign led[3] = cur_state == PLAY;
     assign led[7] = sys_rst;
-    
 endmodule

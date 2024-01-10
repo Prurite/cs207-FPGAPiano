@@ -93,7 +93,6 @@ module pagePlayChart(
         else begin
             // Exit
             if (user_in.arrow_keys == LEFT) state <= MENU;
-            // Save
             if (fin_en) begin
                 if (user_in.arrow_keys == RIGHT) begin
                     // Save chart
