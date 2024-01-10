@@ -90,7 +90,7 @@ module pageMenu(
             endcase
             
             // Input key actions
-            case (edged_user_in.arrow_keys)
+            case (user_in.arrow_keys)
                 UP: begin
                     if (cur_pos == 0) cur_pos <= 5;
                     else cur_pos <= cur_pos - 1;
