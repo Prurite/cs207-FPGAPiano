@@ -46,7 +46,7 @@ module pagePlayChart(
     
     // Countdown func (3s before start)
     wire [1:0] cnt_dn;
-    logic cd_end = 1'b0;
+    logic cd_end;
     countDown cd(.clk(clk), .rst(rst), .play_st(cd_end), .cnt_dn(cnt_dn));
 
     // Status control
@@ -172,14 +172,13 @@ module scoreManager (
     // Perfect 50ms 10p, Great 100ms 8p, Good 150ms 5p, Miss 200ms+ 0p.
 
     // Scan every 50ms
-    logic clk50ms = 1'b0;
+    logic clk50ms;
     clkDiv clk50(.clk(clk), .rst(rst), .divx(5_000_000), .clk_out(clk50ms));
     Notes uin [`CHART_LEN - 1:0];
     Notes cur_note, cur_in;
     shortint uc;
     always @(posedge clk50ms) begin
         if (rst) begin
-            clk50ms = 1'b0;
             score = 14'd0;
             uc = 0;
         end

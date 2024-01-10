@@ -16,7 +16,7 @@ module clkDiv(
                     clk_out <= 0;
                     cnt <= 0;
                 end
-                if (cnt == (divx >> 1) - 1) clk_out <= ~clk_out;
+                else if (cnt == (divx >> 1) - 1) clk_out <= ~clk_out;
                 cnt <= cnt + 1;
             end 
         end
