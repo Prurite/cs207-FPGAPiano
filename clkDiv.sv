@@ -5,8 +5,10 @@ module clkDiv(
 );
     integer cnt = 0;
     always @(posedge clk) begin
-        if (rst)
+        if (rst) begin
             clk_out <= 0;
+            cnt <= 0;
+        end
         else begin
             if (divx == 0) clk_out <= 0;
             else begin
