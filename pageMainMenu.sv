@@ -65,31 +65,31 @@ module pageMenu(
             end else case (cur_pos)
                 0: begin
                     read_chart_id <= 0;
-                    seg <= "HIS     ";
+                    seg <= "history ";
                 end
                 1: begin
                     read_chart_id <= 0;
-                    seg <= "FREE    ";
+                    seg <= "free    ";
                 end
                 2: begin
                     read_chart_id <= 1;
-                    seg <= "SO    01";
+                    seg <= "song  01";
                 end
                 3: begin
                     read_chart_id <= 2;
-                    seg <= "SO    02";
+                    seg <= "song  02";
                 end
                 4: begin
                     read_chart_id <= 3;
-                    seg <= "SO    03";
+                    seg <= "song  03";
                 end
                 5: begin
                     read_chart_id <= 4;
-                    seg <= "SO    04";
+                    seg <= "song  04";
                 end
                 default: begin
                     read_chart_id <= 5;
-                    seg <= "SO    05";
+                    seg <= "song  05";
                 end
             endcase
             
