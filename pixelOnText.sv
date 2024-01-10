@@ -59,7 +59,7 @@ module Pixel_On_Text2_sv #(
         if (horzCoord >= positionX && horzCoord < positionX + FONT_WIDTH * `SCREEN_TEXT_WIDTH) begin
             if (vertCoord >= positionY && vertCoord < positionY + FONT_HEIGHT * `SCREEN_TEXT_HEIGHT) begin
                 // Checking if the pixel is on for the text
-                if (charBitInRow[FONT_WIDTH - 1 - bitPosition]) begin
+                if (charBitInRow[FONT_WIDTH - bitPosition]) begin
                     pixel = 1;
                 end
             end
