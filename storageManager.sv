@@ -130,7 +130,7 @@ module ChartStorageManager(
                 chartStorage[2].notes[i] <= ts_notes[i];
         end else begin
             if (read_chart_id != 0)
-                current_chart_data <= chartStorage[read_chart_id-1];
+                current_chart_data <= chartStorage[read_chart_id];
             else
                 current_chart_data <= current_chart_data;
             if (write_chart_id != 0)
@@ -166,7 +166,7 @@ module RecordStorageManager(
         end
         else begin
             if (read_record_id != 0)
-                current_record_data <= record_storage[read_record_id-1];
+                current_record_data <= record_storage[read_record_id];
             else
                 current_record_data <= current_record_data;
             if (write_record_id != 0)

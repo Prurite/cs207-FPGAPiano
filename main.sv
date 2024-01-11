@@ -120,12 +120,14 @@ module main(
         .clk(clk), .prog_clk(prog_clk), .rst(history_rst), .user_in(history_in), .history_out(history_out),
         .read_record_id(read_record_id), .record_data(read_record)
     );
+    /*
     pagePlayChart page_play(
         .clk(clk), .prog_clk(prog_clk), .rst(play_rst), .user_in(play_in), .play_out(play_out),
         .read_chart(read_chart), .auto_play(auto_play),
         .write_chart_id(write_chart_id), .write_chart(write_chart),
         .write_record_id(write_record_id), .write_record(write_record)
     );
+    */
 
     /* State transitions:
      * INIT -> MENU
@@ -144,14 +146,20 @@ module main(
             INIT: prog_out = init_out;
             MENU: prog_out = menu_out;
             HISTORY: prog_out = history_out;
-            PLAY: prog_out = play_out;
+            // PLAY: prog_out = play_out;
             default: prog_out = init_out;
         endcase
 
         init_in = cur_state == INIT ? edged_user_in : default_user_in;
         menu_in = cur_state == MENU ? edged_user_in : default_user_in;
         history_in = cur_state == HISTORY ? edged_user_in : default_user_in;
-        play_in = cur_state == PLAY ? edged_user_in : default_user_in;
+        play_in = cur_state == PLAY ? user_in : default_user_in;
+        // init_in = edged_user_in;
+        // menu_in = edged_user_in;
+        // history_in = edged_user_in;
+        // play_in = user_in;
+
+        next_state = sys_rst ? INIT : prog_out.state;
 
         rst = sys_rst || next_state != cur_state;
         init_rst = sys_rst || next_state == INIT ? rst : 0;
@@ -159,12 +167,12 @@ module main(
         history_rst = sys_rst || next_state == HISTORY ? rst : 0;
         play_rst = sys_rst || next_state == PLAY ? rst : 0;
 
-        next_state = sys_rst ? INIT : prog_out.state;
     end
 
     assign led[0] = cur_state == INIT;
     assign led[1] = cur_state == MENU;
     assign led[2] = cur_state == HISTORY;
     assign led[3] = cur_state == PLAY;
+    assign led[6] = rst;
     assign led[7] = sys_rst;
 endmodule

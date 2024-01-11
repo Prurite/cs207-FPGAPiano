@@ -39,7 +39,7 @@ module pageMenu(
             updating_stay_cnt <= 0;
             init_finish <= 0;
             text[0] <=  "=======    Main  Menu    =======";
-            text[1] <=  ">>> Score History               ";
+            text[1] <=  "    Score History               ";
             text[2] <=  "-----      Chart List      -----";
             text[3] <=  "    [0]  Free play      .       ";
             text[4] <=  "    [1]                         ";
@@ -50,6 +50,8 @@ module pageMenu(
             text[9] <=  "[^][v] Move Up / Down           ";
             text[10] <= "[<] Auto          [>] Play Chart";
         end else if (!init_finish)
+            text[11] <= "0" + read_chart_id;
+            text[12] <= "0" + updating_stay_cnt;
             if (updating_stay_cnt == 0)
                 updating_stay_cnt <= 1;
             else if (updating_stay_cnt == 1) begin
@@ -58,7 +60,7 @@ module pageMenu(
             end else if (updating_stay_cnt == 2) begin
                 updating_stay_cnt <= 0;
                 read_chart_id <= read_chart_id + 1;
-                init_finish <= read_chart_id == 5;
+                init_finish <= read_chart_id >= 4;
             end
         else begin
             // Pointer actions
