@@ -20,30 +20,29 @@ module pagePlayChart(
     // Status control
     logic play_en, play_st, fin_en;
     assign play_en = play_st & fin_en;
+    // play_en: 1: playing; 0: not playing
+    // play_st: 1: play has started; 0: play has not started
+    // fin_en: 1: play has not finished; 0: play has finished
     
     // Iterate notes 
-    shortint note_count;
-    Notes notes [`CHART_LEN-1:0];
+    shortint note_count; // Current note index
     Notes cur_note;
 
     // Records score.
     wire [13:0] cur_score;
-    
-    ScreenText text;
-
     TopState state;
 
-    assign notes = read_chart.notes;
-
-    // Instanciate current player
-    //notePlayer note_player(.clk(clk), .rst(rst), .note(cur_note), .sig(sig));
-
     // Get screen output
-    screenOut screen_out(.prog_clk(prog_clk), .rst(rst), .chart(read_chart), .note_count(note_count), .user_in(user_in), .score(cur_score), .play_st(play_st), .text(text), .seg_text(play_out.seg), .led(play_out.led));
+    screenOut screen_out(
+        .prog_clk(prog_clk), .rst(rst),
+        .chart(read_chart), .note_count(note_count),
+        .user_in(user_in), .play_st(play_st), .score(cur_score),
+        .text(play_out.text), .seg_text(play_out.seg), .led(play_out.led)
+    );
     
     // Countdown func (3s before start)
     wire [1:0] cnt_dn;
-    logic cd_end;
+    logic cd_end; // 1: countdown ends
     countDown cd(.prog_clk(prog_clk), .rst(rst), .play_st(cd_end), .cnt_dn(cnt_dn));
 
     // Status control
@@ -51,71 +50,63 @@ module pagePlayChart(
         if (rst) begin
             play_st <= 1'b0;
             fin_en <= 1'b1;
-        end
-        else begin
-            if (cd_end) begin
-                play_st <= 1'b1;
-            end
-            else if (note_count >= read_chart.info.note_cnt && read_chart.info.note_cnt > 0) begin
-                fin_en <= 1'b0;
-            end
+        end else begin
+            play_st <= cd_end;
+            fin_en <= note_count <= read_chart.info.note_cnt || read_chart.info.note_cnt == 0;
         end
     end
     
-    // Record chart
-    Chart uinc;
-    Notes un [`CHART_LEN-1:0];
-    // Record play status
-    PlayRecord play_record;
+    Chart uinc; // Record chart
+    PlayRecord play_record; // Record play data
+
     // Refresh current note every 100ms
     logic clk_100ms;
     clkDiv div100(.clk(prog_clk), .rst(rst), .divx(6), .clk_out(clk_100ms));
+
+    Notes user_playing_notes;
+    assign user_playing_notes = {user_in.oct_down, user_in.oct_up, user_in.note_keys};
+
+    // Manage current note and record user played chart
     always @(posedge clk_100ms or posedge rst) begin
         if (rst) begin
             note_count <= 0;
-            cur_note <= 9'b00_0000000;
-        end
-        else if (play_en) begin
+            play_out.notes <= 9'b00_0000000;
+        end else if (play_en) begin
             note_count <= note_count + 1;
-            cur_note <= notes[note_count];
-            un[note_count] <= {user_in.oct_down, user_in.oct_up, user_in.note_keys};
+            play_out.notes <= auto_play ? read_chart.notes[note_count] : user_playing_notes;
+            uinc.notes[note_count] <= user_playing_notes;
         end
     end
     assign uinc.info = read_chart.info;
-    assign uinc.notes = un; 
     assign play_record = '{user_in.user_id, read_chart.info.name, cur_score};
 
-    // Management after play ends
+    // Manage user input
     always @(posedge prog_clk) begin
         if (rst) begin
-            state = PLAY;
-            write_chart_id = 0;
-            write_record_id = 0;
-        end
-        else begin
-            // Exit
-            if (user_in.arrow_keys == LEFT) 
-                if (~auto_play || ~fin_en) state = MENU;
-            if (~fin_en) begin
-                if (user_in.arrow_keys == RIGHT) begin
-                    // Save chart
-                    write_chart_id = 1;
-                    write_chart = uinc;
-                    // Save score
-                    write_record_id = 1;
-                    write_record = play_record;
-                    state = MENU;
-                end
+            state <= PLAY;
+            write_chart_id <= 0;
+            write_record_id <= 0;
+        end else begin
+            if (user_in.arrow_keys == LEFT && (~auto_play || note_count > 5))
+                state <= MENU;
+            if (user_in.arrow_keys == RIGHT) begin
+                // Save chart
+                write_chart_id = user_in.chart_id;
+                write_chart = uinc;
+                // Save score
+                write_record_id = user_in.chart_id;
+                write_record = play_record;
             end
         end
     end
 
     // Instanciate score manager
-    scoreManager sc_m(.prog_clk(prog_clk), .rst(rst), .play_en(play_en), .auto_play(auto_play), .user_in(user_in), .chart(read_chart), .note_count(note_count), .score(cur_score));
-    
-    assign play_out.text = text;
-    assign play_out.notes = cur_note;
-    assign play_out.state = state;
+    scoreManager sc_m(
+        .prog_clk(prog_clk), .rst(rst),
+        .play_en(play_en), .auto_play(auto_play),
+        .user_in(user_in), .chart(read_chart), .note_count(note_count),
+        .score(cur_score)
+    );
 endmodule
 
 // Manage total screen output
@@ -124,21 +115,23 @@ module screenOut(
     input Chart chart,
     input shortint note_count,
     input UserInput user_in,
-    input [13:0] score,
-    input [1:0] cnt_dn,
+    input logic [13:0] score,
+    input logic [1:0] cnt_dn,
     input logic play_st,
     output ScreenText text,
     output SegDisplayText seg_text,
     output LedState led
 );
     ScreenText note_area;
-    
-    wire [0:39] sc_str, cnt_str, len_str, uid_raw;
+    wire [0:39] sc_str, cnt_str, len_str, uid_raw, cid_raw;
+
     // Display Info (Line 8, Col 7~10, 14~17, 28~32)    
     binary2Str b2sc(.intx(score), .str(sc_str));
     binary2Str b2sn(.intx(note_count), .str(cnt_str));
     binary2Str b2snc(.intx(chart.info.note_cnt), .str(len_str));
     binary2Str b2suid(.intx(user_in.user_id), .str(uid_raw));
+    binary2Str b2scid(.intx(user_in.chart_id), .str(cid_raw));
+
     always @(posedge prog_clk or posedge rst) begin
         if (rst) begin
             // Title display
@@ -158,10 +151,16 @@ module screenOut(
             // Display chart info
             text[4][17*8:19*8-1] <= uid_raw[3*8:5*8-1];
             text[5][9*8:(9+`NAME_LEN)*8 - 1] <= chart.info.name;
+            text[6][19*8:21*8-1] <= cid_raw[3*8:5*8-1];
             text[10:25] <= note_area[10:25];
         end
     end
-    noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_count(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area), .seg(seg_text), .led(led));
+
+    noteAreaController ctrl(
+        .prog_clk(prog_clk), .rst(rst), .en(play_st),
+        .cnt_dn(cnt_dn), .note_count(note_count), .notes(chart.notes),
+        .text(note_area), .seg(seg_text), .led(led)
+    );
 endmodule
 
 // Return realtime score according to user input
@@ -206,7 +205,6 @@ module noteAreaController(
     input [1:0] cnt_dn,
     input shortint note_count,
     input Notes notes [`CHART_LEN-1:0],
-    input logic play_st,
     // Only [10:25] is modified
     output ScreenText text,
     output SegDisplayText seg,
@@ -345,7 +343,7 @@ module displayLine(
 
     always @(posedge prog_clk) begin
         if (rst || !en)
-            line_notes = "                       ";
+            line_notes = ".                 .   .";
         else begin
             case (cur_note)
                 //                            C  D  E  F  G  A  B   O
