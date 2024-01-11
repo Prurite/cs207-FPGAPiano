@@ -41,8 +41,8 @@ module ChartStorageManager(
             init_chart_id <= 1;
             init_cycle_cnt <= 0;
         end else if (init_chart_id > 0 && init_chart_id < 2) begin
-            init_chart_id <= init_chart_id + (init_cycle_cnt == 2);
-            init_cycle_cnt <= init_cycle_cnt == 2 ? 0 : init_cycle_cnt + 1;
+            init_chart_id <= init_chart_id + (init_cycle_cnt == 3);
+            init_cycle_cnt <= init_cycle_cnt == 3 ? 0 : init_cycle_cnt + 1;
         end else
             init_chart_id <= 0;
     end
