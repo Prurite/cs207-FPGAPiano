@@ -29,7 +29,7 @@ module pagePlayChart(
     Notes cur_note;
 
     // Records score.
-    wire [13:0] cur_score;
+    wire [13:0] cur_score, hi_score;
     ScreenText text;
 
     // Get screen output
@@ -37,7 +37,7 @@ module pagePlayChart(
         .prog_clk(prog_clk), .rst(rst),
         .chart(read_chart), .note_count(note_count),
         .user_in(user_in), .play_st(play_st), .auto_play(auto_play), .free_play(free_play),
-        .score(cur_score), .text(text), .seg_text(play_out.seg), .led(play_out.led)
+        .score(cur_score), .hi_score(hi_score), .text(text), .seg_text(play_out.seg), .led(play_out.led)
     );
     
     // Countdown func (3s before start)
@@ -115,7 +115,7 @@ module pagePlayChart(
         .prog_clk(prog_clk), .rst(rst),
         .play_en(play_en), .auto_play(auto_play), .free_play(free_play),
         .user_in(user_in), .chart(read_chart), .note_count(note_count),
-        .score(cur_score)
+        .score(cur_score), .hi_score(hi_score)
     );
 endmodule
 
@@ -125,7 +125,7 @@ module screenOut(
     input Chart chart,
     input shortint note_count,
     input UserInput user_in,
-    input bit [13:0] score,
+    input bit [13:0] score, hi_score,
     input bit [1:0] cnt_dn,
     input logic play_st, auto_play, free_play,
     output ScreenText text,
@@ -133,10 +133,11 @@ module screenOut(
     output LedState led
 );
     ScreenTextRow note_area [`NOTE_AREA_HEIGHT-1:0];
-    wire [0:39] sc_str, cnt_str, len_str, uid_raw, cid_raw;
+    wire [0:39] hi_sc_str, sc_str, cnt_str, len_str, uid_raw, cid_raw;
 
     // Display Info (Line 8, Col 7~10, 14~17, 28~32)    
     binary2Str b2sc(.intx(score), .str(sc_str));
+    binary2Str b2shc(.intx(hi_score), .str(hi_sc_str));
     binary2Str b2sn(.intx(note_count), .str(cnt_str));
     binary2Str b2snc(.intx(chart.info.note_cnt), .str(len_str));
     binary2Str b2suid(.intx(user_in.user_id), .str(uid_raw));
@@ -150,14 +151,16 @@ module screenOut(
             text[5]  <= "Playing: -                      ";
             text[6]  <= "Save to chart ID:               ";
             // Progress & Score display
-            text[8]  <= "Prog.    0 /    0    Score     0";
+            text[8]  <= "Prog.    0 /    0   Score     0/";
+            text[9]  <= "                      Max     0 ";
             // Line 10-25 display notes
             text[27] <= "    C  D  E  F  G  A  B   =     ";
             //              [C][D]                [+][[-]]
             text[29] <= "[+] Hi [-] Lo [<] Exit  [>] Save";
         end else begin
             // Display prog info
-            text[8][0:32*8-1] <= {"Prog. ", cnt_str[8:39], " / ", len_str[8:39], "    Score ", sc_str};
+            text[8][0:32*8-1] <= {"Prog. ", cnt_str[8:39], " / ", len_str[8:39], "   Score ", sc_str, " "};
+            text[9][26*8:31*8-1] <= hi_sc_str;
             // Display chart info
             if (auto_play) text[4][17*8:21*8-1] <= "Auto";
             else text[4][17*8:21*8-1] <= {uid_raw[3*8:5*8-1], 16'h0000};
@@ -198,7 +201,8 @@ module scoreManager (
     input UserInput user_in,
     input Chart chart,
     input shortint note_count,
-    output reg [13:0] score
+    output reg [13:0] score,
+    output reg [13:0] hi_score
 );
     // Perfect 50ms 10p, Great 100ms 8p, Good 150ms 5p, Miss 200ms+ 0p.
 
@@ -213,9 +217,11 @@ module scoreManager (
     always @(posedge clk50ms or posedge rst) begin
         if (rst) begin
             score <= 14'd0;
+            hi_score <= 14'd0;
             uin[0] <= 9'b00_0000000;
             uin[1] <= 9'b00_0000000;
         end else if (play_en && ~free_play && (cur_note[6:0] != 7'b0000000)) begin
+            hi_score <= hi_score + 5;
             if (auto_play) score <= score + 4;
             else if ((user_in.note_keys != 7'b0000000)) begin
                 uin[0] <= cur_in;
