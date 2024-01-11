@@ -30,8 +30,6 @@ module pagePlayChart(
 
     // Records score.
     wire [13:0] cur_score;
-    TopState state;
-
     ScreenText text;
 
     // Get screen output
@@ -61,8 +59,9 @@ module pagePlayChart(
     assign play_out.text[0][0:7] = "0" + play_st;
     assign play_out.text[0][8:15] = "0" + fin_en;
     assign play_out.text[0][24:31] = "0" + play_en;
+    assign play_out.text[0][32:39] = "0" + cnt_dn;
 
-    assign play_out.text[2:`SCREEN_TEXT_HEIGHT-1] = text[2:`SCREEN_TEXT_HEIGHT-1];
+    assign play_out.text[`SCREEN_TEXT_HEIGHT-1:2] = text[`SCREEN_TEXT_HEIGHT-1:2];
     
     Chart uinc; // Record chart
     PlayRecord play_record; // Record play data
@@ -91,19 +90,22 @@ module pagePlayChart(
     // Manage user input
     always @(posedge prog_clk) begin
         if (rst) begin
-            state <= PLAY;
+            play_out.state <= PLAY;
             write_chart_id <= 0;
             write_record_id <= 0;
         end else begin
             if (user_in.arrow_keys == LEFT && (~auto_play || note_count > 5))
-                state <= MENU;
-            if (user_in.arrow_keys == RIGHT) begin
+                play_out.state <= MENU;
+            else if (user_in.arrow_keys == RIGHT) begin
                 // Save chart
-                write_chart_id = user_in.chart_id;
-                write_chart = uinc;
+                write_chart_id <= user_in.chart_id;
+                write_chart <= uinc;
                 // Save score
-                write_record_id = user_in.chart_id;
-                write_record = play_record;
+                write_record_id <= user_in.chart_id;
+                write_record <= play_record;
+            end else begin
+                write_chart_id <= 0;
+                write_record_id <= 0;
             end
         end
     end
@@ -160,7 +162,7 @@ module screenOut(
             text[4][17*8:19*8-1] <= uid_raw[3*8:5*8-1];
             text[5][9*8:(9+`NAME_LEN)*8 - 1] <= chart.info.name;
             text[6][19*8:21*8-1] <= cid_raw[3*8:5*8-1];
-            text[10:25] <= note_area[0:15];
+            text[25:10] <= note_area[15:0];
         end
     end
 
@@ -184,24 +186,24 @@ module scoreManager (
     // Scan every 50ms
     logic clk50ms;
     clkDiv clk50(.clk(prog_clk), .rst(rst), .divx(3), .clk_out(clk50ms));
-    Notes uin [`CHART_LEN - 1:0];
+    Notes uin [1:0];
     Notes cur_note, cur_in;
-    shortint uc;
+    assign cur_in = {user_in.oct_down, user_in.oct_up, user_in.note_keys};
+
     always @(posedge clk50ms or posedge rst) begin
         if (rst) begin
             score <= 14'd0;
-            uc <= 0;
-        end
-        else if (play_en) begin
+            uin[0] <= 9'b00_0000000;
+            uin[1] <= 9'b00_0000000;
+        end else if (play_en) begin
             if (auto_play) score = score + 4;
             else begin
-                cur_in <= {user_in.oct_down, user_in.oct_up, user_in.note_keys};
+                uin[0] <= cur_in;
+                uin[1] <= uin[0];
                 cur_note <= chart.notes[note_count];
-                if (cur_note == cur_in | cur_note == uin[uc - 1]) score <= score + 4;
-                else if (cur_note == uin[uc - 2]) score <= score + 2;
-                else if (cur_note == uin[uc - 3]) score <= score + 1;
-                uin[uc] <= cur_in;
-                uc <= uc + 1;
+                if (cur_note == cur_in) score = score + 5;
+                else if (cur_note == uin[0]) score = score + 3;
+                else if (cur_note == uin[1]) score = score + 1;
             end
         end
     end

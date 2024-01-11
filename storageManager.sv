@@ -119,25 +119,18 @@ module ChartStorageManager(
     assign info2.name = "Ringing Bloom   ";
     assign info2.note_cnt = NOTE_CNT;
 
+    assign chartStorage[0].info = ts_info;
+    assign chartStorage[0].notes[0:NOTE_CNT-1] = ts_notes;
+    assign chartStorage[1].info = info2;
+    assign chartStorage[1].notes[0:NOTE_CNT-1] = ts_notes;
+
     // When id's are not 0, read or write accordingly
-    always @(posedge clk or posedge sys_rst)
-        if (sys_rst) begin
-            chartStorage[0].info <= ts_info;
-            for (int i = 0; i < NOTE_CNT; i++)
-                chartStorage[0].notes[i] <= ts_notes[i];
-            chartStorage[1].info <= info2;
-            for (int i = 0; i < NOTE_CNT; i++)
-                chartStorage[1].notes[i] <= ts_notes[i];
-        end else begin
-            if (read_chart_id > 0 && read_chart_id <= `CHARTS_MAX)
-                current_chart_data <= chartStorage[read_chart_id - 1];
-            else
-                current_chart_data <= current_chart_data;
-            if (write_chart_id > 0 && write_chart_id <= `CHARTS_MAX)
-                chartStorage[write_chart_id - 1] <= new_chart_data;
-            else
-                chartStorage[write_chart_id - 1] <= chartStorage[write_chart_id - 1];
-        end
+    always @(posedge clk) begin
+        // if (read_chart_id > 0 && read_chart_id <= `CHARTS_MAX)
+            current_chart_data <= chartStorage[read_chart_id - 1];
+        if (write_chart_id > 2 && write_chart_id <= `CHARTS_MAX)
+            chartStorage[write_chart_id - 1] <= new_chart_data;
+    end
 
 endmodule
 

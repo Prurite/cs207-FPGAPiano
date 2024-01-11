@@ -152,10 +152,6 @@ module main(
         menu_in = cur_state == MENU ? edged_user_in : default_user_in;
         history_in = cur_state == HISTORY ? edged_user_in : default_user_in;
         play_in = cur_state == PLAY ? user_in : default_user_in;
-        // init_in = edged_user_in;
-        // menu_in = edged_user_in;
-        // history_in = edged_user_in;
-        // play_in = user_in;
 
         next_state = sys_rst ? INIT : prog_out.state;
 
