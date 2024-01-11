@@ -13,26 +13,28 @@ module ChartStorageManager(
     // Use a generated for loop to assign din
     logic [2:0] init_chart_id; // 1 - 2; 0: finished
 
-    Chart init_charts[1:0];
+    Chart init_charts[2:0];
 
     init_chart1 chart1( .chart1(init_charts[0]) );
-    assign init_charts[1] = init_charts[0];
+    assign init_charts[1].info.name = "Ringing Bloom   ";
+    assign init_charts[1].info.note_cnt = 190;
+    assign init_charts[1].notes = init_charts[0].notes;
 
     assign addr = init_chart_id > 0 ? init_chart_id - 1 :
-        write_chart_id > 0 ? write_chart_id - 1 : 
-        read_chart_id > 0 ? read_chart_id - 1 : 0;
+        (write_chart_id > 0 ? write_chart_id - 1 : 
+        (read_chart_id > 0 ? read_chart_id - 1 : 0));
     assign din[0 +: 8*`NAME_LEN] = init_chart_id > 0
         ? init_charts[init_chart_id - 1].info.name : new_chart_data.info.name;
     assign din[8*`NAME_LEN +: 16] = init_chart_id > 0
         ? init_charts[init_chart_id - 1].info.note_cnt : new_chart_data.info.note_cnt;
     genvar i;
     for (i = 0; i < `CHART_LEN; i = i + 1)
-        assign din[8*`NAME_LEN + 16 + `NOTE_WIDTH * i +: `NOTE_WIDTH] =
+        assign din[8*`NAME_LEN + 16 + (`NOTE_WIDTH+2) * i +: (`NOTE_WIDTH+2)] =
             init_chart_id > 0 ? init_charts[init_chart_id - 1].notes[i] : new_chart_data.notes[i];
     assign current_chart_data.info.name = dout[0 +: 8*`NAME_LEN];
     assign current_chart_data.info.note_cnt = dout[8*`NAME_LEN +: 16];
     for (i = 0; i < `CHART_LEN; i = i + 1)
-        assign current_chart_data.notes[i] = dout[8*`NAME_LEN + 16 + `NOTE_WIDTH * i +: `NOTE_WIDTH];
+        assign current_chart_data.notes[i] = dout[8*`NAME_LEN + 16 + (`NOTE_WIDTH+2) * i +: (`NOTE_WIDTH+2)];
     
     logic [1:0] init_cycle_cnt;
 
@@ -40,9 +42,9 @@ module ChartStorageManager(
         if (sys_rst) begin
             init_chart_id <= 1;
             init_cycle_cnt <= 0;
-        end else if (init_chart_id > 0 && init_chart_id < 2) begin
-            init_chart_id <= init_chart_id + (init_cycle_cnt == 3);
-            init_cycle_cnt <= init_cycle_cnt == 3 ? 0 : init_cycle_cnt + 1;
+        end else if (init_chart_id > 0 && init_chart_id < 3) begin
+            init_chart_id <= init_chart_id + (init_cycle_cnt >= 2);
+            init_cycle_cnt <= init_cycle_cnt >= 2 ? 0 : init_cycle_cnt + 1;
         end else
             init_chart_id <= 0;
     end
@@ -93,13 +95,13 @@ module init_chart1(
     output Chart chart1
 );
     localparam NU = 9'b00_0000000;
-    localparam C4 = 9'b00_0000001;
-    localparam D4 = 9'b00_0000010;
-    localparam E4 = 9'b00_0000100;
-    localparam F4 = 9'b00_0001000;
-    localparam G4 = 9'b00_0010000;
-    localparam A5 = 9'b00_0100000;
-    localparam B5 = 9'b00_1000000;
+    localparam C4 = 9'b10_0000001;
+    localparam D4 = 9'b10_0000010;
+    localparam E4 = 9'b10_0000100;
+    localparam F4 = 9'b10_0001000;
+    localparam G4 = 9'b10_0010000;
+    localparam A5 = 9'b10_0100000;
+    localparam B5 = 9'b10_1000000;
 
     localparam NOTE_CNT = 190;
 

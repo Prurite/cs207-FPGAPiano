@@ -50,33 +50,29 @@ module unifiedInput (
         .board_in(board_in)
     );
 
-    assign user_in = board_in;
+    // assign user_in = board_in;
 
-    /*
+    // Merge the 2 inputs
     always_comb begin
-        if (sys_rst)
-            user_in = '{default: '0};
-        else begin // Merge the two inputs
-            // Arrow keys: only 1 key may be pressed, priority: U D L R
-            user_in.arrow_keys = keyboard_in.arrow_keys | board_in.arrow_keys;
-            casex(user_in.arrow_keys)
-                4'bxxx1: user_in.arrow_keys = 4'b0001;
-                4'bxx10: user_in.arrow_keys = 4'b0010;
-                4'bx100: user_in.arrow_keys = 4'b0100;
-                4'b1000: user_in.arrow_keys = 4'b1000;
-                default: user_in.arrow_keys = 4'b0000;
-            endcase
-            // Note keys: or together
-            user_in.note_keys = keyboard_in.note_keys | board_in.note_keys;
-            // Octave keys: only 1 key may be pressed, priority: +8 -8
-            user_in.oct_up = keyboard_in.oct_up | board_in.oct_up;
-            user_in.oct_down = (~user_in.oct_up)
-                    & (keyboard_in.oct_down | board_in.oct_down);
-            // User ID: only from board
-            user_in.user_id = board_in.user_id;
-        end
+        // Arrow keys: only 1 key may be pressed, priority: U D L R
+        user_in.arrow_keys = keyboard_in.arrow_keys | board_in.arrow_keys;
+        casex(user_in.arrow_keys)
+            4'bxxx1: user_in.arrow_keys = 4'b0001;
+            4'bxx10: user_in.arrow_keys = 4'b0010;
+            4'bx100: user_in.arrow_keys = 4'b0100;
+            4'b1000: user_in.arrow_keys = 4'b1000;
+            default: user_in.arrow_keys = 4'b0000;
+        endcase
+        // Note keys: or together
+        user_in.note_keys = keyboard_in.note_keys | board_in.note_keys;
+        // Octave keys: only 1 key may be pressed, priority: +8 -8
+        user_in.oct_up = keyboard_in.oct_up | board_in.oct_up;
+        user_in.oct_down = (~user_in.oct_up)
+                & (keyboard_in.oct_down | board_in.oct_down);
+        // User ID and Chart ID: only from board
+        user_in.user_id = board_in.user_id;
+        user_in.chart_id = board_in.chart_id;
     end
-    */
 endmodule
 
 // Unified output processing func, ProgramOutput struct => physical signals
@@ -128,7 +124,7 @@ module unifiedOutput (
 endmodule
 
 // Keyboard input processing
-module keyboardInput (
+module keyboardInput_Old (
     input logic clk, prog_clk, sys_rst,
     input logic ps2_clk, ps2_data,
     output UserInput keyboard_in
@@ -137,6 +133,7 @@ module keyboardInput (
     localparam KEY_1 = 8'h16, KEY_2 = 8'h1e, KEY_3 = 8'h26, KEY_4 = 8'h25,
         KEY_5 = 8'h2e, KEY_6 = 8'h36, KEY_7 = 8'h3d, KEY_MINUS = 8'h4e, KEY_PLUS = 8'h55;
     localparam KEY_UP = 8'h75, KEY_DOWN = 8'h72, KEY_LEFT = 8'h6b, KEY_RIGHT = 8'h74;
+    localparam KEY_RELEASE = 8'hf0;
 
     // State machine states for PS/2 protocol
     typedef enum { IDLE, READ, PARITY, STOP } PS2State;
@@ -158,11 +155,14 @@ module keyboardInput (
         prog_clk_sync <= {prog_clk_sync[0], prog_clk};
     end
 
+    logic ps2_clk_n;
+    assign ps2_clk_n = ~ps2_clk;
+
     // PS/2 data state machine
-    always @(posedge clk)
+    always @(posedge ps2_clk_n or posedge sys_rst)
         if (sys_rst) begin
             state <= IDLE; bit_count <= 4'd0; data_reg <= 8'h00; last_key <= 8'h00;
-        end else if (ps2_clk_sync[1] && !ps2_clk_sync[0]) // negedge of ps2_clk
+        end else
             case (state)
                 IDLE: begin
                     last_key <= 8'h00;
@@ -172,11 +172,13 @@ module keyboardInput (
                 end
                 READ: begin
                     bit_count <= bit_count + 1;
-                    data_reg <= {data_reg[6:0], ps2_data};
+                    data_reg <= {ps2_data, data_reg[7:1]};
                     if (bit_count == 4'd7)
                         state <= PARITY;
                 end
-                PARITY: state <= STOP;
+                PARITY: begin
+                    state <= STOP;
+                end
                 STOP: if (ps2_data) begin
                     last_key <= data_reg; state <= IDLE;
                 end
@@ -206,6 +208,7 @@ module keyboardInput (
                 KEY_DOWN: keyboard_in_next.arrow_keys[1] <= 1'b1;
                 KEY_LEFT: keyboard_in_next.arrow_keys[2] <= 1'b1;
                 KEY_RIGHT: keyboard_in_next.arrow_keys[3] <= 1'b1;
+                KEY_RELEASE: keyboard_in_next <= default_keyboard_in;
             endcase
             if (!prog_clk_sync[1] && prog_clk_sync[0]) begin // posedge of prog_clk
                 keyboard_in <= keyboard_in_next;
@@ -213,6 +216,151 @@ module keyboardInput (
             end
         end
 endmodule
+
+// Keyboard input processing, new version
+module keyboardInput (
+    input logic clk, prog_clk, sys_rst,
+    input logic ps2_clk, ps2_data,
+    output UserInput keyboard_in
+);
+    // Local parameters for keycodes
+    localparam KEY_1 = 8'h16, KEY_2 = 8'h1e, KEY_3 = 8'h26, KEY_4 = 8'h25,
+        KEY_5 = 8'h2e, KEY_6 = 8'h36, KEY_7 = 8'h3d, KEY_MINUS = 8'h4e, KEY_PLUS = 8'h55;
+    localparam KEY_UP = 8'h75, KEY_DOWN = 8'h72, KEY_LEFT = 8'h6b, KEY_RIGHT = 8'h74;
+    localparam KEY_RELEASE = 8'hf0;
+
+	reg read;				//this is 1 if still waits to receive more bits 
+	reg [11:0] count_reading;		//this is used to detect how much time passed since it received the previous codeword
+	reg PREVIOUS_STATE;			//used to check the previous state of the keyboard clock signal to know if it changed
+	reg scan_err;				//this becomes one if an error was received somewhere in the packet
+	reg [10:0] scan_code;			//this stores 11 received bits
+	reg [7:0] CODEWORD;			//this stores only the DATA codeword
+	reg TRIG_ARR;				//this is triggered when full 11 bits are received
+	reg [3:0]COUNT;				//tells how many bits were received until now (from 0 to 11)
+	reg TRIGGER = 0;			//This acts as a 250 times slower than the board clock. 
+	reg [7:0]DOWNCOUNTER = 0;		//This is used together with TRIGGER - look the code
+
+	//Set initial values
+	initial begin
+		PREVIOUS_STATE = 1;		
+		scan_err = 0;		
+		scan_code = 0;
+		COUNT = 0;			
+		CODEWORD = 0;
+		read = 0;
+		count_reading = 0;
+	end
+
+	always @(posedge clk) begin				//This reduces the frequency 250 times
+		if (DOWNCOUNTER < 249) begin			//and uses variable TRIGGER as the new board clock 
+			DOWNCOUNTER <= DOWNCOUNTER + 1;
+			TRIGGER <= 0;
+		end
+		else begin
+			DOWNCOUNTER <= 0;
+			TRIGGER <= 1;
+		end
+	end
+	
+	always @(posedge clk) begin	
+		if (TRIGGER) begin
+			if (read)				//if it still waits to read full packet of 11 bits, then (read == 1)
+				count_reading <= count_reading + 1;	//and it counts up this variable
+			else 						//and later if check to see how big this value is.
+				count_reading <= 0;			//if it is too big, then it resets the received data
+		end
+	end
+
+
+	always @(posedge clk) begin		
+	if (TRIGGER) begin						//If the down counter (clk/250) is ready
+		if (ps2_clk != PREVIOUS_STATE) begin			//if the state of Clock pin changed from previous state
+			if (!ps2_clk) begin				//and if the keyboard clock is at falling edge
+				read <= 1;				//mark down that it is still reading for the next bit
+				scan_err <= 0;				//no errors
+				scan_code[10:0] <= {ps2_data, scan_code[10:1]};	//add up the data received by shifting bits and adding one new bit
+				COUNT <= COUNT + 1;			//
+			end
+		end
+		else if (COUNT == 11) begin				//if it already received 11 bits
+			COUNT <= 0;
+			read <= 0;					//mark down that reading stopped
+			TRIG_ARR <= 1;					//trigger out that the full pack of 11bits was received
+			//calculate scan_err using parity bit
+			if (!scan_code[10] || scan_code[0] || !(scan_code[1]^scan_code[2]^scan_code[3]^scan_code[4]
+				^scan_code[5]^scan_code[6]^scan_code[7]^scan_code[8]
+				^scan_code[9]))
+				scan_err <= 1;
+			else 
+				scan_err <= 0;
+		end	
+		else  begin						//if it yet not received full pack of 11 bits
+			TRIG_ARR <= 0;					//tell that the packet of 11bits was not received yet
+			if (COUNT < 11 && count_reading >= 4000) begin	//and if after a certain time no more bits were received, then
+				COUNT <= 0;				//reset the number of bits received
+				read <= 0;				//and wait for the next packet
+			end
+		end
+	PREVIOUS_STATE <= ps2_clk;					//mark down the previous state of the keyboard clock
+	end
+	end
+
+	always @(posedge clk) begin
+		if (TRIGGER) begin					//if the 250 times slower than board clock triggers
+			if (TRIG_ARR) begin				//and if a full packet of 11 bits was received
+				if (scan_err) begin			//BUT if the packet was NOT OK
+					CODEWORD <= 8'd0;		//then reset the codeword register
+				end
+				else begin
+					CODEWORD <= scan_code[8:1];	//else drop down the unnecessary  bits and transport the 7 DATA bits to CODEWORD reg
+				end				//notice, that the codeword is also reversed! This is because the first bit to received
+			end					//is supposed to be the last bit in the codeword…
+			else CODEWORD <= 8'd0;				//not a full packet received, thus reset codeword
+		end
+		else CODEWORD <= 8'd0;					//no clock trigger, no data…
+	end
+
+    // Mapping keycodes to UserInput structure
+    const UserInput default_keyboard_in = '{default: '0};
+    UserInput keyboard_in_next;
+
+    logic prog_clk_sync[1:0];
+    always_ff @(posedge clk) begin
+        prog_clk_sync <= {prog_clk_sync[0], prog_clk};
+    end
+
+    reg [7:0] last_key; 
+
+    always @(posedge prog_clk)
+        if (sys_rst) begin
+            keyboard_in <= default_keyboard_in;
+            keyboard_in_next <= default_keyboard_in;
+        end else if (TRIGGER && TRIG_ARR) begin
+            last_key <= CODEWORD;
+            if (last_key != KEY_RELEASE)
+                case (CODEWORD)
+                    KEY_1: keyboard_in_next.note_keys[0] <= 1'b1;
+                    KEY_2: keyboard_in_next.note_keys[1] <= 1'b1;
+                    KEY_3: keyboard_in_next.note_keys[2] <= 1'b1;
+                    KEY_4: keyboard_in_next.note_keys[3] <= 1'b1;
+                    KEY_5: keyboard_in_next.note_keys[4] <= 1'b1;
+                    KEY_6: keyboard_in_next.note_keys[5] <= 1'b1;
+                    KEY_7: keyboard_in_next.note_keys[6] <= 1'b1;
+                    KEY_MINUS: keyboard_in_next.oct_down <= 1'b1;
+                    KEY_PLUS: keyboard_in_next.oct_up <= 1'b1;
+                    KEY_UP: keyboard_in_next.arrow_keys[0] <= 1'b1;
+                    KEY_DOWN: keyboard_in_next.arrow_keys[1] <= 1'b1;
+                    KEY_LEFT: keyboard_in_next.arrow_keys[2] <= 1'b1;
+                    KEY_RIGHT: keyboard_in_next.arrow_keys[3] <= 1'b1;
+                    KEY_RELEASE: keyboard_in_next <= default_keyboard_in;
+                endcase
+            if (!prog_clk_sync[1] && prog_clk_sync[0]) begin // posedge of prog_clk
+                keyboard_in <= keyboard_in_next;
+                keyboard_in_next <= default_keyboard_in;
+            end
+        end
+endmodule
+
 
 module boardInput (
     input logic clk, prog_clk, sys_rst,

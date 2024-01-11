@@ -47,7 +47,7 @@ module pageMenu(
             text[9]  <=  "    [6]                         ";
             text[10] <=  "                                ";
             text[11] <=  "[^][v] Move Up / Down           ";
-            text[12] <= "[<]                [>]           ";
+            text[12] <=  "[<]                [>]          ";
         end else if (!init_finish) begin
             case (read_chart_id)
                 1: begin
@@ -149,7 +149,7 @@ module pageMenu(
                 `LEFT: begin
                     if (cur_pos == 0) state <= INIT;
                     else begin
-                        free_play <= cur_pos == 1 || chart.info.note_cnt == 0;
+                        free_play <= cur_pos == 1 || chart_data.info.note_cnt == 0;
                         auto_play <= ~free_play;
                         state <= PLAY;
                     end
@@ -157,7 +157,7 @@ module pageMenu(
                 `RIGHT: begin
                     if (cur_pos == 0) state <= HISTORY;
                     else begin
-                        free_play <= chart.info.note_cnt == 0;
+                        free_play <= chart_data.info.note_cnt == 0;
                         auto_play <= 1'b0;
                         state <= PLAY;
                     end

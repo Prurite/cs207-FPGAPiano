@@ -6,6 +6,7 @@ set_property PACKAGE_PIN P17 [get_ports clk]
 set_property PACKAGE_PIN P15 [get_ports sys_rst_n]
 
 set_property PACKAGE_PIN K5 [get_ports ps2_clk]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets ps2_clk_IBUF]
 set_property PACKAGE_PIN L4 [get_ports ps2_data]
 
 # 0-3: U D L R
