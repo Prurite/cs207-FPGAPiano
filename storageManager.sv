@@ -119,9 +119,9 @@ module ChartStorageManager(
     // When id's are not 0, read or write accordingly
     always @(posedge clk or posedge sys_rst)
         if (sys_rst) begin
-            chartStorage[1].info <= ts_info;
+            chartStorage[2].info <= ts_info;
             for (int i = 0; i < NOTE_CNT; i++)
-                chartStorage[1].notes[i] <= ts_notes[i];
+                chartStorage[2].notes[i] <= ts_notes[i];
         end else begin
             if (read_chart_id != 0)
                 current_chart_data <= chartStorage[read_chart_id-1];
@@ -156,10 +156,11 @@ module RecordStorageManager(
             record_storage[2].chart_name <= "Ringing Bloom   ";
             record_storage[2].score <= 10940;
             record_storage[3] <= pr;
+            record_storage[1] <= pr;
         end
         else begin
             if (read_record_id != 0)
-                current_record_data <= record_storage[read_record_id];
+                current_record_data <= record_storage[read_record_id-1];
             else
                 current_record_data <= current_record_data;
             if (write_record_id != 0)

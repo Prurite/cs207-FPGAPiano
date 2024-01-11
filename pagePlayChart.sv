@@ -17,9 +17,6 @@ module pagePlayChart(
     localparam LEFT = `LEFT;
     localparam RIGHT = `RIGHT;
 
-    // Output sound signal, connected directly to notePlayer
-    logic sig = 1'b0;
-
     // Status control
     logic play_en, play_st, fin_en;
     assign play_en = play_st & fin_en;
@@ -73,7 +70,6 @@ module pagePlayChart(
         if (rst) begin
             note_count <= 0;
             cur_note <= 9'b00_0000000;
-            sig <= 1'b0;
         end
         else if (play_en) begin
             note_count <= note_count + 1;
@@ -436,6 +432,7 @@ module countDown (
     assign play_st = en;
 endmodule
 
+/*
 // Play notes(Generate square waves)
 module notePlayer(
     input logic clk, rst,
@@ -475,3 +472,4 @@ module notePlayer(
         end
     end
 endmodule
+*/

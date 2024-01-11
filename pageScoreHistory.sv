@@ -21,10 +21,11 @@ module pageScoreHistory(
         .str(score_text) );
 
     byte updating_record_id;
+    byte tid;
 
     always @(posedge prog_clk)
         if (rst) begin
-            read_record_id <= 0;
+            tid <= 0;
             updating_record_id <= 0;
             //history_out.state <= HISTORY;
             history_out.text[0] <=  "=====    Score History    ===== ";
@@ -45,15 +46,17 @@ module pageScoreHistory(
                 history_out.text[i] <= "                                ";
             history_out.seg <= "rec     ";
         end else if (updating_record_id <= 11) begin
-            read_record_id <= updating_record_id;
+            tid <= updating_record_id;
             updating_record_id <= updating_record_id + 1;
             // Current record data is for read_record_id - 1
-            if (read_record_id >= 1 && read_record_id <= 9) begin
-                history_out.text[read_record_id + 1][7*8 : 9*8 - 1] <= user_id_text[3*8 : 5*8 - 1];
-                history_out.text[read_record_id + 1][10*8 : 10*8 + `NAME_LEN*8 - 1] <= record_data.chart_name;
-                history_out.text[read_record_id + 1][11*8 + `NAME_LEN*8 : 16*8 + `NAME_LEN*8 - 1] <= score_text;
+            if (tid >= 1 && tid <= 9) begin
+                history_out.text[read_record_id][7*8 : 9*8 - 1] <= user_id_text[3*8 : 5*8 - 1];
+                history_out.text[read_record_id][10*8 : 10*8 + `NAME_LEN*8 - 1] <= record_data.chart_name;
+                history_out.text[read_record_id][11*8 + `NAME_LEN*8 : 16*8 + `NAME_LEN*8 - 1] <= score_text;
             end
         end
+
+        assign read_record_id = tid + 1;
 
     // Individual state control
     always @(posedge prog_clk)
