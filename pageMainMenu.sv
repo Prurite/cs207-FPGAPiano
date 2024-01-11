@@ -49,18 +49,31 @@ module pageMenu(
             text[8] <=  "                                ";
             text[9] <=  "[^][v] Move Up / Down           ";
             text[10] <= "[<] Auto          [>] Play Chart";
-        end else if (!init_finish)
-            text[11] <= "0" + read_chart_id;
-            text[12] <= "0" + updating_stay_cnt;
-            if (updating_stay_cnt == 0)
-                updating_stay_cnt <= 1;
-            else if (updating_stay_cnt == 1) begin
-                updating_stay_cnt <= 2;
-                text[3 + read_chart_id][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
-            end else if (updating_stay_cnt == 2) begin
-                updating_stay_cnt <= 0;
-                read_chart_id <= read_chart_id + 1;
-                init_finish <= read_chart_id >= 4;
+        end else if (!init_finish) begin
+            // text[11] <= "0" + read_chart_id;
+            // text[12] <= "0" + updating_stay_cnt;
+            case (read_chart_id)
+                1: begin
+                    text[4][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
+                    read_chart_id <= read_chart_id + 1;
+                end
+                2: begin
+                    text[5][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
+                    read_chart_id <= read_chart_id + 1;
+                end
+                3: begin
+                    text[6][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
+                    read_chart_id <= read_chart_id + 1;
+                end
+                4: begin
+                    text[7][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
+                    read_chart_id <= read_chart_id + 1;
+                    init_finish <= 1;
+                end
+                default: begin
+                    read_chart_id <= 0;
+                end
+            endcase
             end
         else begin
             // Pointer actions

@@ -44,7 +44,7 @@ module pagePlayChart(
     // Countdown func (3s before start)
     wire [1:0] cnt_dn;
     logic cd_end;
-    countDown cd(.clk(prog_clk), .rst(rst), .play_st(cd_end), .cnt_dn(cnt_dn));
+    countDown cd(.prog_clk(prog_clk), .rst(rst), .play_st(cd_end), .cnt_dn(cnt_dn));
 
     // Status control
     always @(posedge prog_clk) begin
@@ -55,7 +55,6 @@ module pagePlayChart(
         else begin
             if (cd_end) begin
                 play_st <= 1'b1;
-                cd_end <= 1'b0;
             end
             else if (note_count >= read_chart.info.note_cnt) begin
                 fin_en <= 1'b0;
@@ -182,19 +181,19 @@ module scoreManager (
     shortint uc;
     always @(posedge clk50ms) begin
         if (rst) begin
-            score = 14'd0;
-            uc = 0;
+            score <= 14'd0;
+            uc <= 0;
         end
         else if (play_en) begin
             if (auto_play) score = score + 4;
             else begin
-                cur_in = {user_in.oct_down, user_in.oct_up, user_in.note_keys};
-                cur_note = chart.notes[note_count];
-                if (cur_note == cur_in | cur_note == uin[uc - 1]) score = score + 4;
-                else if (cur_note == uin[uc - 2]) score = score + 2;
-                else if (cur_note == uin[uc - 3]) score = score + 1;
-                uin[uc] = cur_in;
-                uc = uc + 1;
+                cur_in <= {user_in.oct_down, user_in.oct_up, user_in.note_keys};
+                cur_note <= chart.notes[note_count];
+                if (cur_note == cur_in | cur_note == uin[uc - 1]) score <= score + 4;
+                else if (cur_note == uin[uc - 2]) score <= score + 2;
+                else if (cur_note == uin[uc - 3]) score <= score + 1;
+                uin[uc] <= cur_in;
+                uc <= uc + 1;
             end
         end
     end
@@ -219,65 +218,65 @@ module noteAreaController(
         if (~en) begin
             case (cnt_dn)
                 2'b11: begin
-                    text[10] = "                                ";
-                    text[11] = "                                ";
-                    text[12] = "          33333333333           ";
-                    text[13] = "        333333333333333         ";
-                    text[14] = "       3333         3333        ";
-                    text[15] = "                     333        ";
-                    text[16] = "                    3333        ";
-                    text[17] = "            33333333333         ";
-                    text[18] = "            33333333333         ";
-                    text[19] = "                    3333        ";
-                    text[20] = "                     333        ";
-                    text[21] = "       3333         3333        ";
-                    text[22] = "        333333333333333         ";
-                    text[23] = "          33333333333           ";
-                    text[24] = "                                ";
-                    text[25] = "                                ";
+                    text[10] <= "                                ";
+                    text[11] <= "                                ";
+                    text[12] <= "          33333333333           ";
+                    text[13] <= "        333333333333333         ";
+                    text[14] <= "       3333         3333        ";
+                    text[15] <= "                     333        ";
+                    text[16] <= "                    3333        ";
+                    text[17] <= "            33333333333         ";
+                    text[18] <= "            33333333333         ";
+                    text[19] <= "                    3333        ";
+                    text[20] <= "                     333        ";
+                    text[21] <= "       3333         3333        ";
+                    text[22] <= "        333333333333333         ";
+                    text[23] <= "          33333333333           ";
+                    text[24] <= "                                ";
+                    text[25] <= "                                ";
                 end
                 2'b10: begin
-                    text[10] = "                                ";
-                    text[11] = "            22222222            ";
-                    text[12] = "         2222222222222          ";
-                    text[13] = "        2222       2222         ";
-                    text[14] = "        2222        2222        ";
-                    text[15] = "                    2222        ";
-                    text[16] = "                   22222        ";
-                    text[17] = "                 222222         ";
-                    text[18] = "                22222           ";
-                    text[19] = "              22222             ";
-                    text[20] = "            22222               ";
-                    text[21] = "          22222                 ";
-                    text[22] = "        22222222222222222       ";
-                    text[23] = "        22222222222222222       ";
-                    text[24] = "                                ";
-                    text[25] = "                                ";
+                    text[10] <= "                                ";
+                    text[11] <= "            22222222            ";
+                    text[12] <= "         2222222222222          ";
+                    text[13] <= "        2222       2222         ";
+                    text[14] <= "        2222        2222        ";
+                    text[15] <= "                    2222        ";
+                    text[16] <= "                   22222        ";
+                    text[17] <= "                 222222         ";
+                    text[18] <= "                22222           ";
+                    text[19] <= "              22222             ";
+                    text[20] <= "            22222               ";
+                    text[21] <= "          22222                 ";
+                    text[22] <= "        22222222222222222       ";
+                    text[23] <= "        22222222222222222       ";
+                    text[24] <= "                                ";
+                    text[25] <= "                                ";
                 end
                 2'b01: begin
-                    text[10] = "                                ";
-                    text[11] = "                                ";
-                    text[12] = "                111             ";
-                    text[13] = "            1111111             ";
-                    text[14] = "            1111111             ";
-                    text[15] = "                111             ";
-                    text[16] = "                111             ";
-                    text[17] = "                111             ";
-                    text[18] = "                111             ";
-                    text[19] = "                111             ";
-                    text[20] = "                111             ";
-                    text[21] = "                111             ";
-                    text[22] = "           111111111111         ";
-                    text[23] = "           111111111111         ";
-                    text[24] = "                                ";
-                    text[25] = "                                ";
+                    text[10] <= "                                ";
+                    text[11] <= "                                ";
+                    text[12] <= "                111             ";
+                    text[13] <= "            1111111             ";
+                    text[14] <= "            1111111             ";
+                    text[15] <= "                111             ";
+                    text[16] <= "                111             ";
+                    text[17] <= "                111             ";
+                    text[18] <= "                111             ";
+                    text[19] <= "                111             ";
+                    text[20] <= "                111             ";
+                    text[21] <= "                111             ";
+                    text[22] <= "           111111111111         ";
+                    text[23] <= "           111111111111         ";
+                    text[24] <= "                                ";
+                    text[25] <= "                                ";
                 end
                 default:
-                    text = text_init;
+                    text <= text_init;
             endcase
         end
         else begin
-            text[10:25] = temp_text[10:25];
+            text[10:25] <= temp_text[10:25];
         end
     end
     
@@ -349,28 +348,28 @@ module displayLine(
         else begin
             case (cur_note)
                 //                            C  D  E  F  G  A  B   O
-                9'b00_0000001:  line_notes = "#  .  .  .  .  .  .   .";
-                9'b00_0000010:  line_notes = ".  #  .  .  .  .  .   .";
-                9'b00_0000100:  line_notes = ".  .  #  .  .  .  .   .";
-                9'b00_0001000:  line_notes = ".  .  .  #  .  .  .   .";
-                9'b00_0010000:  line_notes = ".  .  .  .  #  .  .   .";
-                9'b00_0100000:  line_notes = ".  .  .  .  .  #  .   .";
-                9'b00_1000000:  line_notes = ".  .  .  .  .  .  #   .";
-                9'b01_0000001:  line_notes = "#  .  .  .  .  .  .   +";
-                9'b01_0000010:  line_notes = ".  #  .  .  .  .  .   +";
-                9'b01_0000100:  line_notes = ".  .  #  .  .  .  .   +";
-                9'b01_0001000:  line_notes = ".  .  .  #  .  .  .   +";
-                9'b01_0010000:  line_notes = ".  .  .  .  #  .  .   +";
-                9'b01_0100000:  line_notes = ".  .  .  .  .  #  .   +";
-                9'b01_1000000:  line_notes = ".  .  .  .  .  .  #   +";
-                9'b10_0000001:  line_notes = "#  .  .  .  .  .  .   -";
-                9'b10_0000010:  line_notes = ".  #  .  .  .  .  .   -";
-                9'b10_0000100:  line_notes = ".  .  #  .  .  .  .   -";
-                9'b10_0001000:  line_notes = ".  .  .  #  .  .  .   -";
-                9'b10_0010000:  line_notes = ".  .  .  .  #  .  .   -";
-                9'b10_0100000:  line_notes = ".  .  .  .  .  #  .   -";
-                9'b10_1000000:  line_notes = ".  .  .  .  .  .  #   -";
-                default:        line_notes = ".  .  .  .  .  .  .   .";
+                9'b00_0000001:  line_notes <= "#  .  .  .  .  .  .   .";
+                9'b00_0000010:  line_notes <= ".  #  .  .  .  .  .   .";
+                9'b00_0000100:  line_notes <= ".  .  #  .  .  .  .   .";
+                9'b00_0001000:  line_notes <= ".  .  .  #  .  .  .   .";
+                9'b00_0010000:  line_notes <= ".  .  .  .  #  .  .   .";
+                9'b00_0100000:  line_notes <= ".  .  .  .  .  #  .   .";
+                9'b00_1000000:  line_notes <= ".  .  .  .  .  .  #   .";
+                9'b01_0000001:  line_notes <= "#  .  .  .  .  .  .   +";
+                9'b01_0000010:  line_notes <= ".  #  .  .  .  .  .   +";
+                9'b01_0000100:  line_notes <= ".  .  #  .  .  .  .   +";
+                9'b01_0001000:  line_notes <= ".  .  .  #  .  .  .   +";
+                9'b01_0010000:  line_notes <= ".  .  .  .  #  .  .   +";
+                9'b01_0100000:  line_notes <= ".  .  .  .  .  #  .   +";
+                9'b01_1000000:  line_notes <= ".  .  .  .  .  .  #   +";
+                9'b10_0000001:  line_notes <= "#  .  .  .  .  .  .   -";
+                9'b10_0000010:  line_notes <= ".  #  .  .  .  .  .   -";
+                9'b10_0000100:  line_notes <= ".  .  #  .  .  .  .   -";
+                9'b10_0001000:  line_notes <= ".  .  .  #  .  .  .   -";
+                9'b10_0010000:  line_notes <= ".  .  .  .  #  .  .   -";
+                9'b10_0100000:  line_notes <= ".  .  .  .  .  #  .   -";
+                9'b10_1000000:  line_notes <= ".  .  .  .  .  .  #   -";
+                default:        line_notes <= ".  .  .  .  .  .  .   .";
             endcase
             line[0 : 4 * 8 - 1] <= is_line ? ">>> " : "    ";
             line[4 * 8 : 27 * 8 - 1] <= line_notes;
@@ -386,23 +385,23 @@ module displayLed(
     output LedState led
 );
     always @(posedge prog_clk) begin
-        if (rst) led = 8'b0000_0000;
+        if (rst) led <= 8'b0000_0000;
         else if (en) begin
             case (cur_note[8:7])
-                2'b00:      led[0] = 1'b0;
-                2'b01:      led[0] = 1'b1;
-                2'b10:      led[0] = 1'b1;
-                default:    led[0] = 1'b0;
+                2'b00:      led[0] <= 1'b0;
+                2'b01:      led[0] <= 1'b1;
+                2'b10:      led[0] <= 1'b1;
+                default:    led[0] <= 1'b0;
             endcase
             case (cur_note[6:0])
-                7'b0000001: led[7:1] = 7'b1000000;
-                7'b0000010: led[7:1] = 7'b0100000;
-                7'b0000100: led[7:1] = 7'b0010000;
-                7'b0001000: led[7:1] = 7'b0001000;
-                7'b0010000: led[7:1] = 7'b0000100;
-                7'b0100000: led[7:1] = 7'b0000010;
-                7'b1000000: led[7:1] = 7'b0000001;
-                default:    led[7:1] = 7'b0000000;
+                7'b0000001: led[7:1] <= 7'b1000000;
+                7'b0000010: led[7:1] <= 7'b0100000;
+                7'b0000100: led[7:1] <= 7'b0010000;
+                7'b0001000: led[7:1] <= 7'b0001000;
+                7'b0010000: led[7:1] <= 7'b0000100;
+                7'b0100000: led[7:1] <= 7'b0000010;
+                7'b1000000: led[7:1] <= 7'b0000001;
+                default:    led[7:1] <= 7'b0000000;
             endcase
         end
     end
@@ -416,7 +415,7 @@ module countDown (
 );
     byte cnt;
     logic en;
-    always @(posedge prog_clk or posedge rst) begin
+    always @(posedge prog_clk) begin
         if (rst) begin
             cnt <= 0;
             en <= 1'b0;
