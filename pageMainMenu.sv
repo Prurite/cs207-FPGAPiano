@@ -150,7 +150,7 @@ module pageMenu(
                     if (cur_pos == 0) state <= INIT;
                     else begin
                         free_play <= cur_pos == 1 || chart_data.info.note_cnt == 0;
-                        auto_play <= ~free_play;
+                        auto_play <= ~(cur_pos == 1 || chart_data.info.note_cnt == 0);
                         state <= PLAY;
                     end
                 end
