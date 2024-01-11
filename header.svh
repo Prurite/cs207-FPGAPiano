@@ -21,10 +21,10 @@
 `define VGA_HEIGHT 480
 
 // Arrow keys
-`define UP 4'b0001;
-`define DOWN 4'b0010;
-`define LEFT 4'b0100;
-`define RIGHT 4'b1000;
+`define UP 4'b0001
+`define DOWN 4'b0010
+`define LEFT 4'b0100
+`define RIGHT 4'b1000
 
 // Wavelength of diffrent notes
 `define C3  764467

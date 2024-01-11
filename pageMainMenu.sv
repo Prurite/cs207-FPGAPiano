@@ -9,10 +9,6 @@ module pageMenu(
     output logic auto_play,
     input TopState cur_state
 );
-    localparam UP = `UP;
-    localparam DOWN = `DOWN;
-    localparam LEFT = `LEFT;
-    localparam RIGHT = `RIGHT;
 
     byte cur_pos;
     ScreenText text;
@@ -121,21 +117,21 @@ module pageMenu(
 
             // Input key actions
             case (user_in.arrow_keys)
-                UP: begin
+                `UP: begin
                     if (cur_pos == 0) cur_pos <= 5;
                     else cur_pos <= cur_pos - 1;
                 end
-                DOWN: begin
+                `DOWN: begin
                     if (cur_pos == 5) cur_pos <= 0;
                     else cur_pos <= cur_pos + 1;
                 end
-                LEFT: begin
+                `LEFT: begin
                     if (cur_pos == 0) state <= INIT;
                     else if (cur_pos > 1) begin
                         state <= PLAY; auto_play <= 1'b1;
                     end
                 end
-                RIGHT: begin
+                `RIGHT: begin
                     if (cur_pos == 0) state <= HISTORY;
                     else begin
                         state <= PLAY; auto_play <= 1'b0;

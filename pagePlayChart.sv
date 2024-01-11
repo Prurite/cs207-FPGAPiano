@@ -56,9 +56,9 @@ module pagePlayChart(
         end
     end
 
-    assign text[0][0:7] = "0" + play_st;
-    assign text[0][8:15] = "0" + fin_en;
-    assign text[0][24:31] = "0" + play_en;
+    assign play_out.text[0][0:7] = "0" + play_st;
+    assign play_out.text[0][8:15] = "0" + fin_en;
+    assign play_out.text[0][24:31] = "0" + play_en;
     
     Chart uinc; // Record chart
     PlayRecord play_record; // Record play data
