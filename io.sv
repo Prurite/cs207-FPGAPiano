@@ -229,7 +229,7 @@ module boardInput (
             board_in.note_keys <= btn_notes;
             board_in.oct_up <= btn_oct_up;
             board_in.oct_down <= btn_oct_down;
-            board_in.sw_chart_id <= sw_chart_id;
+            board_in.chart_id <= sw_chart_id + 1'b1;
             board_in.user_id <= sw_user_id;
         end
 endmodule
