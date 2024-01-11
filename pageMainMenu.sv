@@ -28,6 +28,7 @@ module pageMenu(
     always @(posedge prog_clk) begin
         if (rst) begin
             auto_play <= 0;
+            free_play <= 0;
             cur_pos <= 0;
             seg <= "        ";
             state <= MENU;
@@ -46,7 +47,7 @@ module pageMenu(
             text[9]  <=  "    [6]                         ";
             text[10] <=  "                                ";
             text[11] <=  "[^][v] Move Up / Down           ";
-            text[12] <= "[<] Auto          [>] Play Chart";
+            text[12] <= "[<]                [>]           ";
         end else if (!init_finish) begin
             case (read_chart_id)
                 1: begin
@@ -147,14 +148,18 @@ module pageMenu(
                 end
                 `LEFT: begin
                     if (cur_pos == 0) state <= INIT;
-                    else if (cur_pos > 1) begin
-                        state <= PLAY; auto_play <= 1'b1;
+                    else begin
+                        free_play <= cur_pos == 1 || chart.info.note_cnt == 0;
+                        auto_play <= ~free_play;
+                        state <= PLAY;
                     end
                 end
                 `RIGHT: begin
                     if (cur_pos == 0) state <= HISTORY;
                     else begin
-                        state <= PLAY; auto_play <= 1'b0;
+                        free_play <= chart.info.note_cnt == 0;
+                        auto_play <= 1'b0;
+                        state <= PLAY;
                     end
                 end
             endcase

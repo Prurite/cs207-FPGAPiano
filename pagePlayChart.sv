@@ -142,7 +142,7 @@ module screenOut(
     binary2Str b2suid(.intx(user_in.user_id), .str(uid_raw));
     binary2Str b2scid(.intx(user_in.chart_id), .str(cid_raw));
 
-    always @(posedge prog_clk or posedge rst) begin
+    always @(posedge prog_clk) begin
         if (rst) begin
             // Title display
             text[2]  <= "=====    Playing Chart    ===== ";
@@ -214,15 +214,15 @@ module scoreManager (
             score <= 14'd0;
             uin[0] <= 9'b00_0000000;
             uin[1] <= 9'b00_0000000;
-        end else if (play_en && !free_play) begin
+        end else if (play_en && ~free_play && (cur_note[6:0] != 7'b0000000)) begin
             if (auto_play) score = score + 4;
-            else begin
+            else if ((user_in.note_keys != 7'b0000000)) begin
                 uin[0] <= cur_in;
                 uin[1] <= uin[0];
                 cur_note <= chart.notes[note_count];
                 if (cur_note == cur_in) score = score + 5;
                 else if (cur_note == uin[0]) score = score + 3;
-                else if (cur_note == uin[1]) score = score + 1;
+                else if (cur_note == uin[1]) score = score + 2;
             end
         end
     end
@@ -442,27 +442,25 @@ module countDown (
     output reg [1:0] cnt_dn
 );
     byte cnt;
-    logic en;
     always @(posedge prog_clk) begin
         if (rst) begin
             cnt <= 0;
-            en <= 1'b0;
+            play_st <= 1'b0;
             cnt_dn <= 2'b11;
         end
-        else if (~en) begin
+        else if (~play_st) begin
             if (cnt == 60) begin
-                cnt <= 0;
+                cnt <= 1;
                 case (cnt_dn)
                     2'b11: cnt_dn <= 2'b10;
                     2'b10: cnt_dn <= 2'b01;
                     2'b01: cnt_dn <= 2'b00;
-                    2'b00: en <= 1'b1;
+                    2'b00: play_st <= 1'b1;
                 endcase
             end
             else cnt <= cnt + 1;
         end
     end
-    assign play_st = en;
 endmodule
 
 /*
