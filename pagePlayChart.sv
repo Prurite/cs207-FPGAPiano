@@ -32,12 +32,14 @@ module pagePlayChart(
     wire [13:0] cur_score;
     TopState state;
 
+    ScreenText text;
+
     // Get screen output
     screenOut screen_out(
         .prog_clk(prog_clk), .rst(rst),
         .chart(read_chart), .note_count(note_count),
         .user_in(user_in), .play_st(play_st), .score(cur_score),
-        .text(play_out.text), .seg_text(play_out.seg), .led(play_out.led)
+        .text(text), .seg_text(play_out.seg), .led(play_out.led)
     );
     
     // Countdown func (3s before start)
@@ -59,19 +61,21 @@ module pagePlayChart(
     assign play_out.text[0][0:7] = "0" + play_st;
     assign play_out.text[0][8:15] = "0" + fin_en;
     assign play_out.text[0][24:31] = "0" + play_en;
+
+    assign play_out.text[2:`SCREEN_TEXT_HEIGHT-1] = text[2:`SCREEN_TEXT_HEIGHT-1];
     
     Chart uinc; // Record chart
     PlayRecord play_record; // Record play data
 
-    // Refresh current note every 100ms
-    logic clk_100ms;
-    clkDiv div100(.clk(prog_clk), .rst(rst), .divx(6), .clk_out(clk_100ms));
+    // Refresh current note every `NOTE_TIME
+    logic clk_notes;
+    clkDiv div_note(.clk(prog_clk), .rst(rst), .divx(`NOTE_CLK_DIV), .clk_out(clk_notes));
 
     Notes user_playing_notes;
     assign user_playing_notes = {user_in.oct_down, user_in.oct_up, user_in.note_keys};
 
     // Manage current note and record user played chart
-    always @(posedge clk_100ms or posedge rst) begin
+    always @(posedge clk_notes or posedge rst) begin
         if (rst) begin
             note_count <= 0;
             play_out.notes <= 9'b00_0000000;
@@ -126,7 +130,7 @@ module screenOut(
     output SegDisplayText seg_text,
     output LedState led
 );
-    ScreenText note_area;
+    ScreenTextRow note_area [`NOTE_AREA_HEIGHT-1:0];
     wire [0:39] sc_str, cnt_str, len_str, uid_raw, cid_raw;
 
     // Display Info (Line 8, Col 7~10, 14~17, 28~32)    
@@ -156,7 +160,7 @@ module screenOut(
             text[4][17*8:19*8-1] <= uid_raw[3*8:5*8-1];
             text[5][9*8:(9+`NAME_LEN)*8 - 1] <= chart.info.name;
             text[6][19*8:21*8-1] <= cid_raw[3*8:5*8-1];
-            text[10:25] <= note_area[10:25];
+            text[10:25] <= note_area[0:15];
         end
     end
 
@@ -210,76 +214,76 @@ module noteAreaController(
     input shortint note_count,
     input Notes notes [`CHART_LEN-1:0],
     // Only [10:25] is modified
-    output ScreenText text,
+    output ScreenTextRow text [`NOTE_AREA_HEIGHT-1:0],
     output SegDisplayText seg,
     output LedState led
 );
-    ScreenText temp_text;
-    const ScreenText text_init = '{default: '0};
+    ScreenTextRow temp_text [`NOTE_AREA_HEIGHT-1:0];
+    const ScreenTextRow text_init [`NOTE_AREA_HEIGHT-1:0] = '{default: '0};
     // Display countdown
     always @(posedge prog_clk) begin
         if (~en) begin
             case (cnt_dn)
                 2'b11: begin
-                    text[10] <= "                                ";
-                    text[11] <= "                                ";
-                    text[12] <= "          33333333333           ";
-                    text[13] <= "        333333333333333         ";
-                    text[14] <= "       3333         3333        ";
-                    text[15] <= "                     333        ";
-                    text[16] <= "                    3333        ";
-                    text[17] <= "            33333333333         ";
-                    text[18] <= "            33333333333         ";
-                    text[19] <= "                    3333        ";
-                    text[20] <= "                     333        ";
-                    text[21] <= "       3333         3333        ";
-                    text[22] <= "        333333333333333         ";
-                    text[23] <= "          33333333333           ";
-                    text[24] <= "                                ";
-                    text[25] <= "                                ";
+                    text[0] <= "                                ";
+                    text[1] <= "                                ";
+                    text[2] <= "          33333333333           ";
+                    text[3] <= "        333333333333333         ";
+                    text[4] <= "       3333         3333        ";
+                    text[5] <= "                     333        ";
+                    text[6] <= "                    3333        ";
+                    text[7] <= "            33333333333         ";
+                    text[8] <= "            33333333333         ";
+                    text[9] <= "                    3333        ";
+                    text[10] <= "                     333        ";
+                    text[11] <= "       3333         3333        ";
+                    text[12] <= "        333333333333333         ";
+                    text[13] <= "          33333333333           ";
+                    text[14] <= "                                ";
+                    text[15] <= "                                ";
                 end
                 2'b10: begin
-                    text[10] <= "                                ";
-                    text[11] <= "            22222222            ";
-                    text[12] <= "         2222222222222          ";
-                    text[13] <= "        2222       2222         ";
-                    text[14] <= "        2222        2222        ";
-                    text[15] <= "                    2222        ";
-                    text[16] <= "                   22222        ";
-                    text[17] <= "                 222222         ";
-                    text[18] <= "                22222           ";
-                    text[19] <= "              22222             ";
-                    text[20] <= "            22222               ";
-                    text[21] <= "          22222                 ";
-                    text[22] <= "        22222222222222222       ";
-                    text[23] <= "        22222222222222222       ";
-                    text[24] <= "                                ";
-                    text[25] <= "                                ";
+                    text[0] <= "                                ";
+                    text[1] <= "            22222222            ";
+                    text[2] <= "         2222222222222          ";
+                    text[3] <= "        2222       2222         ";
+                    text[4] <= "        2222        2222        ";
+                    text[5] <= "                    2222        ";
+                    text[6] <= "                   22222        ";
+                    text[7] <= "                 222222         ";
+                    text[8] <= "                22222           ";
+                    text[9] <= "              22222             ";
+                    text[10] <= "            22222               ";
+                    text[11] <= "          22222                 ";
+                    text[12] <= "        22222222222222222       ";
+                    text[13] <= "        22222222222222222       ";
+                    text[14] <= "                                ";
+                    text[15] <= "                                ";
                 end
                 2'b01: begin
-                    text[10] <= "                                ";
-                    text[11] <= "                                ";
-                    text[12] <= "                111             ";
-                    text[13] <= "            1111111             ";
-                    text[14] <= "            1111111             ";
-                    text[15] <= "                111             ";
-                    text[16] <= "                111             ";
-                    text[17] <= "                111             ";
-                    text[18] <= "                111             ";
-                    text[19] <= "                111             ";
-                    text[20] <= "                111             ";
-                    text[21] <= "                111             ";
-                    text[22] <= "           111111111111         ";
-                    text[23] <= "           111111111111         ";
-                    text[24] <= "                                ";
-                    text[25] <= "                                ";
+                    text[0] <= "                                ";
+                    text[1] <= "                                ";
+                    text[2] <= "                111             ";
+                    text[3] <= "            1111111             ";
+                    text[4] <= "            1111111             ";
+                    text[5] <= "                111             ";
+                    text[6] <= "                111             ";
+                    text[7] <= "                111             ";
+                    text[8] <= "                111             ";
+                    text[9] <= "                111             ";
+                    text[10] <= "                111             ";
+                    text[11] <= "                111             ";
+                    text[12] <= "           111111111111         ";
+                    text[13] <= "           111111111111         ";
+                    text[14] <= "                                ";
+                    text[15] <= "                                ";
                 end
                 default:
                     text <= text_init;
             endcase
         end
         else begin
-            text[10:25] <= temp_text[10:25];
+            text <= temp_text;
         end
     end
     
@@ -316,22 +320,22 @@ module noteAreaController(
     end
 
     // Display Notes
-    displayLine l25(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 15]), .is_line(1'b1), .line(temp_text[25]));
-    displayLine l24(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 14]), .is_line(1'b0), .line(temp_text[24]));
-    displayLine l23(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 13]), .is_line(1'b0), .line(temp_text[23]));
-    displayLine l22(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 12]), .is_line(1'b0), .line(temp_text[22]));
-    displayLine l21(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 11]), .is_line(1'b0), .line(temp_text[21]));
-    displayLine l20(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 10]), .is_line(1'b0), .line(temp_text[20]));
-    displayLine l19(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 9]), .is_line(1'b0), .line(temp_text[19]));
-    displayLine l18(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 8]), .is_line(1'b0), .line(temp_text[18]));
-    displayLine l17(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 7]), .is_line(1'b0), .line(temp_text[17]));
-    displayLine l16(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 6]), .is_line(1'b0), .line(temp_text[16]));
-    displayLine l15(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 5]), .is_line(1'b0), .line(temp_text[15]));
-    displayLine l14(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 4]), .is_line(1'b0), .line(temp_text[14]));
-    displayLine l13(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 3]), .is_line(1'b0), .line(temp_text[13]));
-    displayLine l12(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 2]), .is_line(1'b0), .line(temp_text[12]));
-    displayLine l11(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 1]), .is_line(1'b0), .line(temp_text[11]));
-    displayLine l10(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id]), .is_line(1'b0), .line(temp_text[10]));
+    displayLine l25(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 15]), .is_line(1'b1), .line(temp_text[15]));
+    displayLine l24(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 14]), .is_line(1'b0), .line(temp_text[14]));
+    displayLine l23(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 13]), .is_line(1'b0), .line(temp_text[13]));
+    displayLine l22(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 12]), .is_line(1'b0), .line(temp_text[12]));
+    displayLine l21(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 11]), .is_line(1'b0), .line(temp_text[11]));
+    displayLine l20(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 10]), .is_line(1'b0), .line(temp_text[10]));
+    displayLine l19(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 9]), .is_line(1'b0), .line(temp_text[9]));
+    displayLine l18(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 8]), .is_line(1'b0), .line(temp_text[8]));
+    displayLine l17(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 7]), .is_line(1'b0), .line(temp_text[7]));
+    displayLine l16(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 6]), .is_line(1'b0), .line(temp_text[6]));
+    displayLine l15(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 5]), .is_line(1'b0), .line(temp_text[5]));
+    displayLine l14(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 4]), .is_line(1'b0), .line(temp_text[4]));
+    displayLine l13(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 3]), .is_line(1'b0), .line(temp_text[3]));
+    displayLine l12(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 2]), .is_line(1'b0), .line(temp_text[2]));
+    displayLine l11(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id + 1]), .is_line(1'b0), .line(temp_text[1]));
+    displayLine l10(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id]), .is_line(1'b0), .line(temp_text[0]));
     displayLed dd(.prog_clk(prog_clk), .rst(rst), .en(en), .cur_note(notes[note_id]), .led(led));
 endmodule
 
@@ -341,7 +345,7 @@ module displayLine(
     input logic prog_clk, rst, en,
     input Notes cur_note,
     input logic is_line,
-    output reg [0:`SCREEN_TEXT_WIDTH * 8 - 1] line
+    output ScreenTextRow line
 );
     reg [0 : 23 * 8 - 1] line_notes;
 

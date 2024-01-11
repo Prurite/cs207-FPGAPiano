@@ -8,11 +8,13 @@
 
 `define NAME_LEN 16
 `define NOTE_WIDTH 7
-`define CHART_LEN 512
-`define CHARTS_MAX 10
+`define CHART_LEN 384
+`define CHARTS_MAX 6
 `define SCREEN_TEXT_WIDTH 32
 `define SCREEN_TEXT_HEIGHT 30
-`define NOTE_TIME 100 // ms
+`define NOTE_AREA_HEIGHT 16
+`define NOTE_TIME 192 // ms
+`define NOTE_CLK_DIV 12
 `define SEG_WIDTH 8
 `define PLAY_RECS_MAX 10
 `define MAX_DISPLAY_HEIGHT 16
@@ -73,6 +75,7 @@ typedef bit [0:8*`SCREEN_TEXT_WIDTH-1] ScreenText [`SCREEN_TEXT_HEIGHT-1:0];
 // Example: ScreenText[0] <= "=====       Main Menu      ====="
 // Then ScreenText[0][0:7] is "="
 // Otherwise, verilog fills 0 from left (right-aligned)
+typedef bit [0:8*`SCREEN_TEXT_WIDTH-1] ScreenTextRow;
 
 typedef bit [7:0] LedState;
 // A variable for controlling LED light

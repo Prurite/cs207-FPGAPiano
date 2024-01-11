@@ -18,125 +18,125 @@ module ChartStorageManager(
     localparam A5 = 9'b00_0100000;
     localparam B5 = 9'b00_1000000;
 
-    localparam NOTE_CNT = 282;
+    localparam NOTE_CNT = 186;
     ChartInfo ts_info;
     assign ts_info.name = "Little Stars    ";
     assign ts_info.note_cnt = NOTE_CNT;
     typedef Notes note_t [NOTE_CNT];
     note_t ts_notes = {
         // 1
-        C4, C4, C4, C4, C4, NU,
+        C4, C4, C4, NU,
         // 1
-        C4, C4, C4, C4, C4, NU,
+        C4, C4, C4, NU,
         // 5
-        G4, G4, G4, G4, G4, NU,
+        G4, G4, G4, NU,
         // 5
-        G4, G4, G4, G4, G4, NU,
+        G4, G4, G4, NU,
         // 6
-        A5, A5, A5, A5, A5, NU,
+        A5, A5, A5, NU,
         // 6
-        A5, A5, A5, A5, A5, NU,
+        A5, A5, A5, NU,
         // 5 5
-        G4, G4, G4, G4, G4,
-        G4, G4, G4, G4, G4, NU,
+        G4, G4, G4,
+        G4, G4, G4, NU,
         // 4
-        F4, F4, F4, F4, F4, NU,
+        F4, F4, F4, NU,
         // 4
-        F4, F4, F4, F4, F4, NU,
+        F4, F4, F4, NU,
         // 3
-        E4, E4, E4, E4, E4, NU,
+        E4, E4, E4, NU,
         // 3
-        E4, E4, E4, E4, E4, NU,
+        E4, E4, E4, NU,
         // 2
-        D4, D4, D4, D4, D4, NU,
+        D4, D4, D4, NU,
         // 2
-        D4, D4, D4, D4, D4, NU,
+        D4, D4, D4, NU,
         // 1 1
-        C4, C4, C4, C4, C4,
-        C4, C4, C4, C4, C4, NU,
+        C4, C4, C4,
+        C4, C4, C4, NU,
         // 5
-        G4, G4, G4, G4, G4, NU,
+        G4, G4, G4, NU,
         // 5
-        G4, G4, G4, G4, G4, NU,
+        G4, G4, G4, NU,
         // 4
-        F4, F4, F4, F4, F4, NU,
+        F4, F4, F4, NU,
         // 4
-        F4, F4, F4, F4, F4, NU,
+        F4, F4, F4, NU,
         // 3
-        E4, E4, E4, E4, E4, NU,
+        E4, E4, E4, NU,
         // 3
-        E4, E4, E4, E4, E4, NU,
+        E4, E4, E4, NU,
         // 2 2
-        D4, D4, D4, D4, D4,
-        D4, D4, D4, D4, D4, NU,
+        D4, D4, D4,
+        D4, D4, D4, NU,
         // 5
-        G4, G4, G4, G4, G4, NU,
+        G4, G4, G4, NU,
         // 5
-        G4, G4, G4, G4, G4, NU,
+        G4, G4, G4, NU,
         // 4
-        F4, F4, F4, F4, F4, NU,
+        F4, F4, F4, NU,
         // 4
-        F4, F4, F4, F4, F4, NU,
+        F4, F4, F4, NU,
         // 3
-        E4, E4, E4, E4, E4, NU,
+        E4, E4, E4, NU,
         // 3
-        E4, E4, E4, E4, E4, NU,
+        E4, E4, E4, NU,
         // 2 2
-        D4, D4, D4, D4, D4,
-        D4, D4, D4, D4, D4, NU,
+        D4, D4, D4,
+        D4, D4, D4, NU,
          // 1
-        C4, C4, C4, C4, C4, NU,
+        C4, C4, C4, NU,
         // 1
-        C4, C4, C4, C4, C4, NU,
+        C4, C4, C4, NU,
         // 5
-        G4, G4, G4, G4, G4, NU,
+        G4, G4, G4, NU,
         // 5
-        G4, G4, G4, G4, G4, NU,
+        G4, G4, G4, NU,
         // 6
-        A5, A5, A5, A5, A5, NU,
+        A5, A5, A5, NU,
         // 6
-        A5, A5, A5, A5, A5, NU,
+        A5, A5, A5, NU,
         // 5 5
-        G4, G4, G4, G4, G4,
-        G4, G4, G4, G4, G4, NU,
+        G4, G4, G4,
+        G4, G4, G4, NU,
         // 4
-        F4, F4, F4, F4, F4, NU,
+        F4, F4, F4, NU,
         // 4
-        F4, F4, F4, F4, F4, NU,
+        F4, F4, F4, NU,
         // 3
-        E4, E4, E4, E4, E4, NU,
+        E4, E4, E4, NU,
         // 3
-        E4, E4, E4, E4, E4, NU,
+        E4, E4, E4, NU,
         // 2
-        D4, D4, D4, D4, D4, NU,
+        D4, D4, D4, NU,
         // 2
-        D4, D4, D4, D4, D4, NU,
+        D4, D4, D4, NU,
         // 1 1
-        C4, C4, C4, C4, C4,
-        C4, C4, C4, C4, C4, NU
+        C4, C4, C4,
+        C4, C4, C4, NU
     };
     ChartInfo info2;
     assign info2.name = "Ringing Bloom   ";
-    assign info2.note_cnt = 282;
+    assign info2.note_cnt = NOTE_CNT;
 
     // When id's are not 0, read or write accordingly
     always @(posedge clk or posedge sys_rst)
         if (sys_rst) begin
-            chartStorage[1].info <= ts_info;
+            chartStorage[0].info <= ts_info;
+            for (int i = 0; i < NOTE_CNT; i++)
+                chartStorage[0].notes[i] <= ts_notes[i];
+            chartStorage[1].info <= info2;
             for (int i = 0; i < NOTE_CNT; i++)
                 chartStorage[1].notes[i] <= ts_notes[i];
-            chartStorage[2].info <= info2;
-            for (int i = 0; i < NOTE_CNT; i++)
-                chartStorage[2].notes[i] <= ts_notes[i];
         end else begin
-            if (read_chart_id != 0)
-                current_chart_data <= chartStorage[read_chart_id];
+            if (read_chart_id > 0 && read_chart_id <= `CHARTS_MAX)
+                current_chart_data <= chartStorage[read_chart_id - 1];
             else
                 current_chart_data <= current_chart_data;
-            if (write_chart_id != 0)
-                chartStorage[write_chart_id] <= new_chart_data;
+            if (write_chart_id > 0 && write_chart_id <= `CHARTS_MAX)
+                chartStorage[write_chart_id - 1] <= new_chart_data;
             else
-                chartStorage[write_chart_id] <= chartStorage[write_chart_id];
+                chartStorage[write_chart_id - 1] <= chartStorage[write_chart_id - 1];
         end
 
 endmodule

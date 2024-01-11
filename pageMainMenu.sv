@@ -42,12 +42,12 @@ module pageMenu(
             text[5] <=  "    [2]                         ";
             text[6] <=  "    [3]                         ";
             text[7] <=  "    [4]                         ";
-            text[8] <=  "                                ";
-            text[9] <=  "[^][v] Move Up / Down           ";
-            text[10] <= "[<] Auto          [>] Play Chart";
+            text[8] <=  "    [5]                         ";
+            text[9] <=  "    [6]                         ";
+            text[10] <=  "                                ";
+            text[11] <=  "[^][v] Move Up / Down           ";
+            text[12] <= "[<] Auto          [>] Play Chart";
         end else if (!init_finish) begin
-            // text[11] <= "0" + read_chart_id;
-            // text[12] <= "0" + updating_stay_cnt;
             case (read_chart_id)
                 1: begin
                     text[4][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
@@ -64,6 +64,14 @@ module pageMenu(
                 4: begin
                     text[7][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
                     read_chart_id <= read_chart_id + 1;
+                end
+                5: begin
+                    text[8][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
+                    read_chart_id <= read_chart_id + 1;
+                end
+                6: begin
+                    text[9][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
+                    read_chart_id <= read_chart_id + 1;
                     init_finish <= 1;
                 end
                 default: begin
@@ -79,6 +87,8 @@ module pageMenu(
             text[5][0:3*8-1] <= (cur_pos == 3) ? ">>>" : "   ";
             text[6][0:3*8-1] <= (cur_pos == 4) ? ">>>" : "   ";
             text[7][0:3*8-1] <= (cur_pos == 5) ? ">>>" : "   ";
+            text[8][0:3*8-1] <= (cur_pos == 6) ? ">>>" : "   ";
+            text[9][0:3*8-1] <= (cur_pos == 7) ? ">>>" : "   ";
 
             // Read chart name
             case (cur_pos)
@@ -89,8 +99,8 @@ module pageMenu(
                 end
                 1: begin
                     read_chart_id <= 0; seg <= "free    ";
-                    text[10][4*8:11*8-1] <= "NO Auto";
-                    text[10][22*8:32*8-1] <= "Freedom!!!";
+                    text[10][4*8:11*8-1] <= "       ";
+                    text[10][22*8:32*8-1] <= "Free play ";
                 end
                 2: begin
                     read_chart_id <= 1; seg <= "song  01";
@@ -112,17 +122,27 @@ module pageMenu(
                     text[10][4*8:11*8-1] <= "Auto   ";
                     text[10][22*8:32*8-1] <= "Play Chart";
                 end
+                6: begin
+                    read_chart_id <= 5; seg <= "song  05";
+                    text[10][4*8:11*8-1] <= "Auto   ";
+                    text[10][22*8:32*8-1] <= "Play Chart";
+                end
+                7: begin
+                    read_chart_id <= 6; seg <= "song  06";
+                    text[10][4*8:11*8-1] <= "Auto   ";
+                    text[10][22*8:32*8-1] <= "Play Chart";
+                end
                 default: begin read_chart_id <= 0; seg <= "ykns inu"; end
             endcase
 
             // Input key actions
             case (user_in.arrow_keys)
                 `UP: begin
-                    if (cur_pos == 0) cur_pos <= 5;
+                    if (cur_pos == 0) cur_pos <= 7;
                     else cur_pos <= cur_pos - 1;
                 end
                 `DOWN: begin
-                    if (cur_pos == 5) cur_pos <= 0;
+                    if (cur_pos == 7) cur_pos <= 0;
                     else cur_pos <= cur_pos + 1;
                 end
                 `LEFT: begin

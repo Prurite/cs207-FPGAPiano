@@ -13,6 +13,7 @@ module edgeDetector (
     assign edge_out.oct_up = user_in.oct_up & ~user_in_reg.oct_up & ~rst;
     assign edge_out.oct_down = user_in.oct_down & ~user_in_reg.oct_down & ~rst;
     assign edge_out.user_id = user_in.user_id;
+    assign edge_out.chart_id = user_in.chart_id;
 
     const UserInput default_user_in = '{default: '0};
 
