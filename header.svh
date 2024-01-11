@@ -92,7 +92,8 @@ typedef struct {
     bit [3:0] arrow_keys; // 0 - 3: U D L R
     bit [6:0] note_keys; // 0 - 6: C D E F G A B
     bit oct_up, oct_down; // +8 / -8
-    bit [3:0] user_id; // Controlled by on board switches
+    bit [1:0] chart_id; // Controlled by onboard switches
+    bit [3:0] user_id; // Controlled by onboard switches
 } UserInput;
 // Processed input from keyboard and board
 

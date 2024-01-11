@@ -25,6 +25,8 @@ set_property PACKAGE_PIN N4 [get_ports {btn_notes[6]}]
 set_property PACKAGE_PIN U3 [get_ports {btn_oct_up}]
 set_property PACKAGE_PIN U2 [get_ports {btn_oct_down}]
 
+set_property PACKAGE_PIN V2 [get_ports {sw_chart_id[1]}]
+set_property PACKAGE_PIN V5 [get_ports {sw_chart_id[0]}]
 set_property PACKAGE_PIN V4 [get_ports {sw_user_id[3]}]
 set_property PACKAGE_PIN R3 [get_ports {sw_user_id[2]}]
 set_property PACKAGE_PIN T3 [get_ports {sw_user_id[1]}]

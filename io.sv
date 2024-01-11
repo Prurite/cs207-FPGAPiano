@@ -30,7 +30,7 @@ module unifiedInput (
     input logic ps2_clk, ps2_data,
     // Board in
     input logic [3:0] btn_arr, [6:0] btn_notes,
-    input logic btn_oct_up, btn_oct_down, [3:0] sw_user_id,
+    input logic btn_oct_up, btn_oct_down, [1:0] sw_chart_id, [3:0] sw_user_id,
     output UserInput user_in
 );
     UserInput keyboard_in, board_in;
@@ -45,7 +45,7 @@ module unifiedInput (
         .clk(clk), .prog_clk(prog_clk), .sys_rst(sys_rst),
         .btn_arr(btn_arr), .btn_notes(btn_notes),
         .btn_oct_up(btn_oct_up), .btn_oct_down(btn_oct_down),
-        .sw_user_id(sw_user_id),
+        .sw_chart_id(sw_chart_id), .sw_user_id(sw_user_id),
         .board_in(board_in)
     );
 
@@ -216,7 +216,7 @@ endmodule
 module boardInput (
     input logic clk, prog_clk, sys_rst,
     input logic [3:0] btn_arr, [6:0] btn_notes,
-        btn_oct_up, btn_oct_down, [3:0] sw_user_id,
+        btn_oct_up, btn_oct_down, [1:0] sw_chart_id, [3:0] sw_user_id,
     output UserInput board_in
 );
     const UserInput default_board_in = '{default: '0};
@@ -229,6 +229,7 @@ module boardInput (
             board_in.note_keys <= btn_notes;
             board_in.oct_up <= btn_oct_up;
             board_in.oct_down <= btn_oct_down;
+            board_in.sw_chart_id <= sw_chart_id;
             board_in.user_id <= sw_user_id;
         end
 endmodule

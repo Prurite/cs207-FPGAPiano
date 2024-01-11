@@ -22,7 +22,7 @@ module main(
     input logic ps2_clk, ps2_data,
     // Board in
     input logic [3:0] btn_arr, [6:0] btn_notes,
-    input logic btn_oct_up, btn_oct_down, [3:0] sw_user_id,
+    input logic btn_oct_up, btn_oct_down, [1:0] sw_chart_id, [3:0] sw_user_id,
     // PWM audio out
     output logic audio_pwm, audio_sd,
     // 7-seg display out, 2 groups, each 4 displays
@@ -54,7 +54,7 @@ module main(
         .ps2_clk(ps2_clk), .ps2_data(ps2_data),
         .btn_arr(btn_arr), .btn_notes(btn_notes),
         .btn_oct_up(btn_oct_up), .btn_oct_down(btn_oct_down),
-        .sw_user_id(sw_user_id),
+        .sw_chart_id(sw_chart_id), .sw_user_id(sw_user_id),
         .user_in(user_in)
     );
     unifiedOutput output_handler(
