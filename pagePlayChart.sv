@@ -85,6 +85,8 @@ module pagePlayChart(
     always @(posedge prog_clk) begin
         if (rst) begin
             state = PLAY;
+            write_chart_id = 0;
+            write_record_id = 0;
         end
         else begin
             // Exit

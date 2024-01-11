@@ -143,8 +143,8 @@ module main(
             PLAY: prog_out = play_out;
             default: prog_out = init_out;
         endcase
-        next_state = sys_rst ? INIT : prog_out.state;
         rst = sys_rst || next_state != cur_state;
+        next_state = sys_rst ? INIT : prog_out.state;
     end
 
     assign led[0] = cur_state == INIT;
