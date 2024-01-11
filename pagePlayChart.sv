@@ -184,24 +184,23 @@ module scoreManager (
     // Scan every 50ms
     logic clk50ms;
     clkDiv clk50(.clk(prog_clk), .rst(rst), .divx(3), .clk_out(clk50ms));
-    Notes uin [`CHART_LEN - 1:0];
+    Notes uin [2:0];
     Notes cur_note, cur_in;
-    shortint uc;
     always @(posedge clk50ms or posedge rst) begin
         if (rst) begin
             score <= 14'd0;
-            uc <= 0;
         end
         else if (play_en) begin
             if (auto_play) score = score + 4;
             else begin
                 cur_in <= {user_in.oct_down, user_in.oct_up, user_in.note_keys};
                 cur_note <= chart.notes[note_count];
-                if (cur_note == cur_in | cur_note == uin[uc - 1]) score <= score + 4;
-                else if (cur_note == uin[uc - 2]) score <= score + 2;
-                else if (cur_note == uin[uc - 3]) score <= score + 1;
-                uin[uc] <= cur_in;
-                uc <= uc + 1;
+                if (cur_note == cur_in | cur_note == uin[2]) score <= score + 4;
+                else if (cur_note == uin[1]) score <= score + 2;
+                else if (cur_note == uin[0]) score <= score + 1;
+                uin[2] <= cur_in;
+                uin[1] <= uin[2];
+                uin[0] <= uin[1];
             end
         end
     end
