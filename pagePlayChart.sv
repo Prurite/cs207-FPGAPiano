@@ -56,7 +56,7 @@ module pagePlayChart(
             if (cd_end) begin
                 play_st <= 1'b1;
             end
-            else if (note_count >= read_chart.info.note_cnt) begin
+            else if (note_count >= read_chart.info.note_cnt && read_chart.info.note_cnt > 0) begin
                 fin_en <= 1'b0;
             end
         end
@@ -70,7 +70,7 @@ module pagePlayChart(
     // Refresh current note every 100ms
     logic clk_100ms;
     clkDiv div100(.clk(prog_clk), .rst(rst), .divx(6), .clk_out(clk_100ms));
-    always @(posedge prog_clk) begin
+    always @(posedge clk_100ms or posedge rst) begin
         if (rst) begin
             note_count <= 0;
             cur_note <= 9'b00_0000000;
@@ -179,7 +179,7 @@ module scoreManager (
     Notes uin [`CHART_LEN - 1:0];
     Notes cur_note, cur_in;
     shortint uc;
-    always @(posedge clk50ms) begin
+    always @(posedge clk50ms or posedge rst) begin
         if (rst) begin
             score <= 14'd0;
             uc <= 0;

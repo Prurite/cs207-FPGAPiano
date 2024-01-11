@@ -86,12 +86,36 @@ module pageMenu(
 
             // Read chart name
             case (cur_pos)
-                0: begin read_chart_id <= 0; seg <= "history "; end
-                1: begin read_chart_id <= 0; seg <= "free    "; end
-                2: begin read_chart_id <= 2; seg <= "song  01"; end
-                3: begin read_chart_id <= 3; seg <= "song  02"; end
-                4: begin read_chart_id <= 4; seg <= "song  03"; end
-                5: begin read_chart_id <= 5; seg <= "song  04"; end
+                0: begin
+                    read_chart_id <= 0; seg <= "history ";
+                    text[10][4*8:11*8-1] <= "Back   ";
+                    text[10][22*8:32*8-1] <= "Confirm   ";
+                end
+                1: begin
+                    read_chart_id <= 0; seg <= "free    ";
+                    text[10][4*8:11*8-1] <= "NO Auto";
+                    text[10][22*8:32*8-1] <= "Freedom!!!";
+                end
+                2: begin
+                    read_chart_id <= 1; seg <= "song  01";
+                    text[10][4*8:11*8-1] <= "Auto   ";
+                    text[10][22*8:32*8-1] <= "Play Chart";
+                end
+                3: begin
+                    read_chart_id <= 2; seg <= "song  02";
+                    text[10][4*8:11*8-1] <= "Auto   ";
+                    text[10][22*8:32*8-1] <= "Play Chart";
+                end
+                4: begin
+                    read_chart_id <= 3; seg <= "song  03";
+                    text[10][4*8:11*8-1] <= "Auto   ";
+                    text[10][22*8:32*8-1] <= "Play Chart";
+                end
+                5: begin
+                    read_chart_id <= 4; seg <= "song  04";
+                    text[10][4*8:11*8-1] <= "Auto   ";
+                    text[10][22*8:32*8-1] <= "Play Chart";
+                end
                 default: begin read_chart_id <= 0; seg <= "ykns inu"; end
             endcase
 
