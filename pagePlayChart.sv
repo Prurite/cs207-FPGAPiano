@@ -36,7 +36,7 @@ module pagePlayChart(
     assign notes = read_chart.notes;
 
     // Instanciate current player
-    notePlayer note_player(.clk(clk), .rst(rst), .note(cur_note), .sig(sig));
+    //notePlayer note_player(.clk(clk), .rst(rst), .note(cur_note), .sig(sig));
 
     // Get screen output
     screenOut screen_out(.prog_clk(prog_clk), .rst(rst), .chart(read_chart), .note_count(note_count), .user_in(user_in), .score(cur_score), .play_st(play_st), .text(text), .seg_text(play_out.seg), .led(play_out.led));
@@ -84,27 +84,27 @@ module pagePlayChart(
     // Management after play ends
     always @(posedge prog_clk) begin
         if (rst) begin
-            state <= PLAY;
+            state = PLAY;
         end
         else begin
             // Exit
-            if (user_in.arrow_keys == LEFT) state <= MENU;
+            if (user_in.arrow_keys == LEFT) state = MENU;
             if (~fin_en) begin
                 if (user_in.arrow_keys == RIGHT) begin
                     // Save chart
-                    write_chart_id <= 1;
-                    write_chart <= uinc;
+                    write_chart_id = 1;
+                    write_chart = uinc;
                     // Save score
-                    write_record_id <= 1;
-                    write_record <= play_record;
-                    state <= MENU;
+                    write_record_id = 1;
+                    write_record = play_record;
+                    state = MENU;
                 end
             end
         end
     end
 
     // Instanciate score manager
-    scoreManager sc_m(.clk(clk), .prog_clk(prog_clk), .rst(rst), .play_en(play_en), .auto_play(auto_play), .user_in(user_in), .chart(read_chart), .note_count(note_count), .score(cur_score));
+    scoreManager sc_m(.clk(clk), .rst(rst), .play_en(play_en), .auto_play(auto_play), .user_in(user_in), .chart(read_chart), .note_count(note_count), .score(cur_score));
     
     assign play_out.text = text;
     assign play_out.notes = cur_note;
@@ -159,7 +159,7 @@ endmodule
 
 // Return realtime score according to user input
 module scoreManager (
-    input logic clk, prog_clk, rst, play_en, auto_play,
+    input logic clk, rst, play_en, auto_play,
     input UserInput user_in,
     input Chart chart,
     input shortint note_count,

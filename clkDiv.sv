@@ -12,12 +12,11 @@ module clkDiv(
         else begin
             if (divx == 0) clk_out <= 0;
             else begin
-                if (cnt == divx) begin
-                    clk_out <= 0;
+                if (cnt == (divx >> 1) - 1) begin
                     cnt <= 0;
+                    clk_out <= ~clk_out;
                 end
-                else if (cnt == (divx >> 1) - 1) clk_out <= ~clk_out;
-                cnt <= cnt + 1;
+                else cnt <= cnt + 1;
             end 
         end
     end

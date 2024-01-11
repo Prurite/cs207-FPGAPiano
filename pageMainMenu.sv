@@ -36,7 +36,7 @@ module pageMenu(
             text[1] <=  ">>> Score History               ";
             text[2] <=  "-----      Chart List      -----";
             text[3] <=  "    [0]  Free play      .       ";
-            text[4] <=  "    [1]                         ";
+            text[4] <=  "    [1]  Little Stars           ";
             text[5] <=  "    [2]                         ";
             text[6] <=  "    [3]                         ";
             text[7] <=  "    [4]  Something              ";
@@ -57,7 +57,7 @@ module pageMenu(
             if (updating_chart_id <= 6) begin
                 read_chart_id <= updating_chart_id;
                 updating_chart_id <= updating_chart_id + 1;
-                if (read_chart_id >= 2 && read_chart_id <= 5)
+                if (read_chart_id >= 3 && read_chart_id <= 5)
                     text[2 + read_chart_id][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
             end else begin
                 case (cur_pos)
@@ -70,19 +70,19 @@ module pageMenu(
                         seg <= "free    ";
                     end
                     2: begin
-                        read_chart_id <= 2;
+                        read_chart_id <= 1;
                         seg <= "song  01";
                     end
                     3: begin
-                        read_chart_id <= 3;
+                        read_chart_id <= 2;
                         seg <= "song  02";
                     end
                     4: begin
-                        read_chart_id <= 4;
+                        read_chart_id <= 3;
                         seg <= "song  03";
                     end
                     5: begin
-                        read_chart_id <= 5;
+                        read_chart_id <= 4;
                         seg <= "song  04";
                     end
                     default: begin
@@ -102,7 +102,7 @@ module pageMenu(
                         else cur_pos <= cur_pos + 1;
                     end
                     LEFT: begin
-                        if (cur_pos != 0) begin
+                        if (cur_pos > 1) begin
                             state <= PLAY; auto_play <= 1'b1;
                         end
                     end
