@@ -5,7 +5,7 @@ module pagePlayChart(
     input logic clk, prog_clk, rst,
     input UserInput user_in,
     input Chart read_chart,
-    input logic auto_play,
+    input logic auto_play, free_play,
     output ProgramOutput play_out,
     output byte write_chart_id,
     output Chart write_chart,
@@ -36,8 +36,8 @@ module pagePlayChart(
     screenOut screen_out(
         .prog_clk(prog_clk), .rst(rst),
         .chart(read_chart), .note_count(note_count),
-        .user_in(user_in), .play_st(play_st), .score(cur_score),
-        .text(text), .seg_text(play_out.seg), .led(play_out.led)
+        .user_in(user_in), .play_st(play_st), .auto_play(auto_play), .free_play(free_play),
+        .score(cur_score), .text(text), .seg_text(play_out.seg), .led(play_out.led)
     );
     
     // Countdown func (3s before start)
@@ -94,9 +94,9 @@ module pagePlayChart(
             write_chart_id <= 0;
             write_record_id <= 0;
         end else begin
-            if (user_in.arrow_keys == LEFT && (~auto_play || note_count > 5))
+            if (user_in.arrow_keys == LEFT && play_st)
                 play_out.state <= MENU;
-            else if (user_in.arrow_keys == RIGHT) begin
+            else if (user_in.arrow_keys == RIGHT && play_st) begin
                 // Save chart
                 write_chart_id <= user_in.chart_id;
                 write_chart <= uinc;
@@ -113,7 +113,7 @@ module pagePlayChart(
     // Instanciate score manager
     scoreManager sc_m(
         .prog_clk(prog_clk), .rst(rst),
-        .play_en(play_en), .auto_play(auto_play),
+        .play_en(play_en), .auto_play(auto_play), .free_play(free_play),
         .user_in(user_in), .chart(read_chart), .note_count(note_count),
         .score(cur_score)
     );
@@ -125,9 +125,9 @@ module screenOut(
     input Chart chart,
     input shortint note_count,
     input UserInput user_in,
-    input logic [13:0] score,
-    input logic [1:0] cnt_dn,
-    input logic play_st,
+    input bit [13:0] score,
+    input bit [1:0] cnt_dn,
+    input logic play_st, auto_play, free_play,
     output ScreenText text,
     output SegDisplayText seg_text,
     output LedState led
@@ -148,21 +148,40 @@ module screenOut(
             text[2]  <= "=====    Playing Chart    ===== ";
             text[4]  <= "Current User ID: 0              ";
             text[5]  <= "Playing: -                      ";
-            text[6]  <= "Save to chart ID: 1             ";
+            text[6]  <= "Save to chart ID:               ";
             // Progress & Score display
             text[8]  <= "Prog.    0 /    0    Score     0";
             // Line 10-25 display notes
             text[27] <= "    C  D  E  F  G  A  B   =     ";
+            //              [C][D]                [+][[-]]
             text[29] <= "[+] Hi [-] Lo [<] Exit  [>] Save";
-        end
-        else begin
+        end else begin
             // Display prog info
             text[8][0:32*8-1] <= {"Prog. ", cnt_str[8:39], " / ", len_str[8:39], "    Score ", sc_str};
             // Display chart info
-            text[4][17*8:19*8-1] <= uid_raw[3*8:5*8-1];
-            text[5][9*8:(9+`NAME_LEN)*8 - 1] <= chart.info.name;
-            text[6][19*8:21*8-1] <= cid_raw[3*8:5*8-1];
+            if (auto_play) text[4][17*8:21*8-1] <= "Auto";
+            else text[4][17*8:21*8-1] <= {uid_raw[3*8:5*8-1], 16'h0000};
+            if (free_play) text[5][9*8:(9+`NAME_LEN)*8 - 1] <= "Free Playing... ";
+            else text[5][9*8:(9+`NAME_LEN)*8 - 1] <= chart.info.name;
+            text[6][17*8:19*8-1] <= cid_raw[3*8:5*8-1];
             text[25:10] <= note_area[15:0];
+
+            // User interaction
+            case (user_in.note_keys)
+                7'b0000001: text[27][3*8:24*8-1] <= "[C] D  E  F  G  A  B ";
+                7'b0000010: text[27][3*8:24*8-1] <= " C [D] E  F  G  A  B ";
+                7'b0000100: text[27][3*8:24*8-1] <= " C  D [E] F  G  A  B ";
+                7'b0001000: text[27][3*8:24*8-1] <= " C  D  E [F] G  A  B ";
+                7'b0010000: text[27][3*8:24*8-1] <= " C  D  E  F [G] A  B ";
+                7'b0100000: text[27][3*8:24*8-1] <= " C  D  E  F  G [A] B ";
+                7'b1000000: text[27][3*8:24*8-1] <= " C  D  E  F  G  A [B]";
+                default: text[27][3*8:24*8-1]    <= " C  D  E  F  G  A  B ";
+            endcase
+            case ({user_in.oct_down, user_in.oct_up})
+                2'b10: text[27][25*8:28*8-1] <= "[-]";
+                2'b01: text[27][25*8:28*8-1] <= "[+]";
+                default: text[27][25*8:28*8-1] <= " = ";
+            endcase
         end
     end
 
@@ -175,7 +194,7 @@ endmodule
 
 // Return realtime score according to user input
 module scoreManager (
-    input logic prog_clk, rst, play_en, auto_play,
+    input logic prog_clk, rst, play_en, auto_play, free_play,
     input UserInput user_in,
     input Chart chart,
     input shortint note_count,
@@ -195,7 +214,7 @@ module scoreManager (
             score <= 14'd0;
             uin[0] <= 9'b00_0000000;
             uin[1] <= 9'b00_0000000;
-        end else if (play_en) begin
+        end else if (play_en && !free_play) begin
             if (auto_play) score = score + 4;
             else begin
                 uin[0] <= cur_in;
@@ -227,16 +246,16 @@ module noteAreaController(
         if (~en) begin
             case (cnt_dn)
                 2'b11: begin
-                    text[0] <= "                                ";
-                    text[1] <= "                                ";
-                    text[2] <= "          33333333333           ";
-                    text[3] <= "        333333333333333         ";
-                    text[4] <= "       3333         3333        ";
-                    text[5] <= "                     333        ";
-                    text[6] <= "                    3333        ";
-                    text[7] <= "            33333333333         ";
-                    text[8] <= "            33333333333         ";
-                    text[9] <= "                    3333        ";
+                    text[0]  <= "                                ";
+                    text[1]  <= "                                ";
+                    text[2]  <= "          33333333333           ";
+                    text[3]  <= "        333333333333333         ";
+                    text[4]  <= "       3333         3333        ";
+                    text[5]  <= "                     333        ";
+                    text[6]  <= "                    3333        ";
+                    text[7]  <= "            33333333333         ";
+                    text[8]  <= "            33333333333         ";
+                    text[9]  <= "                    3333        ";
                     text[10] <= "                     333        ";
                     text[11] <= "       3333         3333        ";
                     text[12] <= "        333333333333333         ";
@@ -245,16 +264,16 @@ module noteAreaController(
                     text[15] <= "                                ";
                 end
                 2'b10: begin
-                    text[0] <= "                                ";
-                    text[1] <= "            22222222            ";
-                    text[2] <= "         2222222222222          ";
-                    text[3] <= "        2222       2222         ";
-                    text[4] <= "        2222        2222        ";
-                    text[5] <= "                    2222        ";
-                    text[6] <= "                   22222        ";
-                    text[7] <= "                 222222         ";
-                    text[8] <= "                22222           ";
-                    text[9] <= "              22222             ";
+                    text[0]  <= "                                ";
+                    text[1]  <= "            22222222            ";
+                    text[2]  <= "         2222222222222          ";
+                    text[3]  <= "        2222       2222         ";
+                    text[4]  <= "        2222        2222        ";
+                    text[5]  <= "                    2222        ";
+                    text[6]  <= "                   22222        ";
+                    text[7]  <= "                 222222         ";
+                    text[8]  <= "                22222           ";
+                    text[9]  <= "              22222             ";
                     text[10] <= "            22222               ";
                     text[11] <= "          22222                 ";
                     text[12] <= "        22222222222222222       ";
@@ -263,16 +282,16 @@ module noteAreaController(
                     text[15] <= "                                ";
                 end
                 2'b01: begin
-                    text[0] <= "                                ";
-                    text[1] <= "                                ";
-                    text[2] <= "                111             ";
-                    text[3] <= "            1111111             ";
-                    text[4] <= "            1111111             ";
-                    text[5] <= "                111             ";
-                    text[6] <= "                111             ";
-                    text[7] <= "                111             ";
-                    text[8] <= "                111             ";
-                    text[9] <= "                111             ";
+                    text[0]  <= "                                ";
+                    text[1]  <= "                                ";
+                    text[2]  <= "                111             ";
+                    text[3]  <= "            1111111             ";
+                    text[4]  <= "            1111111             ";
+                    text[5]  <= "                111             ";
+                    text[6]  <= "                111             ";
+                    text[7]  <= "                111             ";
+                    text[8]  <= "                111             ";
+                    text[9]  <= "                111             ";
                     text[10] <= "                111             ";
                     text[11] <= "                111             ";
                     text[12] <= "           111111111111         ";

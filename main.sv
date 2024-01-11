@@ -102,6 +102,7 @@ module main(
         .user_in(user_in), .edge_out(edged_user_in) );
 
     logic auto_play; // 0: normal play; 1: auto play
+    logic free_play; // 0: normal play; 1: free play
 
     const UserInput default_user_in = '{default: '0};
     UserInput init_in, menu_in, history_in, play_in;
@@ -114,7 +115,7 @@ module main(
     pageMenu page_menu(
         .clk(clk), .prog_clk(prog_clk), .rst(menu_rst), .user_in(menu_in), .menu_out(menu_out),
         .read_chart_id(read_chart_id), .chart_data(read_chart),
-        .auto_play(auto_play), .cur_state(next_state)
+        .auto_play(auto_play), .free_play(free_play), .cur_state(next_state)
     );
     pageScoreHistory page_history(
         .clk(clk), .prog_clk(prog_clk), .rst(history_rst), .user_in(history_in), .history_out(history_out),
@@ -122,7 +123,7 @@ module main(
     );
     pagePlayChart page_play(
         .clk(clk), .prog_clk(prog_clk), .rst(play_rst), .user_in(play_in), .play_out(play_out),
-        .read_chart(read_chart), .auto_play(auto_play),
+        .read_chart(read_chart), .auto_play(auto_play), .free_play(free_play),
         .write_chart_id(write_chart_id), .write_chart(write_chart),
         .write_record_id(write_record_id), .write_record(write_record)
     );

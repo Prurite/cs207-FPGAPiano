@@ -6,7 +6,7 @@ module pageMenu(
     output ProgramOutput menu_out,
     output byte read_chart_id,
     input Chart chart_data,
-    output logic auto_play,
+    output logic auto_play, free_play,
     input TopState cur_state
 );
 
@@ -34,16 +34,16 @@ module pageMenu(
             read_chart_id <= 1;
             updating_stay_cnt <= 0;
             init_finish <= 0;
-            text[0] <=  "=======    Main  Menu    =======";
-            text[1] <=  "    Score History               ";
-            text[2] <=  "-----      Chart List      -----";
-            text[3] <=  "    [0]  Free play      .       ";
-            text[4] <=  "    [1]                         ";
-            text[5] <=  "    [2]                         ";
-            text[6] <=  "    [3]                         ";
-            text[7] <=  "    [4]                         ";
-            text[8] <=  "    [5]                         ";
-            text[9] <=  "    [6]                         ";
+            text[0]  <=  "=======    Main  Menu    =======";
+            text[1]  <=  "    Score History               ";
+            text[2]  <=  "-----      Chart List      -----";
+            text[3]  <=  "    [0]  Free play      .       ";
+            text[4]  <=  "    [1]                         ";
+            text[5]  <=  "    [2]                         ";
+            text[6]  <=  "    [3]                         ";
+            text[7]  <=  "    [4]                         ";
+            text[8]  <=  "    [5]                         ";
+            text[9]  <=  "    [6]                         ";
             text[10] <=  "                                ";
             text[11] <=  "[^][v] Move Up / Down           ";
             text[12] <= "[<] Auto          [>] Play Chart";
