@@ -122,12 +122,12 @@ module ChartStorageManager(
     // When id's are not 0, read or write accordingly
     always @(posedge clk or posedge sys_rst)
         if (sys_rst) begin
-            chartStorage[2].info <= info2;
-            for (int i = 0; i < NOTE_CNT; i++)
-                chartStorage[2].notes[i] <= ts_notes[i];
             chartStorage[1].info <= ts_info;
             for (int i = 0; i < NOTE_CNT; i++)
                 chartStorage[1].notes[i] <= ts_notes[i];
+            chartStorage[2].info <= info2;
+            for (int i = 0; i < NOTE_CNT; i++)
+                chartStorage[2].notes[i] <= ts_notes[i];
         end else begin
             if (read_chart_id != 0)
                 current_chart_data <= chartStorage[read_chart_id-1];

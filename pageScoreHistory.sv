@@ -20,13 +20,12 @@ module pageScoreHistory(
     binary2Str score_text_gen( .intx(record_data.score),
         .str(score_text) );
 
-    byte updating_record_id;
-    byte tid;
+    byte updating_stay_cnt;
 
     always @(posedge prog_clk)
         if (rst) begin
-            tid <= 0;
-            updating_record_id <= 0;
+            read_record_id <= 1;
+            updating_stay_cnt <= 0;
             //history_out.state <= HISTORY;
             history_out.text[0] <=  "=====    Score History    ===== ";
             history_out.text[1] <=  "                                ";
@@ -45,18 +44,18 @@ module pageScoreHistory(
             for (int i = 13; i < `SCREEN_TEXT_HEIGHT; i = i + 1)
                 history_out.text[i] <= "                                ";
             history_out.seg <= "rec     ";
-        end else if (updating_record_id <= 11) begin
-            tid <= updating_record_id;
-            updating_record_id <= updating_record_id + 1;
-            // Current record data is for read_record_id - 1
-            if (tid >= 1 && tid <= 9) begin
+        end else if (read_record_id <= 9) begin
+            if (updating_stay_cnt == 0)
+                updating_stay_cnt <= 1;
+            else if (updating_stay_cnt == 1) begin
                 history_out.text[read_record_id + 1][7*8 : 9*8 - 1] <= user_id_text[3*8 : 5*8 - 1];
                 history_out.text[read_record_id + 1][10*8 : 10*8 + `NAME_LEN*8 - 1] <= record_data.chart_name;
                 history_out.text[read_record_id + 1][11*8 + `NAME_LEN*8 : 16*8 + `NAME_LEN*8 - 1] <= score_text;
+            end else if (updating_stay_cnt == 2) begin
+                updating_stay_cnt <= 0;
+                read_record_id <= read_record_id + 1;
             end
         end
-
-        assign read_record_id = tid;
 
     // Individual state control
     always @(posedge prog_clk)

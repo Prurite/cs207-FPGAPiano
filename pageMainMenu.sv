@@ -18,8 +18,12 @@ module pageMenu(
     ScreenText text;
     SegDisplayText seg;
     TopState state;
-    byte updating_chart_id;
-    // Everytime a reset happens, it loops back to the first chart
+
+    byte updating_stay_cnt;
+    // read_chart_id is the current chart_id to be read
+    // After setting read_chart_id, the chart will be read in the next cycle
+    // Use updating_stay_cnt to move to the next chart after 5 cycles
+    logic init_finish;
 
     assign menu_out.text = text;
     assign menu_out.seg = seg;
@@ -31,23 +35,31 @@ module pageMenu(
             cur_pos <= 0;
             seg <= "        ";
             state <= MENU;
-            if (cur_state != PLAY) begin
-                read_chart_id <= 0;
-                
-            end
-            updating_chart_id <= 0;
+            read_chart_id <= 1;
+            updating_stay_cnt <= 0;
+            init_finish <= 0;
             text[0] <=  "=======    Main  Menu    =======";
             text[1] <=  ">>> Score History               ";
             text[2] <=  "-----      Chart List      -----";
             text[3] <=  "    [0]  Free play      .       ";
-            text[4] <=  "    [1]  Little Stars           ";
+            text[4] <=  "    [1]                         ";
             text[5] <=  "    [2]                         ";
             text[6] <=  "    [3]                         ";
-            text[7] <=  "    [4]  Something              ";
+            text[7] <=  "    [4]                         ";
             text[8] <=  "                                ";
             text[9] <=  "[^][v] Move Up / Down           ";
             text[10] <= "[<] Auto          [>] Play Chart";
-        end
+        end else if (!init_finish)
+            if (updating_stay_cnt == 0)
+                updating_stay_cnt <= 1;
+            else if (updating_stay_cnt == 1) begin
+                updating_stay_cnt <= 2;
+                text[3 + read_chart_id][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
+            end else if (updating_stay_cnt == 2) begin
+                updating_stay_cnt <= 0;
+                read_chart_id <= read_chart_id + 1;
+                init_finish <= read_chart_id == 5;
+            end
         else begin
             // Pointer actions
             text[1][0:3*8-1] <= (cur_pos == 0) ? ">>>" : "   ";
@@ -58,66 +70,38 @@ module pageMenu(
             text[7][0:3*8-1] <= (cur_pos == 5) ? ">>>" : "   ";
 
             // Read chart name
-            if (updating_chart_id <= 6 && cur_state != PLAY) begin
-                read_chart_id <= updating_chart_id;
-                updating_chart_id <= updating_chart_id + 1;
-                if (read_chart_id >= 3 && read_chart_id <= 5)
-                    text[2 + read_chart_id][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
-            end else if (cur_state != PLAY) begin
-                case (cur_pos)
-                    0: begin
-                        read_chart_id <= 0;
-                        seg <= "history ";
-                    end
-                    1: begin
-                        read_chart_id <= 0;
-                        seg <= "free    ";
-                    end
-                    2: begin
-                        read_chart_id <= 2;
-                        seg <= "song  01";
-                    end
-                    3: begin
-                        read_chart_id <= 3;
-                        seg <= "song  02";
-                    end
-                    4: begin
-                        read_chart_id <= 4;
-                        seg <= "song  03";
-                    end
-                    5: begin
-                        read_chart_id <= 5;
-                        seg <= "song  04";
-                    end
-                    default: begin
-                        read_chart_id <= 0;
-                        seg <= "ykns inu";
-                    end
-                endcase
+            case (cur_pos)
+                0: begin read_chart_id <= 0; seg <= "history "; end
+                1: begin read_chart_id <= 0; seg <= "free    "; end
+                2: begin read_chart_id <= 2; seg <= "song  01"; end
+                3: begin read_chart_id <= 3; seg <= "song  02"; end
+                4: begin read_chart_id <= 4; seg <= "song  03"; end
+                5: begin read_chart_id <= 5; seg <= "song  04"; end
+                default: begin read_chart_id <= 0; seg <= "ykns inu"; end
+            endcase
 
-                // Input key actions
-                case (user_in.arrow_keys)
-                    UP: begin
-                        if (cur_pos == 0) cur_pos <= 5;
-                        else cur_pos <= cur_pos - 1;
+            // Input key actions
+            case (user_in.arrow_keys)
+                UP: begin
+                    if (cur_pos == 0) cur_pos <= 5;
+                    else cur_pos <= cur_pos - 1;
+                end
+                DOWN: begin
+                    if (cur_pos == 5) cur_pos <= 0;
+                    else cur_pos <= cur_pos + 1;
+                end
+                LEFT: begin
+                    if (cur_pos > 1) begin
+                        state <= PLAY; auto_play <= 1'b1;
                     end
-                    DOWN: begin
-                        if (cur_pos == 5) cur_pos <= 0;
-                        else cur_pos <= cur_pos + 1;
+                end
+                RIGHT: begin
+                    if (cur_pos == 0) state <= HISTORY;
+                    else begin
+                        state <= PLAY; auto_play <= 1'b0;
                     end
-                    LEFT: begin
-                        if (cur_pos > 1) begin
-                            state <= PLAY; auto_play <= 1'b1;
-                        end
-                    end
-                    RIGHT: begin
-                        if (cur_pos == 0) state <= HISTORY;
-                        else begin
-                            state <= PLAY; auto_play <= 1'b0;
-                        end
-                    end
-                endcase
-            end
+                end
+            endcase
         end
     end
 endmodule
