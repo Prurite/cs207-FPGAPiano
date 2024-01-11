@@ -103,21 +103,25 @@ module main(
 
     logic auto_play; // 0: normal play; 1: auto play
 
+    const UserInput default_user_in = '{default: '0};
+    UserInput init_in, menu_in, history_in, play_in;
+    logic init_rst, menu_rst, history_rst, play_rst;
+
     // Bind the pages
     pageInit page_init(
-        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(edged_user_in), .init_out(init_out)
+        .clk(clk), .prog_clk(prog_clk), .rst(init_rst), .user_in(init_in), .init_out(init_out)
     ); // pageInit resets things, loads charts from ROM then jumps to MENU
     pageMenu page_menu(
-        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(edged_user_in), .menu_out(menu_out),
+        .clk(clk), .prog_clk(prog_clk), .rst(menu_rst), .user_in(menu_in), .menu_out(menu_out),
         .read_chart_id(read_chart_id), .chart_data(read_chart),
         .auto_play(auto_play), .cur_state(next_state)
     );
     pageScoreHistory page_history(
-        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(edged_user_in), .history_out(history_out),
+        .clk(clk), .prog_clk(prog_clk), .rst(history_rst), .user_in(history_in), .history_out(history_out),
         .read_record_id(read_record_id), .record_data(read_record)
     );
     pagePlayChart page_play(
-        .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(edged_user_in), .play_out(play_out),
+        .clk(clk), .prog_clk(prog_clk), .rst(play_rst), .user_in(play_in), .play_out(play_out),
         .read_chart(read_chart), .auto_play(auto_play),
         .write_chart_id(write_chart_id), .write_chart(write_chart),
         .write_record_id(write_record_id), .write_record(write_record)
@@ -143,7 +147,18 @@ module main(
             PLAY: prog_out = play_out;
             default: prog_out = init_out;
         endcase
+
+        init_in = cur_state == INIT ? edged_user_in : default_user_in;
+        menu_in = cur_state == MENU ? edged_user_in : default_user_in;
+        history_in = cur_state == HISTORY ? edged_user_in : default_user_in;
+        play_in = cur_state == PLAY ? edged_user_in : default_user_in;
+
         rst = sys_rst || next_state != cur_state;
+        init_rst = sys_rst || next_state == INIT ? rst : 0;
+        menu_rst = sys_rst || next_state == MENU ? rst : 0;
+        history_rst = sys_rst || next_state == HISTORY ? rst : 0;
+        play_rst = sys_rst || next_state == PLAY ? rst : 0;
+
         next_state = sys_rst ? INIT : prog_out.state;
     end
 
