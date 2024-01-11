@@ -5,7 +5,7 @@
 module binary2Str(
     // Input up to 16384
     input [13:0] intx,
-    output [0*8:5*8 - 1] str
+    output reg [0*8:5*8 - 1] str
 );
     bit [3:0] t [10:0];
     // 00 0000 0000 0xxx
@@ -54,7 +54,21 @@ module binary2Str(
     bit [19:0] bcd;
     assign bcd = {2'b0, thhh[0][3], thhh[1], thh[4], th[7], t[10], intx[0]};
     // Convert to string
-    assign str = bcd == 20'd0 ? 40'd0 : {4'h3, bcd[19:16], 4'h3, bcd[15:12], 4'h3, bcd[11:8], 4'h3, bcd[7:4], 4'h3, bcd[3:0]};
+    always_comb begin
+        str = {4'h3, bcd[19:16], 4'h3, bcd[15:12], 4'h3, bcd[11:8], 4'h3, bcd[7:4], 4'h3, bcd[3:0]};
+        if (bcd[19:16] == 4'h0) begin
+            str[0:7] = 8'h00;
+            if (bcd[15:12] == 4'h0) begin
+                str[8:15] = 8'h00;
+                if (bcd[11:8] == 4'h0) begin
+                    str[16:23] = 8'h00;
+                    if (bcd[7:4] == 4'h0) begin
+                        str[24:31] = 8'h00;
+                    end
+                end
+            end
+        end
+    end
 endmodule
 
 // Add 3 when x exceeds 4.
