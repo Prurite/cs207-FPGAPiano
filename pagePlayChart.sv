@@ -53,8 +53,13 @@ module pagePlayChart(
             fin_en <= 1'b1;
         end
         else begin
-            if (cd_end) play_st <= 1'b1;
-            if (note_count == read_chart.info.note_cnt) fin_en <= 1'b0;
+            if (cd_end) begin
+                play_st <= 1'b1;
+                cd_end <= 1'b0;
+            end
+            else if (note_count >= read_chart.info.note_cnt) begin
+                fin_en <= 1'b0;
+            end
         end
     end
     
@@ -65,8 +70,8 @@ module pagePlayChart(
     PlayRecord play_record;
     // Refresh current note every 100ms
     logic clk_100ms;
-    clkDiv div100(.clk(clk), .rst(rst), .divx(10_000_000), .clk_out(clk_100ms));
-    always @(posedge clk_100ms) begin
+    clkDiv div100(.clk(prog_clk), .rst(rst), .divx(6), .clk_out(clk_100ms));
+    always @(posedge prog_clk) begin
         if (rst) begin
             note_count <= 0;
             cur_note <= 9'b00_0000000;
@@ -106,7 +111,7 @@ module pagePlayChart(
     end
 
     // Instanciate score manager
-    scoreManager sc_m(.clk(clk), .rst(rst), .play_en(play_en), .auto_play(auto_play), .user_in(user_in), .chart(read_chart), .note_count(note_count), .score(cur_score));
+    scoreManager sc_m(.prog_clk(prog_clk), .rst(rst), .play_en(play_en), .auto_play(auto_play), .user_in(user_in), .chart(read_chart), .note_count(note_count), .score(cur_score));
     
     assign play_out.text = text;
     assign play_out.notes = cur_note;
@@ -155,13 +160,13 @@ module screenOut(
             text[5][9*8:(9+`NAME_LEN)*8 - 1] = chart.info.name;
         end
     end
-    noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_cnt(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area), .seg(seg_text), .led(led));
+    noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_count(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area), .seg(seg_text), .led(led));
     assign text[10:25] = note_area[10:25];
 endmodule
 
 // Return realtime score according to user input
 module scoreManager (
-    input logic clk, rst, play_en, auto_play,
+    input logic prog_clk, rst, play_en, auto_play,
     input UserInput user_in,
     input Chart chart,
     input shortint note_count,
@@ -171,7 +176,7 @@ module scoreManager (
 
     // Scan every 50ms
     logic clk50ms;
-    clkDiv clk50(.clk(clk), .rst(rst), .divx(5_000_000), .clk_out(clk50ms));
+    clkDiv clk50(.clk(prog_clk), .rst(rst), .divx(3), .clk_out(clk50ms));
     Notes uin [`CHART_LEN - 1:0];
     Notes cur_note, cur_in;
     shortint uc;
@@ -199,7 +204,7 @@ endmodule
 module noteAreaController(
     input logic prog_clk, rst, en,
     input [1:0] cnt_dn,
-    input shortint note_cnt,
+    input shortint note_count,
     input Notes notes [`CHART_LEN-1:0],
     input logic play_st,
     // Only [10:25] is modified
@@ -277,12 +282,12 @@ module noteAreaController(
     end
     
     shortint note_id; // Make sure it does not go out of bound
-    assign note_id = (note_cnt+15) >= `CHART_LEN ? `CHART_LEN-16 : note_cnt;
+    assign note_id = (note_count+15) >= `CHART_LEN ? `CHART_LEN-16 : note_count;
 
     // Display seg
     always @(posedge prog_clk) begin
         if (rst) seg <= "        ";
-        else if (en) case (notes[note_cnt])
+        else if (en) case (notes[note_count])
             9'b00_0000001: seg <= "c   1   ";
             9'b00_0000010: seg <= "d   2   ";
             9'b00_0000100: seg <= "e   3   ";
