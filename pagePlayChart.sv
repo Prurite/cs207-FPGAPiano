@@ -44,7 +44,7 @@ module pagePlayChart(
     // Countdown func (3s before start)
     wire [1:0] cnt_dn;
     logic cd_end;
-    countDown cd(.clk(clk), .rst(rst), .play_st(cd_end), .cnt_dn(cnt_dn));
+    countDown cd(.clk(prog_clk), .rst(rst), .play_st(cd_end), .cnt_dn(cnt_dn));
 
     // Status control
     always @(posedge prog_clk) begin
@@ -142,26 +142,26 @@ module screenOut(
     always @(posedge prog_clk or posedge rst) begin
         if (rst) begin
             // Title display
-            text[2]  = "=====    Playing Chart    ===== ";
-            text[4]  = "Current User ID: 0              ";
-            text[5]  = "Playing: -                      ";
-            text[6]  = "Save to chart ID: 1             ";
+            text[2]  <= "=====    Playing Chart    ===== ";
+            text[4]  <= "Current User ID: 0              ";
+            text[5]  <= "Playing: -                      ";
+            text[6]  <= "Save to chart ID: 1             ";
             // Progress & Score display
-            text[8]  = "Prog.    0 /    0    Score     0";
+            text[8]  <= "Prog.    0 /    0    Score     0";
             // Line 10-25 display notes
-            text[27] = "    C  D  E  F  G  A  B   =     ";
-            text[29] = "[+] Hi [-] Lo [<] Exit  [>] Save";
+            text[27] <= "    C  D  E  F  G  A  B   =     ";
+            text[29] <= "[+] Hi [-] Lo [<] Exit  [>] Save";
         end
         else begin
             // Display prog info
-            text[8][0:32*8-1] = {"Prog. ", cnt_str[8:39], " / ", len_str[8:39], "    Score ", sc_str};
+            text[8][0:32*8-1] <= {"Prog. ", cnt_str[8:39], " / ", len_str[8:39], "    Score ", sc_str};
             // Display chart info
-            text[4][17*8:19*8-1] = uid_raw[3*8:5*8-1];
-            text[5][9*8:(9+`NAME_LEN)*8 - 1] = chart.info.name;
+            text[4][17*8:19*8-1] <= uid_raw[3*8:5*8-1];
+            text[5][9*8:(9+`NAME_LEN)*8 - 1] <= chart.info.name;
+            text[10:25] <= note_area[10:25];
         end
     end
     noteAreaController ctrl(.prog_clk(prog_clk), .rst(rst), .en(play_st), .cnt_dn(cnt_dn), .note_count(note_count), .notes(chart.notes), .play_st(play_st), .text(note_area), .seg(seg_text), .led(led));
-    assign text[10:25] = note_area[10:25];
 endmodule
 
 // Return realtime score according to user input
@@ -410,22 +410,20 @@ endmodule
 
 // Perform countdown before a chart starts
 module countDown (
-    input logic clk, rst,
+    input logic prog_clk, rst,
     output reg play_st,
     output reg [1:0] cnt_dn
 );
     byte cnt;
-    logic clk_100ms, en;
-    clkDiv div100(.clk(clk), .rst(rst), .divx(10_000_000), .clk_out(clk_100ms));
-    always @(posedge clk_100ms or posedge rst) begin
+    logic en;
+    always @(posedge prog_clk or posedge rst) begin
         if (rst) begin
             cnt <= 0;
             en <= 1'b0;
             cnt_dn <= 2'b11;
         end
         else if (~en) begin
-            cnt <= cnt + 1;
-            if (cnt == 10) begin
+            if (cnt == 60) begin
                 cnt <= 0;
                 case (cnt_dn)
                     2'b11: cnt_dn <= 2'b10;
@@ -434,6 +432,7 @@ module countDown (
                     2'b00: en <= 1'b1;
                 endcase
             end
+            else cnt <= cnt + 1;
         end
     end
     assign play_st = en;

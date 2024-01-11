@@ -120,12 +120,14 @@ module main(
         .clk(clk), .prog_clk(prog_clk), .rst(history_rst), .user_in(history_in), .history_out(history_out),
         .read_record_id(read_record_id), .record_data(read_record)
     );
+    
     pagePlayChart page_play(
         .clk(clk), .prog_clk(prog_clk), .rst(play_rst), .user_in(play_in), .play_out(play_out),
         .read_chart(read_chart), .auto_play(auto_play),
         .write_chart_id(write_chart_id), .write_chart(write_chart),
         .write_record_id(write_record_id), .write_record(write_record)
     );
+    
 
     /* State transitions:
      * INIT -> MENU
