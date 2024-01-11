@@ -208,6 +208,7 @@ module scoreManager (
     Notes uin [1:0];
     Notes cur_note, cur_in;
     assign cur_in = {user_in.oct_down, user_in.oct_up, user_in.note_keys};
+    assign cur_note = chart.notes[note_count];
 
     always @(posedge clk50ms or posedge rst) begin
         if (rst) begin
@@ -215,14 +216,13 @@ module scoreManager (
             uin[0] <= 9'b00_0000000;
             uin[1] <= 9'b00_0000000;
         end else if (play_en && ~free_play && (cur_note[6:0] != 7'b0000000)) begin
-            if (auto_play) score = score + 4;
+            if (auto_play) score <= score + 4;
             else if ((user_in.note_keys != 7'b0000000)) begin
                 uin[0] <= cur_in;
                 uin[1] <= uin[0];
-                cur_note <= chart.notes[note_count];
-                if (cur_note == cur_in) score = score + 5;
-                else if (cur_note == uin[0]) score = score + 3;
-                else if (cur_note == uin[1]) score = score + 2;
+                if (cur_note == cur_in) score <= score + 5;
+                else if (cur_note == uin[0]) score <= score + 3;
+                else if (cur_note == uin[1]) score <= score + 2;
             end
         end
     end
@@ -245,7 +245,7 @@ module noteAreaController(
     always @(posedge prog_clk) begin
         if (~en) begin
             case (cnt_dn)
-                2'b11: begin
+                2'd3: begin
                     text[0]  <= "                                ";
                     text[1]  <= "                                ";
                     text[2]  <= "          33333333333           ";
@@ -263,7 +263,7 @@ module noteAreaController(
                     text[14] <= "                                ";
                     text[15] <= "                                ";
                 end
-                2'b10: begin
+                2'd2: begin
                     text[0]  <= "                                ";
                     text[1]  <= "            22222222            ";
                     text[2]  <= "         2222222222222          ";
@@ -281,7 +281,7 @@ module noteAreaController(
                     text[14] <= "                                ";
                     text[15] <= "                                ";
                 end
-                2'b01: begin
+                2'd1: begin
                     text[0]  <= "                                ";
                     text[1]  <= "                                ";
                     text[2]  <= "                111             ";
@@ -375,7 +375,7 @@ module displayLine(
             line_notes = ".                 .   .";
         else begin
             case (cur_note)
-                //                            C  D  E  F  G  A  B   O
+                //                             C  D  E  F  G  A  B   O
                 9'b00_0000001:  line_notes <= "#  .  .  .  .  .  .   .";
                 9'b00_0000010:  line_notes <= ".  #  .  .  .  .  .   .";
                 9'b00_0000100:  line_notes <= ".  .  #  .  .  .  .   .";
