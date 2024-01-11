@@ -6,7 +6,7 @@ module pageInit(
     output ProgramOutput init_out
 );
     localparam RIGHT = `RIGHT;
-    ScreenText text = '{default: '0};
+    ScreenText text;
     TopState state;
     always @(posedge prog_clk) begin
         if (rst) begin
@@ -18,5 +18,5 @@ module pageInit(
     end
     assign init_out.text = text;
     assign init_out.state = state;
-    assign init_out.seg = "12345678";
+    assign init_out.seg = "start   ";
 endmodule

@@ -61,6 +61,10 @@ module pagePlayChart(
             end
         end
     end
+
+    assign text[0][0:7] = "0" + play_st;
+    assign text[0][8:15] = "0" + fin_en;
+    assign text[0][24:31] = "0" + play_en;
     
     // Record chart
     Chart uinc;

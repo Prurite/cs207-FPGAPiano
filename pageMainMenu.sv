@@ -130,7 +130,8 @@ module pageMenu(
                     else cur_pos <= cur_pos + 1;
                 end
                 LEFT: begin
-                    if (cur_pos > 1) begin
+                    if (cur_pos == 0) state <= INIT;
+                    else if (cur_pos > 1) begin
                         state <= PLAY; auto_play <= 1'b1;
                     end
                 end
