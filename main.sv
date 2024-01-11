@@ -110,7 +110,7 @@ module main(
     pageMenu page_menu(
         .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(edged_user_in), .menu_out(menu_out),
         .read_chart_id(read_chart_id), .chart_data(read_chart),
-        .auto_play(auto_play)
+        .auto_play(auto_play), .cur_state(next_state)
     );
     pageScoreHistory page_history(
         .clk(clk), .prog_clk(prog_clk), .rst(rst), .user_in(edged_user_in), .history_out(history_out),
