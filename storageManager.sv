@@ -5,18 +5,21 @@ module ChartStorageManager(
     input byte read_chart_id,
     input byte write_chart_id,
     input Chart new_chart_data,
-    output Chart current_chart_data
+    output Chart current_chart_data,
+    output logic [3:0] chart_addr // DEBUG
 );
     logic [3:0] addr;
+    assign chart_addr = addr; // DEBUG
+
     bit [3383:0] din, dout;
     // assign din = {new_chart_data.info.name, new_chart_data.info.note_cnt, new_chart_data.notes};
     // Use a generated for loop to assign din
     logic [2:0] init_chart_id = 0; // 1 - 2; 0: finished
 
-    Chart init_charts[2:0] = '{default: '0};
+    Chart init_charts[2:0];
     const Chart default_chart = '{default: '0};
 
-    init_charts i_charts( .chart1(init_charts[0]), .chart2(init_charts[1]) );
+    initCharts i_charts( .chart1(init_charts[0]), .chart2(init_charts[1]) );
 
     assign addr = init_chart_id > 0 ? init_chart_id - 1 :
         (write_chart_id > 0 ? write_chart_id - 1 : 
@@ -92,7 +95,7 @@ module RecordStorageManager(
         end
 endmodule
 
-module init_charts(
+module initCharts(
     output Chart chart1, chart2
 );
     localparam NU = 9'b00_0000000;

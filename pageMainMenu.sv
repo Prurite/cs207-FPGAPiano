@@ -32,7 +32,7 @@ module pageMenu(
             cur_pos <= 0;
             seg <= "        ";
             state <= MENU;
-            read_chart_id <= 1;
+            read_chart_id <= 10;
             updating_stay_cnt <= 0;
             init_finish <= 0;
             text[0]  <=  "=======    Main  Menu    =======";
@@ -49,7 +49,10 @@ module pageMenu(
             text[11] <=  "[^][v] Move Up / Down           ";
             text[12] <=  "[<]                [>]          ";
         end else if (!init_finish) begin
+            text[13] <= "0" + read_chart_id; // DEBUG
             case (read_chart_id)
+                10:
+                    read_chart_id <= 1;
                 1: begin
                     text[4][9*8:9*8+8*`NAME_LEN-1] <= chart_data.info.name;
                     read_chart_id <= read_chart_id + 1;

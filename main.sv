@@ -86,10 +86,13 @@ module main(
      * When id is not 0, the storage manager will read or write accordingly.
      */
 
+    logic [3:0] chart_addr; // DEBUG
+
     ChartStorageManager chart_storage(
         .clk(clk), .sys_rst(sys_rst),
         .read_chart_id(read_chart_id), .write_chart_id(write_chart_id),
-        .new_chart_data(write_chart), .current_chart_data(read_chart)
+        .new_chart_data(write_chart), .current_chart_data(read_chart),
+        .chart_addr(chart_addr) // DEBUG
     );
     RecordStorageManager record_storage(
         .clk(clk), .sys_rst(sys_rst),
@@ -172,6 +175,7 @@ module main(
     assign led[6] = rst;
     assign led[7] = sys_rst;
     */
-    assign led = dummy_led;
+    // assign led = dummy_led;
+    assign led[3:0] = chart_addr[3:0];
 
 endmodule
