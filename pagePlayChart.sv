@@ -162,7 +162,7 @@ module screenOut(
             text[29] <= "[+] Hi [-] Lo [<] Exit  [>] Save";
         end else begin
             // Display prog info
-            text[8][0:32*8-1] <= {"Prog. ", free_play ? "    " : cnt_str[8:39], " / ", len_str[8:39], "   Score ", sc_str, " "};
+            text[8][0:32*8-1] <= {"Prog. ", free_play ? {" ", cnt_str[8:39], "      "} : {cnt_str[8:39], " / ", len_str[8:39]}, "   Score ", sc_str, " "};
             // Display max score
             if (free_play)
                 text[9][22*8:31*8-1] <= "         ";
