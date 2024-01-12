@@ -52,7 +52,7 @@ module pagePlayChart(
             fin_en <= 1'b1;
         end else begin
             play_st <= cd_end;
-            fin_en <= note_count <= read_chart.info.note_cnt || read_chart.info.note_cnt == 0;
+            fin_en <= note_count < read_chart.info.note_cnt || read_chart.info.note_cnt == 0;
         end
     end
 
