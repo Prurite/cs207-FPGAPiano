@@ -170,19 +170,21 @@ module screenOut(
                 text[9][22*8:31*8-1] <= {"MAX ", hi_sc_str};
             // Calculate and display rank
             if (free_play)
-                text[9][14*8:20*8-1] <= "      ";
+                text[9][14*8:21*8-1] <= "       ";
             else if (max_score == 0)
-                text[9][19*8:20*8-1] <= "-";
+                text[9][19*8:21*8-1] <= "- ";
+            else if (score == max_score)
+                text[9][19*8:21*8-1] <= "SS";
             else if (100 * score / max_score >= 90)
-                text[9][19*8:20*8-1] <= "S";
+                text[9][19*8:21*8-1] <= "S ";
             else if (100 * score / max_score >= 80)
-                text[9][19*8:20*8-1] <= "A";
+                text[9][19*8:21*8-1] <= "A ";
             else if (100 * score / max_score >= 70)
-                text[9][19*8:20*8-1] <= "B";
+                text[9][19*8:21*8-1] <= "B ";
             else if (100 * score / max_score >= 60)
-                text[9][19*8:20*8-1] <= "C";
+                text[9][19*8:21*8-1] <= "C ";
             else
-                text[9][19*8:20*8-1] <= "D";
+                text[9][19*8:20*8-1] <= "D ";
             // Display chart info
             if (auto_play) text[4][17*8:21*8-1] <= "Auto";
             else text[4][17*8:21*8-1] <= {uid_raw[3*8:5*8-1], 16'h0000};
