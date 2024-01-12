@@ -429,9 +429,9 @@ module audioOutput (
             vol_counter <= 0;
             audio_on <= 0;
             audio_pwm <= 0;
-        end else if (!note || freq_counter < `SYS_FREQ / NOTES[note]) begin
+        end else if (!note || freq_counter < `SYS_FREQ / NOTES[note] / 2) begin
             freq_counter <= freq_counter + 1;
-            vol_counter <= vol_counter == 4 ? 0 : vol_counter + 1;
+            vol_counter <= vol_counter == 8 ? 0 : vol_counter + 1;
             audio_pwm <= audio_on ? vol_counter == 0 : 0;
         end else begin
             freq_counter <= 0;

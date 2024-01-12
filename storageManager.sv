@@ -13,16 +13,15 @@ module ChartStorageManager(
     // Use a generated for loop to assign din
     logic [2:0] init_chart_id = 0; // 1 - 2; 0: finished
 
-    Chart init_charts[2:0];
+    Chart init_charts[2:0] = '{default: '0};
+    const Chart default_chart = '{default: '0};
 
-    init_chart1 chart1( .chart1(init_charts[0]) );
-    assign init_charts[1].info.name = "Ringing Bloom   ";
-    assign init_charts[1].info.note_cnt = 190;
-    assign init_charts[1].notes = init_charts[0].notes;
+    init_charts i_charts( .chart1(init_charts[0]), .chart2(init_charts[1]) );
 
     assign addr = init_chart_id > 0 ? init_chart_id - 1 :
         (write_chart_id > 0 ? write_chart_id - 1 : 
         (read_chart_id > 0 ? read_chart_id - 1 : 0));
+
     assign din[0 +: 8*`NAME_LEN] = init_chart_id > 0
         ? init_charts[init_chart_id - 1].info.name : new_chart_data.info.name;
     assign din[8*`NAME_LEN +: 16] = init_chart_id > 0
@@ -31,10 +30,12 @@ module ChartStorageManager(
     for (i = 0; i < `CHART_LEN; i = i + 1)
         assign din[8*`NAME_LEN + 16 + (`NOTE_WIDTH+2) * i +: (`NOTE_WIDTH+2)] =
             init_chart_id > 0 ? init_charts[init_chart_id - 1].notes[i] : new_chart_data.notes[i];
-    assign current_chart_data.info.name = dout[0 +: 8*`NAME_LEN];
-    assign current_chart_data.info.note_cnt = dout[8*`NAME_LEN +: 16];
+
+    assign current_chart_data.info.name = read_chart_id > 0 ? dout[0 +: 8*`NAME_LEN] : default_chart.info.name;
+    assign current_chart_data.info.note_cnt = read_chart_id > 0 ? dout[8*`NAME_LEN +: 16] : default_chart.info.note_cnt;
     for (i = 0; i < `CHART_LEN; i = i + 1)
-        assign current_chart_data.notes[i] = dout[8*`NAME_LEN + 16 + (`NOTE_WIDTH+2) * i +: (`NOTE_WIDTH+2)];
+        assign current_chart_data.notes[i] =
+            read_chart_id > 0 ? dout[8*`NAME_LEN + 16 + (`NOTE_WIDTH+2) * i +: (`NOTE_WIDTH+2)] : default_chart.notes[i];
     
     // logic [1:0] init_cycle_cnt;
 
@@ -42,7 +43,7 @@ module ChartStorageManager(
         if (sys_rst) begin
             init_chart_id <= 1;
             // init_cycle_cnt <= 0;
-        end else if (init_chart_id > 0 && init_chart_id < 2) begin
+        end else if (init_chart_id > 0 && init_chart_id < 3) begin
             init_chart_id <= init_chart_id + 1;
             // init_cycle_cnt <= init_cycle_cnt >= 2 ? 0 : init_cycle_cnt + 1;
         end else
@@ -51,7 +52,8 @@ module ChartStorageManager(
 
     blk_mem_gen_0 chart_blk_mem(
         .clka(clk), .addra(addr), .dina(din), .douta(dout),
-        .wea(write_chart_id != 0 || init_chart_id != 0)
+        .ena(1),
+        .wea(write_chart_id || init_chart_id)
     );
 endmodule
 
@@ -90,24 +92,30 @@ module RecordStorageManager(
         end
 endmodule
 
-module init_chart1(
-    output Chart chart1
+module init_charts(
+    output Chart chart1, chart2
 );
     localparam NU = 9'b00_0000000;
-    localparam C4 = 9'b10_0000001;
-    localparam D4 = 9'b10_0000010;
-    localparam E4 = 9'b10_0000100;
-    localparam F4 = 9'b10_0001000;
-    localparam G4 = 9'b10_0010000;
-    localparam A5 = 9'b10_0100000;
-    localparam B5 = 9'b10_1000000;
+    localparam C4 = 9'b00_0000001;
+    localparam D4 = 9'b00_0000010;
+    localparam E4 = 9'b00_0000100;
+    localparam F4 = 9'b00_0001000;
+    localparam G4 = 9'b00_0010000;
+    localparam A5 = 9'b00_0100000;
+    localparam B5 = 9'b00_1000000;
+    localparam C5 = 9'b01_0000001;
+    localparam D5 = 9'b01_0000010;
+    localparam E5 = 9'b01_0000100;
+    localparam F5 = 9'b01_0001000;
+    localparam G5 = 9'b01_0010000;
+    localparam A6 = 9'b01_0100000;
+    localparam B6 = 9'b01_1000000;
 
-    localparam NOTE_CNT = 190;
+    localparam NOTE_CNT_1 = 190;
 
     assign chart1.info.name = "Little Stars    ";
-    assign chart1.info.note_cnt = NOTE_CNT;
-    typedef Notes note_t [NOTE_CNT];
-    note_t ts_notes = {
+    assign chart1.info.note_cnt = NOTE_CNT_1;
+    Notes ts_notes [NOTE_CNT_1-1:0] = {
         NU, NU, NU, NU,
         // 1
         C4, C4, C4, NU,
@@ -200,5 +208,29 @@ module init_chart1(
         C4, C4, C4,
         C4, C4, C4, NU
     };
-    assign chart1.notes[0:NOTE_CNT-1] = ts_notes;
+    assign chart1.notes[0:NOTE_CNT_1-1] = ts_notes;
+
+    localparam NOTE_CNT_2 = 204;
+    assign chart2.info.name = "Yuanshen Qidong!";
+    assign chart2.info.note_cnt = NOTE_CNT_2;
+    Notes ys_notes [NOTE_CNT_2-1:0] = {
+        NU, NU, NU, NU, NU, NU, NU, NU, C5, C5, C5, C5,
+        F5, F5, F5, F5, F5, F5, F5, F5, G5, G5, A6, A6,
+        B6, B6, B6, B6, B6, B6, B6, B6, A6, A6, G5, G5,
+        A6, A6, A6, A6, A6, A6, A6, A6, G5, G5, F5, F5,
+        G5, G5, G5, G5, D5, D5, D5, D5, D5, D5, D5, D5,
+        F5, F5, F5, F5, F5, F5, F5, F5, F5, F5, G5, G5,
+        E5, E5, E5, E5, D5, D5, D5, D5, D5, D5, C5, C5,
+        D5, D5, D5, D5, A6, A6, A6, A6, A6, A6, A6, A6,
+        NU, NU, NU, NU, NU, NU, NU, NU, C5, C5, C5, C5,
+        F5, F5, F5, F5, F5, F5, F5, F5, G5, G5, A6, A6,
+        B6, B6, B6, B6, B6, B6, B6, B6, A6, A6, G5, G5,
+        A6, A6, A6, A6, A6, A6, G5, G5, G5, G5, F5, F5,
+        G5, G5, G5, G5, D5, D5, D5, D5, D5, D5, D5, D5,
+        F5, F5, F5, F5, F5, F5, F5, F5, F5, F5, G5, G5,
+        E5, E5, E5, E5, D5, D5, D5, D5, D5, D5, C5, C5,
+        D5, D5, D5, D5, D5, D5, D5, D5, D5, D5, D5, D5,
+        D5, D5, D5, D5, D5, D5, D5, D5, D5, D5, D5, D5
+    };
+    assign chart2.notes[0:NOTE_CNT_2-1] = ys_notes;
 endmodule

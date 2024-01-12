@@ -84,8 +84,11 @@ module pagePlayChart(
             uinc.notes[note_count] <= user_playing_notes;
         end
     end
-    assign uinc.info = read_chart.info;
-    assign play_record = '{user_in.user_id, read_chart.info.name, cur_score};
+    bit [0:8*`NAME_LEN-1] name;
+    assign name = free_play ? "Free Play       " : read_chart.info.name;
+    assign uinc.info.name = name;
+    assign uinc.info.note_cnt = note_count;
+    assign play_record = '{user_in.user_id, name, cur_score};
 
     // Manage user input
     always @(posedge prog_clk) begin
@@ -189,7 +192,7 @@ module screenOut(
     end
 
     noteAreaController ctrl(
-        .prog_clk(prog_clk), .rst(rst), .en(play_st),
+        .prog_clk(prog_clk), .rst(rst), .en(play_st), .free_play(free_play),
         .cnt_dn(cnt_dn), .note_count(note_count), .notes(chart.notes),
         .text(note_area), .seg(seg_text), .led(led)
     );
@@ -236,7 +239,7 @@ endmodule
 
 // Manage note area output
 module noteAreaController(
-    input logic prog_clk, rst, en,
+    input logic prog_clk, rst, en, free_play,
     input [1:0] cnt_dn,
     input shortint note_count,
     input Notes notes [`CHART_LEN-1:0],
@@ -249,69 +252,64 @@ module noteAreaController(
     const ScreenTextRow text_init [`NOTE_AREA_HEIGHT-1:0] = '{default: '0};
     // Display countdown
     always @(posedge prog_clk) begin
-        if (~en) begin
-            case (cnt_dn)
-                2'd3: begin
-                    text[0]  <= "                                ";
-                    text[1]  <= "                                ";
-                    text[2]  <= "          33333333333           ";
-                    text[3]  <= "        333333333333333         ";
-                    text[4]  <= "       3333         3333        ";
-                    text[5]  <= "                     333        ";
-                    text[6]  <= "                    3333        ";
-                    text[7]  <= "            33333333333         ";
-                    text[8]  <= "            33333333333         ";
-                    text[9]  <= "                    3333        ";
-                    text[10] <= "                     333        ";
-                    text[11] <= "       3333         3333        ";
-                    text[12] <= "        333333333333333         ";
-                    text[13] <= "          33333333333           ";
-                    text[14] <= "                                ";
-                    text[15] <= "                                ";
-                end
-                2'd2: begin
-                    text[0]  <= "                                ";
-                    text[1]  <= "            22222222            ";
-                    text[2]  <= "         2222222222222          ";
-                    text[3]  <= "        2222       2222         ";
-                    text[4]  <= "        2222        2222        ";
-                    text[5]  <= "                    2222        ";
-                    text[6]  <= "                   22222        ";
-                    text[7]  <= "                 222222         ";
-                    text[8]  <= "                22222           ";
-                    text[9]  <= "              22222             ";
-                    text[10] <= "            22222               ";
-                    text[11] <= "          22222                 ";
-                    text[12] <= "        22222222222222222       ";
-                    text[13] <= "        22222222222222222       ";
-                    text[14] <= "                                ";
-                    text[15] <= "                                ";
-                end
-                2'd1: begin
-                    text[0]  <= "                                ";
-                    text[1]  <= "                                ";
-                    text[2]  <= "                111             ";
-                    text[3]  <= "            1111111             ";
-                    text[4]  <= "            1111111             ";
-                    text[5]  <= "                111             ";
-                    text[6]  <= "                111             ";
-                    text[7]  <= "                111             ";
-                    text[8]  <= "                111             ";
-                    text[9]  <= "                111             ";
-                    text[10] <= "                111             ";
-                    text[11] <= "                111             ";
-                    text[12] <= "           111111111111         ";
-                    text[13] <= "           111111111111         ";
-                    text[14] <= "                                ";
-                    text[15] <= "                                ";
-                end
-                default:
-                    text <= text_init;
-            endcase
-        end
-        else begin
-            text <= temp_text;
-        end
+        case (cnt_dn)
+            2'd3: begin
+                text[0]  <= "                                ";
+                text[1]  <= "                                ";
+                text[2]  <= "          33333333333           ";
+                text[3]  <= "        333333333333333         ";
+                text[4]  <= "       3333         3333        ";
+                text[5]  <= "                     333        ";
+                text[6]  <= "                    3333        ";
+                text[7]  <= "            33333333333         ";
+                text[8]  <= "            33333333333         ";
+                text[9]  <= "                    3333        ";
+                text[10] <= "                     333        ";
+                text[11] <= "       3333         3333        ";
+                text[12] <= "        333333333333333         ";
+                text[13] <= "          33333333333           ";
+                text[14] <= "                                ";
+                text[15] <= "                                ";
+            end
+            2'd2: begin
+                text[0]  <= "                                ";
+                text[1]  <= "            22222222            ";
+                text[2]  <= "         2222222222222          ";
+                text[3]  <= "        2222       2222         ";
+                text[4]  <= "        2222        2222        ";
+                text[5]  <= "                    2222        ";
+                text[6]  <= "                   22222        ";
+                text[7]  <= "                 222222         ";
+                text[8]  <= "                22222           ";
+                text[9]  <= "              22222             ";
+                text[10] <= "            22222               ";
+                text[11] <= "          22222                 ";
+                text[12] <= "        22222222222222222       ";
+                text[13] <= "        22222222222222222       ";
+                text[14] <= "                                ";
+                text[15] <= "                                ";
+            end
+            2'd1: begin
+                text[0]  <= "                                ";
+                text[1]  <= "                                ";
+                text[2]  <= "                111             ";
+                text[3]  <= "            1111111             ";
+                text[4]  <= "            1111111             ";
+                text[5]  <= "                111             ";
+                text[6]  <= "                111             ";
+                text[7]  <= "                111             ";
+                text[8]  <= "                111             ";
+                text[9]  <= "                111             ";
+                text[10] <= "                111             ";
+                text[11] <= "                111             ";
+                text[12] <= "           111111111111         ";
+                text[13] <= "           111111111111         ";
+                text[14] <= "                                ";
+                text[15] <= "                                ";
+            end
+            default:
+                text <= free_play ? text_init : temp_text;
+        endcase
     end
     
     shortint note_id; // Make sure it does not go out of bound
