@@ -14,7 +14,7 @@
 `define SCREEN_TEXT_HEIGHT 30
 `define NOTE_AREA_HEIGHT 16
 `define NOTE_TIME 192 // ms
-`define NOTE_CLK_DIV 24 // was 12
+`define NOTE_CLK_DIV 12
 `define SEG_WIDTH 8
 `define PLAY_RECS_MAX 10
 `define MAX_DISPLAY_HEIGHT 16

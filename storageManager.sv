@@ -230,8 +230,8 @@ module initCharts(
         B6, B6, B6, B6, B6, B6, B6, B6, A6, A6, G5, G5,
         A6, A6, A6, A6, A6, A6, G5, G5, G5, G5, F5, F5,
         G5, G5, G5, G5, D5, D5, D5, D5, D5, D5, D5, D5,
-        F5, F5, F5, F5, F5, F5, F5, F5, F5, F5, G5, G5,
-        E5, E5, E5, E5, D5, D5, D5, D5, D5, D5, C5, C5,
+        F5, F5, F5, F5, F5, F5, F5, F5, F5, G5, G5, G5,
+        E5, E5, E5, E5, D5, D5, D5, D5, D5, C5, C5, C5,
         D5, D5, D5, D5, D5, D5, D5, D5, D5, D5, D5, D5,
         D5, D5, D5, D5, D5, D5, D5, D5, D5, D5, D5, D5
     };

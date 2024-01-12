@@ -124,7 +124,7 @@ module unifiedOutput (
 endmodule
 
 // Keyboard input processing
-module keyboardInput_Old (
+module keyboardInput (
     input logic clk, prog_clk, sys_rst,
     input logic ps2_clk, ps2_data,
     output UserInput keyboard_in
@@ -218,7 +218,7 @@ module keyboardInput_Old (
 endmodule
 
 // Keyboard input processing, new version
-module keyboardInput (
+module keyboardInput_test (
     input logic clk, prog_clk, sys_rst,
     input logic ps2_clk, ps2_data,
     output UserInput keyboard_in

@@ -32,19 +32,19 @@ module pagePlayChart(
     wire [13:0] cur_score, max_score;
     ScreenText text;
 
-    // Get screen output
-    screenOut screen_out(
-        .prog_clk(prog_clk), .rst(rst),
-        .chart(read_chart), .note_count(note_count),
-        .user_in(user_in), .play_st(play_st), .auto_play(auto_play), .free_play(free_play),
-        .score(cur_score), .max_score(max_score), .text(text), .seg_text(play_out.seg), .led(play_out.led)
-    );
-    
     // Countdown func (3s before start)
     wire [1:0] cnt_dn;
     logic cd_end; // 1: countdown ends
     countDown cd(.prog_clk(prog_clk), .rst(rst), .play_st(cd_end), .cnt_dn(cnt_dn));
 
+    // Get screen output
+    screenOut screen_out(
+        .prog_clk(prog_clk), .rst(rst),
+        .chart(read_chart), .note_count(note_count), .cnt_dn(cnt_dn),
+        .user_in(user_in), .play_st(play_st), .auto_play(auto_play), .free_play(free_play),
+        .score(cur_score), .max_score(max_score), .text(text), .seg_text(play_out.seg), .led(play_out.led)
+    );
+    
     // Status control
     always @(posedge prog_clk) begin
         if (rst) begin
@@ -388,7 +388,7 @@ module displayLine(
 
     always @(posedge prog_clk) begin
         if (rst || !en)
-            line_notes = ".                 .   .";
+            line_notes <= ".                 .   .";
         else begin
             case (cur_note)
                 //                             C  D  E  F  G  A  B   O
