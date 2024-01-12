@@ -85,7 +85,7 @@ module pagePlayChart(
         end
     end
     bit [0:8*`NAME_LEN-1] name;
-    assign name = free_play ? "Free Play       " : read_chart.info.name;
+    assign name = free_play ? "Free Play Save  " : read_chart.info.name;
     assign uinc.info.name = name;
     assign uinc.info.note_cnt = note_count;
     assign play_record = '{user_in.user_id, name, cur_score};
