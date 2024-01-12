@@ -29,7 +29,7 @@ module pagePlayChart(
     Notes cur_note;
 
     // Records score.
-    wire [13:0] cur_score, hi_score;
+    wire [13:0] cur_score, max_score;
     ScreenText text;
 
     // Get screen output
@@ -37,7 +37,7 @@ module pagePlayChart(
         .prog_clk(prog_clk), .rst(rst),
         .chart(read_chart), .note_count(note_count),
         .user_in(user_in), .play_st(play_st), .auto_play(auto_play), .free_play(free_play),
-        .score(cur_score), .hi_score(hi_score), .text(text), .seg_text(play_out.seg), .led(play_out.led)
+        .score(cur_score), .max_score(max_score), .text(text), .seg_text(play_out.seg), .led(play_out.led)
     );
     
     // Countdown func (3s before start)
@@ -118,7 +118,7 @@ module pagePlayChart(
         .prog_clk(prog_clk), .rst(rst),
         .play_en(play_en), .auto_play(auto_play), .free_play(free_play),
         .user_in(user_in), .chart(read_chart), .note_count(note_count),
-        .score(cur_score), .hi_score(hi_score)
+        .score(cur_score), .max_score(max_score)
     );
 endmodule
 
@@ -128,7 +128,7 @@ module screenOut(
     input Chart chart,
     input shortint note_count,
     input UserInput user_in,
-    input bit [13:0] score, hi_score,
+    input bit [13:0] score, max_score,
     input bit [1:0] cnt_dn,
     input logic play_st, auto_play, free_play,
     output ScreenText text,
@@ -140,7 +140,7 @@ module screenOut(
 
     // Display Info (Line 8, Col 7~10, 14~17, 28~32)    
     binary2Str b2sc(.intx(score), .str(sc_str));
-    binary2Str b2shc(.intx(hi_score), .str(hi_sc_str));
+    binary2Str b2shc(.intx(max_score), .str(hi_sc_str));
     binary2Str b2sn(.intx(note_count), .str(cnt_str));
     binary2Str b2snc(.intx(chart.info.note_cnt), .str(len_str));
     binary2Str b2suid(.intx(user_in.user_id), .str(uid_raw));
@@ -155,7 +155,7 @@ module screenOut(
             text[6]  <= "Save to chart ID:               ";
             // Progress & Score display
             text[8]  <= "Prog.    0 /    0   Score     0/";
-            text[9]  <= "                      Max     0 ";
+            text[9]  <= "              Rank .  Max     0 ";
             // Line 10-25 display notes
             text[27] <= "    C  D  E  F  G  A  B   =     ";
             //              [C][D]                [+][[-]]
@@ -164,6 +164,18 @@ module screenOut(
             // Display prog info
             text[8][0:32*8-1] <= {"Prog. ", cnt_str[8:39], " / ", len_str[8:39], "   Score ", sc_str, " "};
             text[9][26*8:31*8-1] <= hi_sc_str;
+            if (max_score == 0)
+                text[9][19*8:20*8-1] <= "-";
+            else if (100 * score / max_score >= 90)
+                text[9][19*8:20*8-1] <= "S";
+            else if (100 * score / max_score >= 80)
+                text[9][19*8:20*8-1] <= "A";
+            else if (100 * score / max_score >= 70)
+                text[9][19*8:20*8-1] <= "B";
+            else if (100 * score / max_score >= 60)
+                text[9][19*8:20*8-1] <= "C";
+            else
+                text[9][19*8:20*8-1] <= "D";
             // Display chart info
             if (auto_play) text[4][17*8:21*8-1] <= "Auto";
             else text[4][17*8:21*8-1] <= {uid_raw[3*8:5*8-1], 16'h0000};
@@ -205,7 +217,7 @@ module scoreManager (
     input Chart chart,
     input shortint note_count,
     output reg [13:0] score,
-    output reg [13:0] hi_score
+    output reg [13:0] max_score
 );
     // Perfect 50ms 10p, Great 100ms 8p, Good 150ms 5p, Miss 200ms+ 0p.
 
@@ -220,11 +232,11 @@ module scoreManager (
     always @(posedge clk50ms or posedge rst) begin
         if (rst) begin
             score <= 14'd0;
-            hi_score <= 14'd0;
+            max_score <= 14'd0;
             uin[0] <= 9'b00_0000000;
             uin[1] <= 9'b00_0000000;
         end else if (play_en && ~free_play && (cur_note[6:0] != 7'b0000000)) begin
-            hi_score <= hi_score + 5;
+            max_score <= max_score + 5;
             if (auto_play) score <= score + 4;
             else if ((user_in.note_keys != 7'b0000000)) begin
                 uin[0] <= cur_in;
