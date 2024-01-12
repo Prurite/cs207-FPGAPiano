@@ -164,10 +164,14 @@ module main(
 
     end
 
+/*
     assign led[0] = cur_state == INIT;
     assign led[1] = cur_state == MENU;
     assign led[2] = cur_state == HISTORY;
     assign led[3] = cur_state == PLAY;
     assign led[6] = rst;
     assign led[7] = sys_rst;
+    */
+    assign led = dummy_led;
+
 endmodule

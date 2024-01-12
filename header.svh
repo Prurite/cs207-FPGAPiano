@@ -8,7 +8,7 @@
 
 `define NAME_LEN 16
 `define NOTE_WIDTH 7
-`define CHART_LEN 384
+`define CHART_LEN 360
 `define CHARTS_MAX 6
 `define SCREEN_TEXT_WIDTH 32
 `define SCREEN_TEXT_HEIGHT 30

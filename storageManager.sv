@@ -8,10 +8,10 @@ module ChartStorageManager(
     output Chart current_chart_data
 );
     logic [3:0] addr;
-    bit [3599:0] din, dout;
+    bit [3383:0] din, dout;
     // assign din = {new_chart_data.info.name, new_chart_data.info.note_cnt, new_chart_data.notes};
     // Use a generated for loop to assign din
-    logic [2:0] init_chart_id; // 1 - 2; 0: finished
+    logic [2:0] init_chart_id = 0; // 1 - 2; 0: finished
 
     Chart init_charts[2:0];
 
@@ -36,23 +36,22 @@ module ChartStorageManager(
     for (i = 0; i < `CHART_LEN; i = i + 1)
         assign current_chart_data.notes[i] = dout[8*`NAME_LEN + 16 + (`NOTE_WIDTH+2) * i +: (`NOTE_WIDTH+2)];
     
-    logic [1:0] init_cycle_cnt;
+    // logic [1:0] init_cycle_cnt;
 
-    always @(posedge clk or posedge sys_rst) begin
+    always @(posedge clk) begin
         if (sys_rst) begin
             init_chart_id <= 1;
-            init_cycle_cnt <= 0;
-        end else if (init_chart_id > 0 && init_chart_id < 3) begin
-            init_chart_id <= init_chart_id + (init_cycle_cnt >= 2);
-            init_cycle_cnt <= init_cycle_cnt >= 2 ? 0 : init_cycle_cnt + 1;
+            // init_cycle_cnt <= 0;
+        end else if (init_chart_id > 0 && init_chart_id < 2) begin
+            init_chart_id <= init_chart_id + 1;
+            // init_cycle_cnt <= init_cycle_cnt >= 2 ? 0 : init_cycle_cnt + 1;
         end else
             init_chart_id <= 0;
     end
 
     blk_mem_gen_0 chart_blk_mem(
-        .clka(clk), .ena(addr != 0),
-        .addra(addr), .dina(din),
-        .douta(dout), .wea(write_chart_id != 0 || init_chart_id != 0)
+        .clka(clk), .addra(addr), .dina(din), .douta(dout),
+        .wea(write_chart_id != 0 || init_chart_id != 0)
     );
 endmodule
 
