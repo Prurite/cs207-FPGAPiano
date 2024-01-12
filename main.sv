@@ -175,7 +175,7 @@ module main(
     assign led[6] = rst;
     assign led[7] = sys_rst;
     */
-    // assign led = dummy_led;
-    assign led[3:0] = chart_addr[3:0];
-
+    // assign led = dummy_led | chart_addr;
+    assign led[3:0] = chart_addr; // DEBUG
+    // I Don't know why but this does make everything WORK
 endmodule

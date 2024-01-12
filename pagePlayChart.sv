@@ -244,7 +244,7 @@ module scoreManager (
             uin[1] <= 9'b00_0000000;
         end else if (play_en && ~free_play && (cur_note[6:0] != 7'b0000000)) begin
             max_score <= max_score + 5;
-            if (auto_play) score <= score + 4;
+            if (auto_play) score <= score + 5;
             else if ((user_in.note_keys != 7'b0000000)) begin
                 uin[0] <= cur_in;
                 uin[1] <= uin[0];

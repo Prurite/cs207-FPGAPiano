@@ -8,6 +8,10 @@ module ChartStorageManager(
     output Chart current_chart_data,
     output logic [3:0] chart_addr // DEBUG
 );
+    logic mem_clk;
+    // clkDiv mem_clk_div( .clk(clk), .rst(sys_rst), .divx(20), .clk_out(mem_clk) );
+    assign mem_clk = clk;
+
     logic [3:0] addr;
     assign chart_addr = addr; // DEBUG
 
@@ -19,7 +23,7 @@ module ChartStorageManager(
     Chart init_charts[2:0];
     const Chart default_chart = '{default: '0};
 
-    initCharts i_charts( .chart1(init_charts[0]), .chart2(init_charts[1]) );
+    initCharts i_charts( .chart1(init_charts[0]), .chart2(init_charts[1]), .chart3(init_charts[2]) );
 
     assign addr = init_chart_id > 0 ? init_chart_id - 1 :
         (write_chart_id > 0 ? write_chart_id - 1 : 
@@ -42,7 +46,7 @@ module ChartStorageManager(
     
     // logic [1:0] init_cycle_cnt;
 
-    always @(posedge clk) begin
+    always @(posedge mem_clk) begin
         if (sys_rst) begin
             init_chart_id <= 1;
             // init_cycle_cnt <= 0;
@@ -54,7 +58,7 @@ module ChartStorageManager(
     end
 
     blk_mem_gen_0 chart_blk_mem(
-        .clka(clk), .addra(addr), .dina(din), .douta(dout),
+        .clka(mem_clk), .addra(addr), .dina(din), .douta(dout),
         .ena(1),
         .wea(write_chart_id || init_chart_id)
     );
@@ -70,18 +74,18 @@ module RecordStorageManager(
     //PlayRecord record_storage [`PLAY_RECS_MAX-1:0] = '{default: '0};
     PlayRecord record_storage [`PLAY_RECS_MAX-1:0];
     PlayRecord pr;
-    assign pr.user_id = 2;
-    assign pr.chart_name = "Little Stars    ";
+    assign pr.user_id = 1;
+    assign pr.chart_name = "Example playrec1";
     assign pr.score = 4406;
 
     // When id's are not 0, read or write accordingly
     always @(posedge clk or posedge sys_rst)
         if (sys_rst) begin
-            record_storage[2].user_id <= 1;
-            record_storage[2].chart_name <= "Ringing Bloom   ";
+            record_storage[1] <= pr;
+            record_storage[2].user_id <= 2;
+            record_storage[2].chart_name <= "Example play2   ";
             record_storage[2].score <= 10940;
             record_storage[3] <= pr;
-            record_storage[1] <= pr;
         end
         else begin
             if (read_record_id != 0)
@@ -96,9 +100,12 @@ module RecordStorageManager(
 endmodule
 
 module initCharts(
-    output Chart chart1, chart2
+    output Chart chart1, chart2, chart3
 );
     localparam NU = 9'b00_0000000;
+    localparam G3 = 9'b10_0010000;
+    localparam A4 = 9'b10_0100000;
+    localparam B4 = 9'b10_1000000;
     localparam C4 = 9'b00_0000001;
     localparam D4 = 9'b00_0000010;
     localparam E4 = 9'b00_0000100;
@@ -236,4 +243,20 @@ module initCharts(
         D5, D5, D5, D5, D5, D5, D5, D5, D5, D5, D5, D5
     };
     assign chart2.notes[0:NOTE_CNT_2-1] = ys_notes;
+
+    localparam NOTE_CNT_3 = 144;
+    assign chart3.info.name = "Da Yu           ";
+    assign chart3.info.note_cnt = NOTE_CNT_3;
+    Notes dy_notes [NOTE_CNT_3-1:0] = {
+        NU, NU, NU, NU, NU, NU, NU, NU, NU, NU, NU, NU, E4, E4, G4, G4,
+        C5, C5, C5, C5, C5, C5, B5, B5, E4, E4, E4, NU, E4, E4, D4, D4,
+        C4, C4, C4, NU, C4, C4, D4, D4, E4, E4, E4, NU, E4, E4, D4, D4,
+        C4, C4, C4, C4, A5, A5, C5, C5, B5, B5, A5, A5, G4, G4, D4, D4,
+        E4, E4, E4, E4, E4, E4, E4, E4, E4, E4, NU, NU, E4, E4, G4, G4,
+        C5, C5, C5, C5, C5, C5, B5, B5, E4, E4, E4, NU, E4, E4, D4, D4,
+        C4, C4, C4, NU, C4, C4, D4, D4, E4, E4, E4, E4, E4, E4, E4, E4,
+        D4, D4, E4, E4, A4, A4, A4, A4, D4, D4, E4, E4, A4, A4, G3, G3,
+        A4, A4, A4, A4, A4, A4, A4, A4, A4, A4, A4, A4, A4, A4, A4, A4
+    };
+    assign chart3.notes[0:NOTE_CNT_3-1] = dy_notes;
 endmodule
