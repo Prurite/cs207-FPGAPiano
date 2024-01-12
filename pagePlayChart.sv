@@ -61,7 +61,7 @@ module pagePlayChart(
     assign play_out.text[0][24:31] = "0" + play_en;
     assign play_out.text[0][32:39] = "0" + cnt_dn;
 
-    assign play_out.text[`SCREEN_TEXT_HEIGHT-1:2] = text[`SCREEN_TEXT_HEIGHT-1:2];
+    assign play_out.text[`SCREEN_TEXT_HEIGHT-1:1] = text[`SCREEN_TEXT_HEIGHT-1:1];
     
     Chart uinc; // Record chart
     PlayRecord play_record; // Record play data
@@ -149,65 +149,65 @@ module screenOut(
     always @(posedge prog_clk) begin
         if (rst) begin
             // Title display
-            text[2]  <= "=====    Playing Chart    ===== ";
-            text[4]  <= "Current User ID: 0              ";
-            text[5]  <= "Playing: -                      ";
-            text[6]  <= "Save to chart ID:               ";
+            text[1]  <= "=====    Playing Chart    ===== ";
+            text[3]  <= "Current User ID: 0              ";
+            text[4]  <= "Playing: -                      ";
+            text[5]  <= "Save to chart ID:               ";
             // Progress & Score display
-            text[8]  <= "Prog.    0 /    0   Score     0/";
-            text[9]  <= "              Rank .  Max     0 ";
+            text[7]  <= "Prog.    0 /    0   Score     0/";
+            text[8]  <= "              Rank .  Max     0 ";
             // Line 10-25 display notes
-            text[27] <= "    C  D  E  F  G  A  B   =     ";
+            text[26] <= "    C  D  E  F  G  A  B   =     ";
             //              [C][D]                [+][[-]]
-            text[29] <= "[+] Hi [-] Lo [<] Exit  [>] Save";
+            text[28] <= "[+] Hi [-] Lo [<] Exit  [>] Save";
         end else begin
             // Display prog info
-            text[8][0:32*8-1] <= {"Prog.", free_play ? {" ", cnt_str, "      "} : {cnt_str, " /", len_str}, "   Score ", sc_str, " "};
+            text[7][0:32*8-1] <= {"Prog.", free_play ? {" ", cnt_str, "      "} : {cnt_str, " /", len_str}, "   Score ", sc_str, " "};
             // Display max score
             if (free_play)
-                text[9][22*8:31*8-1] <= "         ";
+                text[8][22*8:31*8-1] <= "         ";
             else
-                text[9][22*8:31*8-1] <= {"MAX ", hi_sc_str};
+                text[8][22*8:31*8-1] <= {"MAX ", hi_sc_str};
             // Calculate and display rank
             if (free_play)
-                text[9][14*8:21*8-1] <= "       ";
+                text[8][14*8:21*8-1] <= "       ";
             else if (max_score == 0)
-                text[9][19*8:21*8-1] <= "- ";
+                text[8][19*8:21*8-1] <= "- ";
             else if (score == max_score)
-                text[9][19*8:21*8-1] <= "SS";
+                text[8][19*8:21*8-1] <= "SS";
             else if (100 * score / max_score >= 90)
-                text[9][19*8:21*8-1] <= "S ";
+                text[8][19*8:21*8-1] <= "S ";
             else if (100 * score / max_score >= 80)
-                text[9][19*8:21*8-1] <= "A ";
+                text[8][19*8:21*8-1] <= "A ";
             else if (100 * score / max_score >= 70)
-                text[9][19*8:21*8-1] <= "B ";
+                text[8][19*8:21*8-1] <= "B ";
             else if (100 * score / max_score >= 60)
-                text[9][19*8:21*8-1] <= "C ";
+                text[8][19*8:21*8-1] <= "C ";
             else
-                text[9][19*8:20*8-1] <= "D ";
+                text[8][19*8:20*8-1] <= "D ";
             // Display chart info
-            if (auto_play) text[4][17*8:21*8-1] <= "Auto";
-            else text[4][17*8:21*8-1] <= {uid_raw[3*8:5*8-1], 16'h0000};
-            if (free_play) text[5][9*8:(9+`NAME_LEN)*8 - 1] <= "Free Playing... ";
-            else text[5][9*8:(9+`NAME_LEN)*8 - 1] <= chart.info.name;
-            text[6][17*8:19*8-1] <= cid_raw[3*8:5*8-1];
-            text[25:10] <= note_area[15:0];
+            if (auto_play) text[3][17*8:21*8-1] <= "Auto";
+            else text[3][17*8:21*8-1] <= {uid_raw[3*8:5*8-1], 16'h0000};
+            if (free_play) text[4][9*8:(9+`NAME_LEN)*8 - 1] <= "Free Playing... ";
+            else text[4][9*8:(9+`NAME_LEN)*8 - 1] <= chart.info.name;
+            text[5][17*8:19*8-1] <= cid_raw[3*8:5*8-1];
+            text[24:9] <= note_area[15:0];
 
             // User interaction
             case (user_in.note_keys)
-                7'b0000001: text[27][3*8:24*8-1] <= "[C] D  E  F  G  A  B ";
-                7'b0000010: text[27][3*8:24*8-1] <= " C [D] E  F  G  A  B ";
-                7'b0000100: text[27][3*8:24*8-1] <= " C  D [E] F  G  A  B ";
-                7'b0001000: text[27][3*8:24*8-1] <= " C  D  E [F] G  A  B ";
-                7'b0010000: text[27][3*8:24*8-1] <= " C  D  E  F [G] A  B ";
-                7'b0100000: text[27][3*8:24*8-1] <= " C  D  E  F  G [A] B ";
-                7'b1000000: text[27][3*8:24*8-1] <= " C  D  E  F  G  A [B]";
-                default: text[27][3*8:24*8-1]    <= " C  D  E  F  G  A  B ";
+                7'b0000001: text[26][3*8:24*8-1] <= "[C] D  E  F  G  A  B ";
+                7'b0000010: text[26][3*8:24*8-1] <= " C [D] E  F  G  A  B ";
+                7'b0000100: text[26][3*8:24*8-1] <= " C  D [E] F  G  A  B ";
+                7'b0001000: text[26][3*8:24*8-1] <= " C  D  E [F] G  A  B ";
+                6'b0010000: text[26][3*8:24*8-1] <= " C  D  E  F [G] A  B ";
+                7'b0100000: text[26][3*8:24*8-1] <= " C  D  E  F  G [A] B ";
+                7'b1000000: text[26][3*8:24*8-1] <= " C  D  E  F  G  A [B]";
+                default: text[26][3*8:24*8-1]    <= " C  D  E  F  G  A  B ";
             endcase
             case ({user_in.oct_down, user_in.oct_up})
-                2'b10: text[27][25*8:28*8-1] <= "[-]";
-                2'b01: text[27][25*8:28*8-1] <= "[+]";
-                default: text[27][25*8:28*8-1] <= " = ";
+                2'b10: text[26][25*8:28*8-1] <= "[-]";
+                2'b01: text[26][25*8:28*8-1] <= "[+]";
+                default: text[26][25*8:28*8-1] <= " = ";
             endcase
         end
     end

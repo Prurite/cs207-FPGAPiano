@@ -6,21 +6,22 @@ module ChartStorageManager(
     input byte write_chart_id,
     input Chart new_chart_data,
     output Chart current_chart_data,
-    output logic [3:0] chart_addr // DEBUG
+    output logic [2:0] chart_addr, // DEBUG
+    output logic [2:0] init_chart_id // DEBUG
 );
     logic mem_clk;
-    // clkDiv mem_clk_div( .clk(clk), .rst(sys_rst), .divx(20), .clk_out(mem_clk) );
-    assign mem_clk = clk;
+    clkDiv mem_clk_div( .clk(clk), .rst(sys_rst), .divx(2), .clk_out(mem_clk) );
+    // assign mem_clk = clk;
 
-    logic [3:0] addr;
+    logic [2:0] addr;
     assign chart_addr = addr; // DEBUG
 
     bit [3383:0] din, dout;
     // assign din = {new_chart_data.info.name, new_chart_data.info.note_cnt, new_chart_data.notes};
     // Use a generated for loop to assign din
-    logic [2:0] init_chart_id = 0; // 1 - 2; 0: finished
+    // logic [2:0] init_chart_id = 0; // 1 - 2; 0: finished
 
-    Chart init_charts[2:0];
+    Chart init_charts[4:0];
     const Chart default_chart = '{default: '0};
 
     initCharts i_charts( .chart1(init_charts[0]), .chart2(init_charts[1]), .chart3(init_charts[2]) );
@@ -44,15 +45,16 @@ module ChartStorageManager(
         assign current_chart_data.notes[i] =
             read_chart_id > 0 ? dout[8*`NAME_LEN + 16 + (`NOTE_WIDTH+2) * i +: (`NOTE_WIDTH+2)] : default_chart.notes[i];
     
-    // logic [1:0] init_cycle_cnt;
+    logic [2:0] init_cycle_cnt;
 
-    always @(posedge mem_clk) begin
+    always @(posedge mem_clk or posedge sys_rst) begin
         if (sys_rst) begin
             init_chart_id <= 1;
-            // init_cycle_cnt <= 0;
+            init_cycle_cnt <= 1;
         end else if (init_chart_id > 0 && init_chart_id < 3) begin
-            init_chart_id <= init_chart_id + 1;
-            // init_cycle_cnt <= init_cycle_cnt >= 2 ? 0 : init_cycle_cnt + 1;
+            // init_chart_id <= init_chart_id + 1;
+            init_chart_id <= init_cycle_cnt == 0 ? init_chart_id + 1 : init_chart_id;
+            init_cycle_cnt <= init_cycle_cnt >= 3 ? 0 : init_cycle_cnt + 1;
         end else
             init_chart_id <= 0;
     end

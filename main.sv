@@ -86,13 +86,14 @@ module main(
      * When id is not 0, the storage manager will read or write accordingly.
      */
 
-    logic [3:0] chart_addr; // DEBUG
+    logic [2:0] chart_addr; // DEBUG
+    logic [2:0] init_chart_id; // DEBUG
 
     ChartStorageManager chart_storage(
         .clk(clk), .sys_rst(sys_rst),
         .read_chart_id(read_chart_id), .write_chart_id(write_chart_id),
         .new_chart_data(write_chart), .current_chart_data(read_chart),
-        .chart_addr(chart_addr) // DEBUG
+        .chart_addr(chart_addr), .init_chart_id(init_chart_id) // DEBUG
     );
     RecordStorageManager record_storage(
         .clk(clk), .sys_rst(sys_rst),
@@ -151,7 +152,12 @@ module main(
             PLAY: prog_out = play_out;
             default: prog_out = init_out;
         endcase
-
+        /*
+        prog_out.text[29][0:7] = "0" + chart_addr; // DEBUG
+        prog_out.text[29][8:15] = "0" + read_chart_id; // DEBUG
+        prog_out.text[29][16:23] = "0" + write_chart_id; // DEBUG
+        prog_out.text[29][24:31] = "0" + init_chart_id; // DEBUG
+        */
         init_in = cur_state == INIT ? edged_user_in : default_user_in;
         menu_in = cur_state == MENU ? edged_user_in : default_user_in;
         history_in = cur_state == HISTORY ? edged_user_in : default_user_in;
@@ -175,7 +181,7 @@ module main(
     assign led[6] = rst;
     assign led[7] = sys_rst;
     */
-    // assign led = dummy_led | chart_addr;
-    assign led[3:0] = chart_addr; // DEBUG
+    assign led = dummy_led;
+    // assign led[2:0] = init_chart_id; // DEBUG
     // I Don't know why but this does make everything WORK
 endmodule

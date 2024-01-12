@@ -16,6 +16,7 @@ module pageInit(
         end else if (state == INIT && user_in.arrow_keys == RIGHT)
             state <= MENU;
     end
+    /*
     assign text[18][0 +: 8] = user_in.arrow_keys == `UP ? " " : "^";
     assign text[18][8 +: 8] = user_in.arrow_keys == `DOWN ? " " : "v";
     assign text[18][16 +: 8] = user_in.arrow_keys == `LEFT ? " " : "<";
@@ -29,6 +30,7 @@ module pageInit(
     assign text[19][48 +: 8] = user_in.note_keys[6] ? "B" : "b";
     assign text[20][0 +: 8] = user_in.oct_up ? " " : "+";
     assign text[20][8 +: 8] = user_in.oct_down ? " " : "-";
+    */
 
     assign init_out.text = text;
     assign init_out.state = state;
